@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scrum Master Calendar</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <div class="site-brand">
+        <span class="site-kicker">Scrum dashboard</span>
+        <h1>Календарь</h1>
+      </div>
+      <nav class="site-nav" aria-label="Основная навигация">
+        <a class="nav-link" href="index.html">Метрики</a>
+        <a class="nav-link is-active" href="calendar.html">Календарь</a>
+        <a class="nav-link" href="backlog.html">Бэклог</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="section calendar-classic-section">
+        <div class="calendar-classic-layout">
+          <div class="calendar-classic-shell">
+            <div class="calendar-classic-topbar">
+              <p class="calendar-current-date" id="calendarCurrentDate"></p>
+              <div class="calendar-month-picker">
+                <label class="calendar-picker-label" for="calendarMonthSelect">Месяц</label>
+                <select id="calendarMonthSelect" aria-label="Выбрать месяц"></select>
+              </div>
+            </div>
+
+            <div class="calendar-classic-header">
+              <div>
+                <p class="calendar-classic-kicker">Планирование</p>
+                <h2 id="calendarMonthTitle"></h2>
+              </div>
+              <div class="calendar-classic-nav">
+                <button type="button" class="calendar-nav-button" id="calendarPrevMonth" aria-label="Предыдущий месяц">▲</button>
+                <button type="button" class="calendar-nav-button" id="calendarNextMonth" aria-label="Следующий месяц">▼</button>
+              </div>
+            </div>
+
+            <div class="calendar-weekdays" id="calendarWeekdays"></div>
+            <div class="calendar-classic-grid" id="calendarGrid"></div>
+
+            <section class="calendar-day-panel" id="calendarDayPanel">
+              <div class="calendar-day-panel-header">
+                <div>
+                  <p class="calendar-day-panel-kicker">Выбранный день</p>
+                  <h3 id="calendarSelectedDate"></h3>
+                </div>
+              </div>
+
+              <div class="calendar-day-events-list" id="calendarSelectedEvents"></div>
+
+              <form class="calendar-event-form" id="calendarEventForm">
+                <input id="calendarEventTitle" type="text" placeholder="Название события" aria-label="Название события">
+                <input id="calendarEventTime" type="time" aria-label="Время события">
+                <select id="calendarEventType" aria-label="Тип события">
+                  <option value="event">Событие</option>
+                  <option value="review">Ритуал</option>
+                  <option value="deadline">Дедлайн</option>
+                </select>
+                <button type="submit" class="calendar-event-submit">Добавить событие</button>
+                <button type="button" class="calendar-event-cancel" id="calendarEventCancel" hidden>Отмена</button>
+              </form>
+            </section>
+          </div>
+
+          <aside class="calendar-month-sidebar">
+            <div class="calendar-month-sidebar-header">
+              <p class="calendar-day-panel-kicker">События месяца</p>
+              <h3 id="calendarMonthEventsTitle"></h3>
+            </div>
+            <div class="calendar-month-events-list" id="calendarMonthEvents"></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="calendar.js"></script>
+</body>
+</html>

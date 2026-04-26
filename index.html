@@ -3,13 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scrum Master Metrics</title>
+  <title>Личный кабинет скрам-мастера</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="page-shell">
-    <button class="edit-toggle-floating" id="editModeButton" type="button" aria-label="Войти в режим редактирования">Ред.</button>
+    <header class="site-header">
+      <div class="site-brand">
+        <span class="site-kicker">Scrum dashboard</span>
+        <h1>Личный кабинет скрам-мастера</h1>
+      </div>
+
+      <div class="site-header-actions">
+        <nav class="site-nav" aria-label="Основная навигация">
+          <a class="nav-link is-active" href="index.html">Метрики</a>
+          <a class="nav-link" href="calendar.html">Календарь</a>
+          <a class="nav-link" href="backlog.html">Бэклог</a>
+        </nav>
+        <button class="login-button" id="loginToggle" type="button">Вход</button>
+      </div>
+    </header>
+
     <main>
+      <div class="edit-mode-banner" id="editModeBanner" hidden>
+        <span id="editModeText">Режим редактирования</span>
+      </div>
+
       <section class="section metrics-section">
         <div class="section-heading">
           <p class="section-kicker">Метрики</p>
@@ -35,28 +54,40 @@
             </div>
           </div>
         </div>
+
         <form class="goal-create-form" id="goalCreateForm" hidden>
-          <select id="goalCreateQuarterInput" aria-label="Квартал новой цели"></select>
-          <input id="goalTitleInput" type="text" placeholder="Новая цель" aria-label="Название новой цели">
-          <input id="goalAcceptanceInput" type="text" placeholder="Критерии приемки" aria-label="Критерии приемки">
-          <select id="goalOwnerInput" aria-label="Ответственный за новую цель"></select>
-          <button class="metric-save-button" type="submit">Добавить цель</button>
+          <div class="goal-create-grid">
+            <input id="newGoalTitle" type="text" placeholder="Название цели" required>
+            <select id="newGoalQuarter" aria-label="Квартал цели"></select>
+            <select id="newGoalOwner" aria-label="Ответственный"></select>
+            <input id="newGoalAcceptance" type="text" placeholder="Критерии приемки" required>
+          </div>
+          <button class="form-action-button" type="submit">Добавить цель</button>
         </form>
+
         <div class="goal-grid" id="goalGrid"></div>
       </section>
     </main>
   </div>
 
-  <div class="modal-backdrop" id="passwordModal" hidden>
-    <div class="password-modal">
-      <p class="section-kicker">Protected edit mode</p>
-      <h2>Введите пароль</h2>
-      <form id="passwordForm">
-        <input id="passwordInput" type="password" placeholder="Пароль" autocomplete="current-password">
-        <p class="password-error" id="passwordError" hidden>Неверный пароль</p>
-        <div class="modal-actions">
-          <button class="ghost-button" id="cancelPasswordButton" type="button">Отмена</button>
-          <button class="edit-mode-button" type="submit">Войти</button>
+  <div class="auth-modal" id="authModal" hidden>
+    <div class="auth-backdrop" id="authBackdrop"></div>
+    <div class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <p class="auth-kicker">Вход в редактирование</p>
+      <h2 id="authTitle">Выберите пользователя</h2>
+      <form id="authForm" class="auth-form">
+        <label class="auth-field">
+          <span>Пользователь</span>
+          <select id="authUser" required></select>
+        </label>
+        <label class="auth-field">
+          <span>Пароль</span>
+          <input id="authPassword" type="password" placeholder="Введите пароль" required>
+        </label>
+        <p class="auth-error" id="authError" hidden>Неверный пользователь или пароль.</p>
+        <div class="auth-actions">
+          <button class="ghost-button" id="authCancel" type="button">Отмена</button>
+          <button class="form-action-button" type="submit">Войти</button>
         </div>
       </form>
     </div>
