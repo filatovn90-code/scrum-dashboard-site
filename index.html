@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scrum Master Metrics</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <button class="edit-toggle-floating" id="editModeButton" type="button" aria-label="Войти в режим редактирования">Ред.</button>
+    <main>
+      <section class="section metrics-section">
+        <div class="section-heading">
+          <p class="section-kicker">Метрики</p>
+          <label class="quarter-filter">
+            <span>Квартал</span>
+            <select id="quarterSelect" aria-label="Выбрать квартал"></select>
+          </label>
+        </div>
+        <div class="metrics-grid" id="metricsGrid"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <p class="section-kicker">Цели</p>
+          <div class="section-filters">
+            <div class="chip-filter-group">
+              <span class="chip-filter-label">Кварталы</span>
+              <div class="chip-filter-list" id="goalQuarterSelect" aria-label="Выбрать кварталы для целей"></div>
+            </div>
+            <div class="chip-filter-group">
+              <span class="chip-filter-label">Ответственные</span>
+              <div class="chip-filter-list" id="assigneeSelect" aria-label="Выбрать ответственных"></div>
+            </div>
+          </div>
+        </div>
+        <form class="goal-create-form" id="goalCreateForm" hidden>
+          <select id="goalCreateQuarterInput" aria-label="Квартал новой цели"></select>
+          <input id="goalTitleInput" type="text" placeholder="Новая цель" aria-label="Название новой цели">
+          <input id="goalAcceptanceInput" type="text" placeholder="Критерии приемки" aria-label="Критерии приемки">
+          <select id="goalOwnerInput" aria-label="Ответственный за новую цель"></select>
+          <button class="metric-save-button" type="submit">Добавить цель</button>
+        </form>
+        <div class="goal-grid" id="goalGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="passwordModal" hidden>
+    <div class="password-modal">
+      <p class="section-kicker">Protected edit mode</p>
+      <h2>Введите пароль</h2>
+      <form id="passwordForm">
+        <input id="passwordInput" type="password" placeholder="Пароль" autocomplete="current-password">
+        <p class="password-error" id="passwordError" hidden>Неверный пароль</p>
+        <div class="modal-actions">
+          <button class="ghost-button" id="cancelPasswordButton" type="button">Отмена</button>
+          <button class="edit-mode-button" type="submit">Войти</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
