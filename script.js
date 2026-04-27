@@ -133,8 +133,12 @@ function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-function isEditingEnabled() {
+function isAuthenticated() {
   return Boolean(activeUser);
+}
+
+function isEditingEnabled() {
+  return activeUser === "Филатов";
 }
 
 function getQuarterList() {
@@ -428,19 +432,23 @@ function logout() {
 }
 
 function updateAuthUi() {
-  if (isEditingEnabled()) {
+  if (!isAuthenticated()) {
+    loginToggle.textContent = "Вход";
+    editModeBanner.hidden = true;
+    goalCreateForm.hidden = true;
+  } else if (isEditingEnabled()) {
     loginToggle.textContent = "Выход";
     editModeText.textContent = `Режим редактирования: ${activeUser}`;
     editModeBanner.hidden = false;
     goalCreateForm.hidden = false;
   } else {
-    loginToggle.textContent = "Вход";
+    loginToggle.textContent = "Выход";
     editModeBanner.hidden = true;
     goalCreateForm.hidden = true;
   }
 
   protectedNavLinks.forEach((link) => {
-    link.hidden = !isEditingEnabled();
+    link.hidden = !isAuthenticated();
   });
 }
 

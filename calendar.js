@@ -4,6 +4,8 @@ if (!window.localStorage.getItem(AUTH_KEY)) {
   window.location.replace("index.html");
 }
 
+const activeUser = window.localStorage.getItem(AUTH_KEY);
+
 const seededCalendarData = {
   "Апрель 2026": {
     monthLabel: "Апрель 2026",
@@ -34,6 +36,7 @@ const seededCalendarData = {
 };
 
 const CALENDAR_STORAGE_KEY = "scrum-master-calendar-data";
+const userCalendarStorageKey = `${CALENDAR_STORAGE_KEY}:${activeUser}`;
 
 const monthSelect = document.getElementById("calendarMonthSelect");
 const monthTitle = document.getElementById("calendarMonthTitle");
@@ -85,16 +88,27 @@ function normalizeMonth(month, fallbackLabel) {
 
 function loadCalendarData() {
   const seeded = cloneSeedData();
-  const raw = window.localStorage.getItem(CALENDAR_STORAGE_KEY);
+  const raw = window.localStorage.getItem(userCalendarStorageKey);
+  const legacyRaw = window.localStorage.getItem(CALENDAR_STORAGE_KEY);
 
-  if (!raw) {
+  if (!raw && legacyRaw) {
+    try {
+      window.localStorage.setItem(userCalendarStorageKey, legacyRaw);
+    } catch {
+      // ignore storage copy issues and fall back to seeds
+    }
+  }
+
+  const resolvedRaw = raw || legacyRaw;
+
+  if (!resolvedRaw) {
     return Object.fromEntries(
       Object.entries(seeded).map(([label, month]) => [label, normalizeMonth(month, label)])
     );
   }
 
   try {
-    const stored = JSON.parse(raw);
+    const stored = JSON.parse(resolvedRaw);
     const merged = { ...seeded, ...stored };
     return Object.fromEntries(
       Object.entries(merged).map(([label, month]) => [label, normalizeMonth(month, label)])
@@ -107,7 +121,7 @@ function loadCalendarData() {
 }
 
 function saveCalendarData() {
-  window.localStorage.setItem(CALENDAR_STORAGE_KEY, JSON.stringify(calendarData));
+  window.localStorage.setItem(userCalendarStorageKey, JSON.stringify(calendarData));
 }
 
 function getMonthNames(data) {

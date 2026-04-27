@@ -4,6 +4,8 @@ if (!window.localStorage.getItem(AUTH_KEY)) {
   window.location.replace("index.html");
 }
 
+const activeUser = window.localStorage.getItem(AUTH_KEY);
+
 const seededBacklogData = {
   "Неделя 20.04 - 24.04": {
     totalMeetingHours: "8 ч 30 мин",
@@ -12,49 +14,49 @@ const seededBacklogData = {
         date: "20.04",
         weekday: "Понедельник",
         items: [
-          { time: "09:00", text: "Написать расписание встреч по планированию", status: "В работе", stress: "Средний" },
-          { time: "14:30", text: "Заполнить еженедельный отчет", status: "Сделано", stress: "Низкий" },
-          { time: "14:45", text: "Подготовиться к встрече завтра с ИТ", status: "Сделано", stress: "Низкий" },
-          { time: "15:15", text: "Дать ОС по сбору ЛМГ", status: "Сделано", stress: "Низкий" }
+          { id: "20-0900", time: "09:00", text: "Написать расписание встреч по планированию", status: "В работе", stress: "Средний" },
+          { id: "20-1430", time: "14:30", text: "Заполнить еженедельный отчет", status: "Сделано", stress: "Низкий" },
+          { id: "20-1445", time: "14:45", text: "Подготовиться к встрече завтра с ИТ", status: "Сделано", stress: "Низкий" },
+          { id: "20-1515", time: "15:15", text: "Дать ОС по сбору ЛМГ", status: "Сделано", stress: "Низкий" }
         ]
       },
       {
         date: "21.04",
         weekday: "Вторник",
         items: [
-          { time: "09:15", text: "Подготовиться к встрече с ИТ", status: "Сделано", stress: "Низкий" },
-          { time: "09:30", text: "Сделать презентацию для встречи в среду", status: "Сделано", stress: "Средний" },
-          { time: "10:15", text: "Перенести данные для викли", status: "Сделано", stress: "Низкий" },
-          { time: "10:45", text: "Написать минутки после встречи с ИТ", status: "Сделано", stress: "Низкий" }
+          { id: "21-0915", time: "09:15", text: "Подготовиться к встрече с ИТ", status: "Сделано", stress: "Низкий" },
+          { id: "21-0930", time: "09:30", text: "Сделать презентацию для встречи в среду", status: "Сделано", stress: "Средний" },
+          { id: "21-1015", time: "10:15", text: "Перенести данные для викли", status: "Сделано", stress: "Низкий" },
+          { id: "21-1045", time: "10:45", text: "Написать минутки после встречи с ИТ", status: "Сделано", stress: "Низкий" }
         ]
       },
       {
         date: "22.04",
         weekday: "Среда",
         items: [
-          { time: "09:15", text: "Поставить встречу по анализу TTM и LT", status: "Запланировано", stress: "Средний" },
-          { time: "09:30", text: "Перенести общие встречи по планированию", status: "Запланировано", stress: "Низкий" },
-          { time: "10:00", text: "Протестировать календарь Димы", status: "В работе", stress: "Средний" },
-          { time: "12:30", text: "Написать минутки по встрече с Discovery", status: "Запланировано", stress: "Средний" },
-          { time: "12:45", text: "Перенести первую встречу по планированию", status: "Запланировано", stress: "Низкий" }
+          { id: "22-0915", time: "09:15", text: "Поставить встречу по анализу TTM и LT", status: "Запланировано", stress: "Средний" },
+          { id: "22-0930", time: "09:30", text: "Перенести общие встречи по планированию", status: "Запланировано", stress: "Низкий" },
+          { id: "22-1000", time: "10:00", text: "Протестировать календарь Димы", status: "В работе", stress: "Средний" },
+          { id: "22-1230", time: "12:30", text: "Написать минутки по встрече с Discovery", status: "Запланировано", stress: "Средний" },
+          { id: "22-1245", time: "12:45", text: "Перенести первую встречу по планированию", status: "Запланировано", stress: "Низкий" }
         ]
       },
       {
         date: "23.04",
         weekday: "Четверг",
         items: [
-          { time: "09:00", text: "Проверить бэклог перед планированием", status: "Запланировано", stress: "Низкий" },
-          { time: "10:30", text: "Подготовить синк по Agile Radar", status: "В работе", stress: "Высокий" },
-          { time: "13:15", text: "Разобрать блокеры по Jira hygiene", status: "Запланировано", stress: "Средний" }
+          { id: "23-0900", time: "09:00", text: "Проверить бэклог перед планированием", status: "Запланировано", stress: "Низкий" },
+          { id: "23-1030", time: "10:30", text: "Подготовить синк по Agile Radar", status: "В работе", stress: "Высокий" },
+          { id: "23-1315", time: "13:15", text: "Разобрать блокеры по Jira hygiene", status: "Запланировано", stress: "Средний" }
         ]
       },
       {
         date: "24.04",
         weekday: "Пятница",
         items: [
-          { time: "09:15", text: "Сверить загрузку команды на цели МП", status: "Запланировано", stress: "Средний" },
-          { time: "11:00", text: "Подготовить материалы к ретро", status: "Запланировано", stress: "Низкий" },
-          { time: "15:00", text: "Обновить квартальные метрики", status: "Запланировано", stress: "Средний" }
+          { id: "24-0915", time: "09:15", text: "Сверить загрузку команды на цели МП", status: "Запланировано", stress: "Средний" },
+          { id: "24-1100", time: "11:00", text: "Подготовить материалы к ретро", status: "Запланировано", stress: "Низкий" },
+          { id: "24-1500", time: "15:00", text: "Обновить квартальные метрики", status: "Запланировано", stress: "Средний" }
         ]
       }
     ]
@@ -65,6 +67,7 @@ const weekSelect = document.getElementById("weekSelect");
 const backlogSummary = document.getElementById("backlogSummary");
 const backlogBoard = document.getElementById("backlogBoard");
 const BACKLOG_STORAGE_KEY = "scrum-master-backlog-data";
+const userBacklogStorageKey = `${BACKLOG_STORAGE_KEY}:${activeUser}`;
 const BACKLOG_YEAR = 2026;
 const timeline = [
   "09:00", "09:15", "09:30", "09:45",
@@ -181,31 +184,65 @@ function shortWeekLabel(week) {
   return `${match[1]} - ${match[2]}`;
 }
 
+function normalizeStoredData(template, stored) {
+  const merged = mergeWeekData(template, stored);
+
+  Object.values(merged).forEach((week) => {
+    week.days.forEach((day) => {
+      day.items = (day.items || []).map((item) => ({
+        id: item.id || `task-${day.date}-${item.time}-${Math.random().toString(36).slice(2, 8)}`,
+        time: item.time,
+        text: item.text || "",
+        status: item.status || "Запланировано",
+        stress: item.stress || "Низкий"
+      }));
+    });
+  });
+
+  return merged;
+}
+
 function loadBacklogData(template) {
-  const raw = window.localStorage.getItem(BACKLOG_STORAGE_KEY);
-  if (!raw) {
-    return JSON.parse(JSON.stringify(template));
+  const raw = window.localStorage.getItem(userBacklogStorageKey);
+  const legacyRaw = window.localStorage.getItem(BACKLOG_STORAGE_KEY);
+
+  if (!raw && legacyRaw) {
+    try {
+      window.localStorage.setItem(userBacklogStorageKey, legacyRaw);
+    } catch {
+      // ignore storage copy issues and fall back to seeds
+    }
+  }
+
+  const resolvedRaw = raw || legacyRaw;
+
+  if (!resolvedRaw) {
+    return normalizeStoredData(template);
   }
 
   try {
-    const stored = JSON.parse(raw);
-    return mergeWeekData(template, stored);
+    const stored = JSON.parse(resolvedRaw);
+    return normalizeStoredData(template, stored);
   } catch {
-    return JSON.parse(JSON.stringify(template));
+    return normalizeStoredData(template);
   }
 }
 
 function saveBacklogData() {
-  window.localStorage.setItem(BACKLOG_STORAGE_KEY, JSON.stringify(backlogData));
+  window.localStorage.setItem(userBacklogStorageKey, JSON.stringify(backlogData));
 }
 
 function parseKey(key) {
-  const [week, date, time] = key.split("::");
-  return { week, date, time };
+  const [week, date, value] = key.split("::");
+  return { week, date, value };
 }
 
-function makeSlotKey(week, date, time) {
-  return `${week}::${date}::${time}`;
+function makeTaskKey(week, date, id) {
+  return `${week}::${date}::${id}`;
+}
+
+function makeCreateKey(week, date) {
+  return `${week}::${date}::__new__`;
 }
 
 function isCreateEditor(key) {
@@ -221,14 +258,25 @@ function findDay(week, date) {
 }
 
 function findTaskByKey(key) {
-  const { week, date, time } = parseKey(key);
+  const { week, date, value } = parseKey(key);
   const day = findDay(week, date);
-  const task = day?.items.find((entry) => entry.time === time);
-  return { day, task, week, date, time };
+  const task = day?.items.find((entry) => entry.id === value);
+  return { day, task, week, date, id: value };
 }
 
 function sortDayItems(day) {
   day.items.sort((a, b) => timeline.indexOf(a.time) - timeline.indexOf(b.time));
+}
+
+function renderTimeOptions(day, selectedTime, originalTime = null) {
+  return timeline.map((time) => {
+    const occupied = day.items.some((entry) => entry.time === time && entry.time !== originalTime);
+    return `<option value="${time}" ${time === selectedTime ? "selected" : ""} ${occupied ? "disabled" : ""}>${time}</option>`;
+  }).join("");
+}
+
+function getNextAvailableTime(day) {
+  return timeline.find((time) => !day.items.some((entry) => entry.time === time)) || timeline[0];
 }
 
 const defaultBacklogData = mergeWeekData(generateWeeksUntilYearEnd(), seededBacklogData);
@@ -266,17 +314,22 @@ function statusClass(status) {
   return "status-planned";
 }
 
-function renderTaskEditor(slotKey, defaults) {
+function renderTaskEditor(editorKey, day, defaults) {
   return `
     <div class="backlog-slot-cell is-editor">
-      <div class="inline-task-editor" data-editor="${slotKey}">
+      <div class="inline-task-editor" data-editor="${editorKey}">
         <input class="inline-task-input" type="text" placeholder="Задача" value="${defaults.text}" data-editor-text>
         <div class="inline-task-row">
+          <select data-editor-time>
+            ${renderTimeOptions(day, defaults.time, defaults.originalTime || defaults.time)}
+          </select>
           <select data-editor-status>
             <option value="Запланировано" ${defaults.status === "Запланировано" ? "selected" : ""}>Запланировано</option>
             <option value="В работе" ${defaults.status === "В работе" ? "selected" : ""}>В работе</option>
             <option value="Сделано" ${defaults.status === "Сделано" ? "selected" : ""}>Сделано</option>
           </select>
+        </div>
+        <div class="inline-task-row">
           <select data-editor-stress>
             <option value="Низкий" ${defaults.stress === "Низкий" ? "selected" : ""}>Низкий</option>
             <option value="Средний" ${defaults.stress === "Средний" ? "selected" : ""}>Средний</option>
@@ -284,19 +337,20 @@ function renderTaskEditor(slotKey, defaults) {
           </select>
         </div>
         <div class="inline-task-actions">
-          <button type="button" class="inline-action-button is-primary" data-editor-save="${slotKey}">Сохранить</button>
-          <button type="button" class="inline-action-button" data-editor-cancel="${slotKey}">Отмена</button>
+          <button type="button" class="inline-action-button is-primary" data-editor-save="${editorKey}">Сохранить</button>
+          <button type="button" class="inline-action-button" data-editor-cancel="${editorKey}">Отмена</button>
         </div>
       </div>
     </div>
   `;
 }
 
-function renderEmptySlot(week, day, time) {
-  const slotKey = makeSlotKey(week, day.date, time);
+function renderDayCreateArea(week, day) {
+  const createKey = makeCreateKey(week, day.date);
 
-  if (isCreateEditor(slotKey)) {
-    return renderTaskEditor(slotKey, {
+  if (isCreateEditor(createKey)) {
+    return renderTaskEditor(createKey, day, {
+      time: getNextAvailableTime(day),
       text: "",
       status: "Запланировано",
       stress: "Низкий"
@@ -304,23 +358,19 @@ function renderEmptySlot(week, day, time) {
   }
 
   return `
-    <button
-      type="button"
-      class="backlog-slot-cell is-empty is-clickable"
-      data-slot-empty="${slotKey}"
-      aria-label="Добавить задачу на ${day.date} в ${time}"
-    >
-      <span class="empty-slot-plus">+</span>
-      <span class="empty-slot-label">Добавить</span>
+    <button type="button" class="backlog-day-add-button" data-day-add="${createKey}">
+      Добавить
     </button>
   `;
 }
 
 function renderTaskCard(week, day, item) {
-  const taskKey = makeSlotKey(week, day.date, item.time);
+  const taskKey = makeTaskKey(week, day.date, item.id);
 
   if (isEditEditor(taskKey)) {
-    return renderTaskEditor(taskKey, {
+    return renderTaskEditor(taskKey, day, {
+      time: item.time,
+      originalTime: item.time,
       text: item.text,
       status: item.status,
       stress: item.stress
@@ -339,6 +389,7 @@ function renderTaskCard(week, day, item) {
         <span class="task-drag-hint" aria-hidden="true">::</span>
         <p>${item.text}</p>
         <div class="task-card-actions">
+          <span class="task-badge">${item.time}</span>
           <select class="task-status-select ${statusClass(item.status)}" data-task-status="${taskKey}">
             <option value="Запланировано" ${item.status === "Запланировано" ? "selected" : ""}>Запланировано</option>
             <option value="В работе" ${item.status === "В работе" ? "selected" : ""}>В работе</option>
@@ -352,45 +403,14 @@ function renderTaskCard(week, day, item) {
   `;
 }
 
-function moveTaskToSlot(fromKey, toKey) {
-  const from = parseKey(fromKey);
-  const to = parseKey(toKey);
-
-  if (from.week !== to.week || fromKey === toKey) {
-    return false;
-  }
-
-  const sourceDay = findDay(from.week, from.date);
-  const targetDay = findDay(to.week, to.date);
-  if (!sourceDay || !targetDay) {
-    return false;
-  }
-
-  const sourceIndex = sourceDay.items.findIndex((entry) => entry.time === from.time);
-  if (sourceIndex < 0) {
-    return false;
-  }
-
-  const targetOccupied = targetDay.items.some((entry) => entry.time === to.time);
-  if (targetOccupied) {
-    return false;
-  }
-
-  const [task] = sourceDay.items.splice(sourceIndex, 1);
-  targetDay.items.push({ ...task, time: to.time });
-  sortDayItems(sourceDay);
-  sortDayItems(targetDay);
-  saveBacklogData();
-  return true;
-}
-
-function saveEditor(slotKey) {
-  const editor = backlogBoard.querySelector(`[data-editor="${slotKey}"]`);
+function saveEditor(editorKey) {
+  const editor = backlogBoard.querySelector(`[data-editor="${editorKey}"]`);
   if (!editor) {
     return;
   }
 
   const textInput = editor.querySelector("[data-editor-text]");
+  const timeSelect = editor.querySelector("[data-editor-time]");
   const statusSelect = editor.querySelector("[data-editor-status]");
   const stressSelect = editor.querySelector("[data-editor-stress]");
   const text = textInput.value.trim();
@@ -400,26 +420,47 @@ function saveEditor(slotKey) {
     return;
   }
 
-  const { week, date, time } = parseKey(slotKey);
+  const { week, date, value } = parseKey(editorKey);
   const day = findDay(week, date);
   if (!day) {
     return;
   }
 
-  const taskPayload = {
-    time,
-    text,
-    status: statusSelect.value,
-    stress: stressSelect.value
-  };
+  const selectedTime = timeSelect.value;
 
   if (activeEditorState?.mode === "edit") {
-    const index = day.items.findIndex((entry) => entry.time === time);
-    if (index >= 0) {
-      day.items[index] = taskPayload;
+    const taskIndex = day.items.findIndex((entry) => entry.id === value);
+    if (taskIndex < 0) {
+      return;
     }
+
+    const hasConflict = day.items.some((entry, index) => entry.time === selectedTime && index !== taskIndex);
+    if (hasConflict) {
+      timeSelect.focus();
+      return;
+    }
+
+    day.items[taskIndex] = {
+      ...day.items[taskIndex],
+      time: selectedTime,
+      text,
+      status: statusSelect.value,
+      stress: stressSelect.value
+    };
   } else {
-    day.items.push(taskPayload);
+    const hasConflict = day.items.some((entry) => entry.time === selectedTime);
+    if (hasConflict) {
+      timeSelect.focus();
+      return;
+    }
+
+    day.items.push({
+      id: `task-${Date.now()}`,
+      time: selectedTime,
+      text,
+      status: statusSelect.value,
+      stress: stressSelect.value
+    });
   }
 
   sortDayItems(day);
@@ -429,39 +470,54 @@ function saveEditor(slotKey) {
 }
 
 function deleteTask(taskKey) {
-  const { day, time } = findTaskByKey(taskKey);
+  const { day, id } = findTaskByKey(taskKey);
   if (!day) {
     return;
   }
 
-  day.items = day.items.filter((entry) => entry.time !== time);
+  day.items = day.items.filter((entry) => entry.id !== id);
   saveBacklogData();
   activeEditorState = null;
   renderBacklog(weekSelect.value);
 }
 
+function moveTaskToDay(taskKey, targetDayKey) {
+  const { week, date: sourceDate, id } = parseKey(taskKey);
+  const { date: targetDate } = parseKey(targetDayKey);
+  const sourceDay = findDay(week, sourceDate);
+  const targetDay = findDay(week, targetDate);
+
+  if (!sourceDay || !targetDay) {
+    return false;
+  }
+
+  const sourceIndex = sourceDay.items.findIndex((entry) => entry.id === id);
+  if (sourceIndex < 0) {
+    return false;
+  }
+
+  const [task] = sourceDay.items.splice(sourceIndex, 1);
+  const keepTime = !targetDay.items.some((entry) => entry.time === task.time);
+  const nextTime = keepTime ? task.time : getNextAvailableTime(targetDay);
+
+  targetDay.items.push({ ...task, time: nextTime });
+  sortDayItems(sourceDay);
+  sortDayItems(targetDay);
+  saveBacklogData();
+  return true;
+}
+
 function renderBacklog(week) {
   const data = backlogData[week];
   backlogSummary.innerHTML = "";
-
   backlogBoard.innerHTML = "";
 
   const table = document.createElement("div");
   table.className = "backlog-table";
 
-  const timeColumn = document.createElement("section");
-  timeColumn.className = "backlog-time-column";
-  timeColumn.innerHTML = `
-    <div class="backlog-column-header">
-      <span class="backlog-time-header">Время</span>
-    </div>
-    <div class="backlog-time-list">
-      ${timeline.map((time) => `<div class="backlog-time-cell">${time}</div>`).join("")}
-    </div>
-  `;
-  table.appendChild(timeColumn);
-
   data.days.forEach((day) => {
+    sortDayItems(day);
+
     const column = document.createElement("section");
     column.className = "backlog-day-column";
     column.innerHTML = `
@@ -471,11 +527,9 @@ function renderBacklog(week) {
           <span>${day.weekday}</span>
         </div>
       </div>
-      <div class="backlog-day-list">
-        ${timeline.map((time) => {
-          const item = day.items.find((entry) => entry.time === time);
-          return item ? renderTaskCard(week, day, item) : renderEmptySlot(week, day, time);
-        }).join("")}
+      <div class="backlog-day-list" data-day-drop="${makeCreateKey(week, day.date)}">
+        ${day.items.map((item) => renderTaskCard(week, day, item)).join("")}
+        ${renderDayCreateArea(week, day)}
       </div>
     `;
     table.appendChild(column);
@@ -502,15 +556,15 @@ function bindBoardActions() {
     card.addEventListener("dragend", () => {
       draggedTaskKey = null;
       card.classList.remove("is-dragging");
-      backlogBoard.querySelectorAll(".is-drop-target").forEach((slot) => {
-        slot.classList.remove("is-drop-target");
+      backlogBoard.querySelectorAll(".is-drop-target").forEach((element) => {
+        element.classList.remove("is-drop-target");
       });
     });
   });
 
-  backlogBoard.querySelectorAll("[data-slot-empty]").forEach((button) => {
+  backlogBoard.querySelectorAll("[data-day-add]").forEach((button) => {
     button.addEventListener("click", () => {
-      activeEditorState = { mode: "create", key: button.dataset.slotEmpty };
+      activeEditorState = { mode: "create", key: button.dataset.dayAdd };
       renderBacklog(weekSelect.value);
 
       const input = backlogBoard.querySelector("[data-editor-text]");
@@ -518,8 +572,10 @@ function bindBoardActions() {
         input.focus();
       }
     });
+  });
 
-    button.addEventListener("dragover", (event) => {
+  backlogBoard.querySelectorAll("[data-day-drop]").forEach((dayList) => {
+    dayList.addEventListener("dragover", (event) => {
       if (!draggedTaskKey) {
         return;
       }
@@ -528,30 +584,30 @@ function bindBoardActions() {
       event.dataTransfer.dropEffect = "move";
     });
 
-    button.addEventListener("dragenter", (event) => {
+    dayList.addEventListener("dragenter", (event) => {
       if (!draggedTaskKey) {
         return;
       }
 
       event.preventDefault();
-      button.classList.add("is-drop-target");
+      dayList.classList.add("is-drop-target");
     });
 
-    button.addEventListener("dragleave", (event) => {
-      if (event.relatedTarget && button.contains(event.relatedTarget)) {
+    dayList.addEventListener("dragleave", (event) => {
+      if (event.relatedTarget && dayList.contains(event.relatedTarget)) {
         return;
       }
 
-      button.classList.remove("is-drop-target");
+      dayList.classList.remove("is-drop-target");
     });
 
-    button.addEventListener("drop", (event) => {
+    dayList.addEventListener("drop", (event) => {
       if (!draggedTaskKey) {
         return;
       }
 
       event.preventDefault();
-      const moved = moveTaskToSlot(draggedTaskKey, button.dataset.slotEmpty);
+      const moved = moveTaskToDay(draggedTaskKey, dayList.dataset.dayDrop);
       draggedTaskKey = null;
       activeEditorState = null;
       if (moved) {
@@ -576,6 +632,7 @@ function bindBoardActions() {
   backlogBoard.querySelectorAll("[data-task-status]").forEach((select) => {
     select.addEventListener("change", () => {
       const taskKey = select.dataset.taskStatus;
+
       if (select.value === "__edit__") {
         activeEditorState = { mode: "edit", key: taskKey };
         renderBacklog(weekSelect.value);
@@ -593,9 +650,7 @@ function bindBoardActions() {
         return;
       }
 
-      const { day, time } = findTaskByKey(taskKey);
-      const task = day?.items.find((entry) => entry.time === time);
-
+      const { task } = findTaskByKey(taskKey);
       if (!task) {
         return;
       }
