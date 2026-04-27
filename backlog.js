@@ -66,6 +66,7 @@ const seededBacklogData = {
 const weekSelect = document.getElementById("weekSelect");
 const backlogSummary = document.getElementById("backlogSummary");
 const backlogBoard = document.getElementById("backlogBoard");
+const logoutButton = document.getElementById("logoutButton");
 const BACKLOG_STORAGE_KEY = "scrum-master-backlog-data";
 const userBacklogStorageKey = `${BACKLOG_STORAGE_KEY}:${activeUser}`;
 const BACKLOG_YEAR = 2026;
@@ -666,6 +667,11 @@ weekSelect.addEventListener("change", (event) => {
   activeEditorState = null;
   draggedTaskKey = null;
   renderBacklog(event.target.value);
+});
+
+logoutButton?.addEventListener("click", () => {
+  window.localStorage.removeItem(AUTH_KEY);
+  window.location.replace("index.html");
 });
 
 renderBacklog(defaultWeek);

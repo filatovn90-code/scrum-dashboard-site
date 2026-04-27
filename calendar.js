@@ -55,6 +55,7 @@ const eventTimeInput = document.getElementById("calendarEventTime");
 const eventTypeSelect = document.getElementById("calendarEventType");
 const eventCancelButton = document.getElementById("calendarEventCancel");
 const eventSubmitButton = eventForm.querySelector(".calendar-event-submit");
+const logoutButton = document.getElementById("logoutButton");
 
 const weekdayShort = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 const weekdayLong = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
@@ -457,6 +458,11 @@ prevMonthButton.addEventListener("click", () => {
 
 nextMonthButton.addEventListener("click", () => {
   moveMonth(1);
+});
+
+logoutButton?.addEventListener("click", () => {
+  window.localStorage.removeItem(AUTH_KEY);
+  window.location.replace("index.html");
 });
 
 weekdayShort.forEach((weekday) => {
