@@ -69,6 +69,7 @@ const backlogBoard = document.getElementById("backlogBoard");
 const logoutButton = document.getElementById("logoutButton");
 const BACKLOG_STORAGE_KEY = "scrum-master-backlog-data";
 const userBacklogStorageKey = `${BACKLOG_STORAGE_KEY}:${activeUser}`;
+const userBacklogWeekStorageKey = `scrum-master-backlog-week:${activeUser}`;
 const BACKLOG_YEAR = 2026;
 const timeline = [
   "09:00", "09:15", "09:30", "09:45",
@@ -283,7 +284,8 @@ function getNextAvailableTime(day) {
 const defaultBacklogData = mergeWeekData(generateWeeksUntilYearEnd(), seededBacklogData);
 const backlogData = loadBacklogData(defaultBacklogData);
 const weekNames = Object.keys(backlogData).sort((a, b) => weekStartValue(a) - weekStartValue(b));
-const defaultWeek = weekNames[0];
+const storedWeek = window.localStorage.getItem(userBacklogWeekStorageKey);
+const defaultWeek = weekNames.includes(storedWeek) ? storedWeek : weekNames[0];
 
 const weeksByMonth = weekNames.reduce((groups, week) => {
   const month = monthNameForWeek(week);
@@ -521,6 +523,7 @@ function renderBacklog(week) {
 
     const column = document.createElement("section");
     column.className = "backlog-day-column";
+    column.dataset.dayDrop = makeCreateKey(week, day.date);
     column.innerHTML = `
       <div class="backlog-column-header">
         <div class="backlog-day-title">
@@ -575,8 +578,8 @@ function bindBoardActions() {
     });
   });
 
-  backlogBoard.querySelectorAll("[data-day-drop]").forEach((dayList) => {
-    dayList.addEventListener("dragover", (event) => {
+  function bindDropZone(element) {
+    element.addEventListener("dragover", (event) => {
       if (!draggedTaskKey) {
         return;
       }
@@ -585,36 +588,44 @@ function bindBoardActions() {
       event.dataTransfer.dropEffect = "move";
     });
 
-    dayList.addEventListener("dragenter", (event) => {
+    element.addEventListener("dragenter", (event) => {
       if (!draggedTaskKey) {
         return;
       }
 
       event.preventDefault();
-      dayList.classList.add("is-drop-target");
+      element.classList.add("is-drop-target");
     });
 
-    dayList.addEventListener("dragleave", (event) => {
-      if (event.relatedTarget && dayList.contains(event.relatedTarget)) {
+    element.addEventListener("dragleave", (event) => {
+      if (event.relatedTarget && element.contains(event.relatedTarget)) {
         return;
       }
 
-      dayList.classList.remove("is-drop-target");
+      element.classList.remove("is-drop-target");
     });
 
-    dayList.addEventListener("drop", (event) => {
+    element.addEventListener("drop", (event) => {
       if (!draggedTaskKey) {
         return;
       }
 
       event.preventDefault();
-      const moved = moveTaskToDay(draggedTaskKey, dayList.dataset.dayDrop);
+      const moved = moveTaskToDay(draggedTaskKey, element.dataset.dayDrop);
       draggedTaskKey = null;
       activeEditorState = null;
       if (moved) {
         renderBacklog(weekSelect.value);
       }
     });
+  }
+
+  backlogBoard.querySelectorAll(".backlog-day-column").forEach((column) => {
+    bindDropZone(column);
+  });
+
+  backlogBoard.querySelectorAll("[data-day-drop]").forEach((dayList) => {
+    bindDropZone(dayList);
   });
 
   backlogBoard.querySelectorAll("[data-editor-cancel]").forEach((button) => {
@@ -666,6 +677,7 @@ function bindBoardActions() {
 weekSelect.addEventListener("change", (event) => {
   activeEditorState = null;
   draggedTaskKey = null;
+  window.localStorage.setItem(userBacklogWeekStorageKey, event.target.value);
   renderBacklog(event.target.value);
 });
 

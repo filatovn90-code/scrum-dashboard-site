@@ -1045,6 +1045,7 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: transform 0.2s ease;
 }
 
 .backlog-column-header {
@@ -1244,6 +1245,13 @@ body::before {
 .backlog-slot-cell.is-drop-target {
   border-color: rgba(115, 159, 123, 0.46);
   background: rgba(168, 197, 172, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(115, 159, 123, 0.12);
+}
+
+.backlog-day-column.is-drop-target .backlog-column-header,
+.backlog-day-list.is-drop-target {
+  border-color: rgba(115, 159, 123, 0.46);
+  background: rgba(168, 197, 172, 0.16);
   box-shadow: inset 0 0 0 1px rgba(115, 159, 123, 0.12);
 }
 
