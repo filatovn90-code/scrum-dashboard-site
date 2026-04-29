@@ -67,6 +67,7 @@ const weekSelect = document.getElementById("weekSelect");
 const backlogSummary = document.getElementById("backlogSummary");
 const backlogBoard = document.getElementById("backlogBoard");
 const logoutButton = document.getElementById("logoutButton");
+const activeUserLabels = Array.from(document.querySelectorAll("[data-active-user-name]"));
 
 const BACKLOG_STORAGE_KEY = "scrum-master-backlog-data";
 const userBacklogStorageKey = `${BACKLOG_STORAGE_KEY}:${activeUser}`;
@@ -91,6 +92,10 @@ const monthNames = [
 
 let activeEditorState = null;
 let draggedTaskKey = null;
+
+activeUserLabels.forEach((label) => {
+  label.textContent = activeUser;
+});
 
 function formatDate(date) {
   const day = String(date.getDate()).padStart(2, "0");
@@ -199,7 +204,9 @@ function normalizeStoredData(template, stored) {
         time: item.time,
         text: item.text || "",
         status: item.status || "Запланировано",
-        stress: item.stress || "Нет"
+        stress: item.stress || "Нет",
+        taskType: item.taskType || "Low Energy",
+        energyCost: item.energyCost || "M"
       }));
     });
   });
@@ -326,6 +333,18 @@ function stressClass(stress) {
   return "stress-low";
 }
 
+function taskTypeClass(taskType) {
+  if (taskType === "Deep Work") return "task-type-deep";
+  if (taskType === "High Energy") return "task-type-high";
+  return "task-type-low";
+}
+
+function energyCostClass(energyCost) {
+  if (energyCost === "L") return "energy-cost-high";
+  if (energyCost === "S") return "energy-cost-low";
+  return "energy-cost-medium";
+}
+
 function renderTaskEditor(editorKey, day, defaults) {
   return `
     <div class="backlog-slot-cell is-editor">
@@ -344,11 +363,15 @@ function renderTaskEditor(editorKey, day, defaults) {
           </select>
         </div>
         <div class="inline-task-row">
-          <select data-editor-stress>
-            <option value="Нет" ${defaults.stress === "Нет" ? "selected" : ""}>Нет</option>
-            <option value="Низкий" ${defaults.stress === "Низкий" ? "selected" : ""}>Низкий</option>
-            <option value="Средний" ${defaults.stress === "Средний" ? "selected" : ""}>Средний</option>
-            <option value="Высокий" ${defaults.stress === "Высокий" ? "selected" : ""}>Высокий</option>
+          <select data-editor-task-type>
+            <option value="Deep Work" ${defaults.taskType === "Deep Work" ? "selected" : ""}>🔵 Deep Work</option>
+            <option value="High Energy" ${defaults.taskType === "High Energy" ? "selected" : ""}>🔴 High Energy</option>
+            <option value="Low Energy" ${defaults.taskType === "Low Energy" ? "selected" : ""}>🟢 Low Energy</option>
+          </select>
+          <select data-editor-energy-cost>
+            <option value="S" ${defaults.energyCost === "S" ? "selected" : ""}>S — Low load</option>
+            <option value="M" ${defaults.energyCost === "M" ? "selected" : ""}>M — Medium load</option>
+            <option value="L" ${defaults.energyCost === "L" ? "selected" : ""}>L — High load</option>
           </select>
         </div>
         <div class="inline-task-actions">
@@ -369,6 +392,8 @@ function renderDayCreateArea(week, day) {
       text: "",
       status: "Запланировано",
       stress: "Нет",
+      taskType: "Low Energy",
+      energyCost: "M",
       hideTime: true
     });
   }
@@ -389,7 +414,9 @@ function renderTaskCard(week, day, item) {
       originalTime: item.time,
       text: item.text,
       status: item.status,
-      stress: item.stress
+      stress: item.stress,
+      taskType: item.taskType || "Low Energy",
+      energyCost: item.energyCost || "M"
     });
   }
 
@@ -397,12 +424,16 @@ function renderTaskCard(week, day, item) {
   const doneMark = item.status === "Сделано"
     ? '<span class="task-done-mark" aria-label="Задача выполнена">✓</span>'
     : "";
-  const stressMarkup = item.stress === "Нет"
-    ? ""
-    : `
+  const typeMarkup = `
         <div class="task-meta task-meta-labeled">
-          <span class="task-meta-label">Стресс</span>
-          <span class="task-badge ${stressClass(item.stress)}">${item.stress}</span>
+          <span class="task-meta-label">Energy Type</span>
+          <span class="task-badge ${taskTypeClass(item.taskType || "Low Energy")}">${item.taskType || "Low Energy"}</span>
+        </div>
+      `;
+  const energyCostMarkup = `
+        <div class="task-meta task-meta-labeled">
+          <span class="task-meta-label">Energy Cost</span>
+          <span class="task-badge ${energyCostClass(item.energyCost || "M")}">${item.energyCost || "M"}</span>
         </div>
       `;
 
@@ -423,7 +454,8 @@ function renderTaskCard(week, day, item) {
               <option value="__delete__">Удалить</option>
             </select>
           </div>
-          ${stressMarkup}
+          ${typeMarkup}
+          ${energyCostMarkup}
         </div>
       </div>
     </div>
@@ -439,7 +471,8 @@ function saveEditor(editorKey) {
   const textInput = editor.querySelector("[data-editor-text]");
   const timeSelect = editor.querySelector("[data-editor-time]");
   const statusSelect = editor.querySelector("[data-editor-status]");
-  const stressSelect = editor.querySelector("[data-editor-stress]");
+  const taskTypeSelect = editor.querySelector("[data-editor-task-type]");
+  const energyCostSelect = editor.querySelector("[data-editor-energy-cost]");
   const text = textInput.value.trim();
 
   if (!text) {
@@ -472,7 +505,9 @@ function saveEditor(editorKey) {
       time: selectedTime,
       text,
       status: statusSelect.value,
-      stress: stressSelect.value
+      stress: day.items[taskIndex]?.stress || "Нет",
+      taskType: taskTypeSelect.value,
+      energyCost: energyCostSelect.value
     };
   } else {
     const hasConflict = day.items.some((entry) => entry.time === selectedTime);
@@ -486,7 +521,9 @@ function saveEditor(editorKey) {
       time: selectedTime,
       text,
       status: statusSelect.value,
-      stress: stressSelect.value
+      stress: "Нет",
+      taskType: taskTypeSelect.value,
+      energyCost: energyCostSelect.value
     });
   }
 

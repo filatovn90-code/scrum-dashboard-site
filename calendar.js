@@ -56,6 +56,7 @@ const eventTypeSelect = document.getElementById("calendarEventType");
 const eventCancelButton = document.getElementById("calendarEventCancel");
 const eventSubmitButton = eventForm.querySelector(".calendar-event-submit");
 const logoutButton = document.getElementById("logoutButton");
+const activeUserLabels = Array.from(document.querySelectorAll("[data-active-user-name]"));
 
 const weekdayShort = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 const weekdayLong = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
@@ -66,6 +67,10 @@ let monthNames = getMonthNames(calendarData);
 let activeMonth = monthNames[0];
 let selectedDay = today.day;
 let editingEvent = null;
+
+activeUserLabels.forEach((label) => {
+  label.textContent = activeUser;
+});
 
 function cloneSeedData() {
   return JSON.parse(JSON.stringify(seededCalendarData));

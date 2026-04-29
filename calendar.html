@@ -3,21 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scrum Master Calendar</title>
+  <title>Календарь</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="page-shell">
+  <div class="page-shell page-shell-wide">
     <header class="site-header">
       <div class="site-brand">
-        <span class="site-kicker">Scrum dashboard</span>
+        <p class="section-kicker">Scrum Dashboard</p>
         <h1>Календарь</h1>
       </div>
+
       <div class="site-header-actions">
         <nav class="site-nav" aria-label="Основная навигация">
           <a class="nav-link" href="index.html">Метрики</a>
           <a class="nav-link is-active" href="calendar.html">Календарь</a>
           <a class="nav-link" href="backlog.html">Бэклог</a>
+          <a class="nav-link" href="analytics.html">Аналитика</a>
         </nav>
         <button class="login-button" id="logoutButton" type="button">Выход</button>
       </div>
@@ -37,12 +39,12 @@
 
             <div class="calendar-classic-header">
               <div>
-                <p class="calendar-classic-kicker">Планирование</p>
+                <p class="calendar-classic-kicker">Month overview</p>
                 <h2 id="calendarMonthTitle"></h2>
               </div>
               <div class="calendar-classic-nav">
-                <button type="button" class="calendar-nav-button" id="calendarPrevMonth" aria-label="Предыдущий месяц">▲</button>
-                <button type="button" class="calendar-nav-button" id="calendarNextMonth" aria-label="Следующий месяц">▼</button>
+                <button type="button" class="calendar-nav-button" id="calendarPrevMonth" aria-label="Предыдущий месяц">←</button>
+                <button type="button" class="calendar-nav-button" id="calendarNextMonth" aria-label="Следующий месяц">→</button>
               </div>
             </div>
 

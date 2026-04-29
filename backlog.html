@@ -3,21 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scrum Master Backlog</title>
+  <title>Бэклог</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="page-shell page-shell-wide">
     <header class="site-header">
       <div class="site-brand">
-        <span class="site-kicker">Scrum dashboard</span>
-        <h1>Недельный бэклог</h1>
+        <p class="section-kicker">Scrum Dashboard</p>
+        <h1>Бэклог</h1>
       </div>
+
       <div class="site-header-actions">
         <nav class="site-nav" aria-label="Основная навигация">
           <a class="nav-link" href="index.html">Метрики</a>
           <a class="nav-link" href="calendar.html">Календарь</a>
           <a class="nav-link is-active" href="backlog.html">Бэклог</a>
+          <a class="nav-link" href="analytics.html">Аналитика</a>
         </nav>
         <button class="login-button" id="logoutButton" type="button">Выход</button>
       </div>
@@ -26,7 +28,10 @@
     <main>
       <section class="section">
         <div class="section-heading">
-          <p class="section-kicker">Бэклог недели</p>
+          <div>
+            <p class="section-kicker">Weekly board</p>
+            <h2 class="dashboard-section-title">Бэклог недели</h2>
+          </div>
           <div class="quarter-filter">
             <span>Неделя</span>
             <select id="weekSelect" aria-label="Выбрать неделю"></select>

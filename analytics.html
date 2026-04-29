@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Аналитика</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell page-shell-wide">
+    <header class="site-header">
+      <div class="site-brand">
+        <p class="section-kicker">Scrum Dashboard</p>
+        <h1>Аналитика</h1>
+      </div>
+
+      <div class="site-header-actions">
+        <nav class="site-nav" aria-label="Основная навигация">
+          <a class="nav-link" href="index.html">Метрики</a>
+          <a class="nav-link" href="calendar.html">Календарь</a>
+          <a class="nav-link" href="backlog.html">Бэклог</a>
+          <a class="nav-link is-active" href="analytics.html">Аналитика</a>
+        </nav>
+        <button class="login-button" id="logoutButton" type="button">Выход</button>
+      </div>
+    </header>
+
+    <main class="analytics-main">
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Weekly analytics</p>
+            <h2 class="dashboard-section-title">Период анализа</h2>
+          </div>
+          <div class="analytics-filter">
+            <span class="analytics-filter-label">Недели</span>
+            <div class="analytics-multi-select" id="analyticsWeekPicker">
+              <button class="analytics-multi-trigger" id="analyticsWeeksTrigger" type="button" aria-haspopup="true" aria-expanded="false">
+                <span id="analyticsWeeksTriggerLabel">Выбрать недели</span>
+              </button>
+              <div class="analytics-multi-menu" id="analyticsWeeksMenu" hidden>
+                <div class="analytics-multi-options" id="analyticsWeeksOptions"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Energy Type</p>
+            <h2 class="dashboard-section-title">Колесо баланса</h2>
+          </div>
+        </div>
+        <div class="analytics-chart-grid analytics-chart-grid-energy" id="energyTypeChart"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Weekday load</p>
+            <h2 class="dashboard-section-title">Задачи по дням недели</h2>
+          </div>
+        </div>
+        <div class="analytics-chart-grid" id="weekdayChart"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Summary</p>
+            <h2 class="dashboard-section-title">Сводка</h2>
+          </div>
+        </div>
+        <div class="analytics-overview-grid analytics-overview-grid-compact" id="analyticsOverview"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="analytics.js"></script>
+</body>
+</html>
