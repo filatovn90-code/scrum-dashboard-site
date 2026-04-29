@@ -67,10 +67,12 @@ const weekSelect = document.getElementById("weekSelect");
 const backlogSummary = document.getElementById("backlogSummary");
 const backlogBoard = document.getElementById("backlogBoard");
 const logoutButton = document.getElementById("logoutButton");
+
 const BACKLOG_STORAGE_KEY = "scrum-master-backlog-data";
 const userBacklogStorageKey = `${BACKLOG_STORAGE_KEY}:${activeUser}`;
 const userBacklogWeekStorageKey = `scrum-master-backlog-week:${activeUser}`;
 const BACKLOG_YEAR = 2026;
+
 const timeline = [
   "09:00", "09:15", "09:30", "09:45",
   "10:00", "10:15", "10:30", "10:45",
@@ -80,6 +82,7 @@ const timeline = [
   "14:00", "14:15", "14:30", "14:45",
   "15:00", "15:15", "15:30", "15:45"
 ];
+
 const weekdayNames = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
 const monthNames = [
   "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
@@ -196,7 +199,7 @@ function normalizeStoredData(template, stored) {
         time: item.time,
         text: item.text || "",
         status: item.status || "Запланировано",
-        stress: item.stress || "Низкий"
+        stress: item.stress || "Нет"
       }));
     });
   });
@@ -212,12 +215,11 @@ function loadBacklogData(template) {
     try {
       window.localStorage.setItem(userBacklogStorageKey, legacyRaw);
     } catch {
-      // ignore storage copy issues and fall back to seeds
+      // ignore copy issue
     }
   }
 
   const resolvedRaw = raw || legacyRaw;
-
   if (!resolvedRaw) {
     return normalizeStoredData(template);
   }
@@ -317,15 +319,24 @@ function statusClass(status) {
   return "status-planned";
 }
 
+function stressClass(stress) {
+  if (stress === "Высокий") return "stress-high";
+  if (stress === "Средний") return "stress-medium";
+  if (stress === "Нет") return "stress-none";
+  return "stress-low";
+}
+
 function renderTaskEditor(editorKey, day, defaults) {
   return `
     <div class="backlog-slot-cell is-editor">
       <div class="inline-task-editor" data-editor="${editorKey}">
         <input class="inline-task-input" type="text" placeholder="Задача" value="${defaults.text}" data-editor-text>
         <div class="inline-task-row">
-          <select data-editor-time>
-            ${renderTimeOptions(day, defaults.time, defaults.originalTime || defaults.time)}
-          </select>
+          ${defaults.hideTime ? "" : `
+            <select data-editor-time>
+              ${renderTimeOptions(day, defaults.time, defaults.originalTime || defaults.time)}
+            </select>
+          `}
           <select data-editor-status>
             <option value="Запланировано" ${defaults.status === "Запланировано" ? "selected" : ""}>Запланировано</option>
             <option value="В работе" ${defaults.status === "В работе" ? "selected" : ""}>В работе</option>
@@ -334,6 +345,7 @@ function renderTaskEditor(editorKey, day, defaults) {
         </div>
         <div class="inline-task-row">
           <select data-editor-stress>
+            <option value="Нет" ${defaults.stress === "Нет" ? "selected" : ""}>Нет</option>
             <option value="Низкий" ${defaults.stress === "Низкий" ? "selected" : ""}>Низкий</option>
             <option value="Средний" ${defaults.stress === "Средний" ? "selected" : ""}>Средний</option>
             <option value="Высокий" ${defaults.stress === "Высокий" ? "selected" : ""}>Высокий</option>
@@ -356,7 +368,8 @@ function renderDayCreateArea(week, day) {
       time: getNextAvailableTime(day),
       text: "",
       status: "Запланировано",
-      stress: "Низкий"
+      stress: "Нет",
+      hideTime: true
     });
   }
 
@@ -384,6 +397,14 @@ function renderTaskCard(week, day, item) {
   const doneMark = item.status === "Сделано"
     ? '<span class="task-done-mark" aria-label="Задача выполнена">✓</span>'
     : "";
+  const stressMarkup = item.stress === "Нет"
+    ? ""
+    : `
+        <div class="task-meta task-meta-labeled">
+          <span class="task-meta-label">Стресс</span>
+          <span class="task-badge ${stressClass(item.stress)}">${item.stress}</span>
+        </div>
+      `;
 
   return `
     <div class="backlog-slot-cell is-task" draggable="true" data-task-card="${taskKey}">
@@ -391,15 +412,18 @@ function renderTaskCard(week, day, item) {
         ${doneMark}
         <span class="task-drag-hint" aria-hidden="true">::</span>
         <p>${item.text}</p>
-        <div class="task-card-actions">
-          <span class="task-badge">${item.time}</span>
-          <select class="task-status-select ${statusClass(item.status)}" data-task-status="${taskKey}">
-            <option value="Запланировано" ${item.status === "Запланировано" ? "selected" : ""}>Запланировано</option>
-            <option value="В работе" ${item.status === "В работе" ? "selected" : ""}>В работе</option>
-            <option value="Сделано" ${item.status === "Сделано" ? "selected" : ""}>Сделано</option>
-            <option value="__edit__">Редактировать</option>
-            <option value="__delete__">Удалить</option>
-          </select>
+        <div class="task-card-actions task-card-actions-stacked">
+          <div class="task-status-group">
+            <span class="task-meta-label">Статус</span>
+            <select class="task-status-select ${statusClass(item.status)}" data-task-status="${taskKey}">
+              <option value="Запланировано" ${item.status === "Запланировано" ? "selected" : ""}>Запланировано</option>
+              <option value="В работе" ${item.status === "В работе" ? "selected" : ""}>В работе</option>
+              <option value="Сделано" ${item.status === "Сделано" ? "selected" : ""}>Сделано</option>
+              <option value="__edit__">Редактировать</option>
+              <option value="__delete__">Удалить</option>
+            </select>
+          </div>
+          ${stressMarkup}
         </div>
       </div>
     </div>
@@ -429,7 +453,7 @@ function saveEditor(editorKey) {
     return;
   }
 
-  const selectedTime = timeSelect.value;
+  const selectedTime = timeSelect ? timeSelect.value : getNextAvailableTime(day);
 
   if (activeEditorState?.mode === "edit") {
     const taskIndex = day.items.findIndex((entry) => entry.id === value);
@@ -439,7 +463,7 @@ function saveEditor(editorKey) {
 
     const hasConflict = day.items.some((entry, index) => entry.time === selectedTime && index !== taskIndex);
     if (hasConflict) {
-      timeSelect.focus();
+      timeSelect?.focus();
       return;
     }
 
@@ -453,7 +477,7 @@ function saveEditor(editorKey) {
   } else {
     const hasConflict = day.items.some((entry) => entry.time === selectedTime);
     if (hasConflict) {
-      timeSelect.focus();
+      timeSelect?.focus();
       return;
     }
 
@@ -485,7 +509,7 @@ function deleteTask(taskKey) {
 }
 
 function moveTaskToDay(taskKey, targetDayKey) {
-  const { week, date: sourceDate, id } = parseKey(taskKey);
+  const { week, date: sourceDate, value: id } = parseKey(taskKey);
   const { date: targetDate } = parseKey(targetDayKey);
   const sourceDay = findDay(week, sourceDate);
   const targetDay = findDay(week, targetDate);
@@ -545,6 +569,10 @@ function renderBacklog(week) {
 
 function bindBoardActions() {
   backlogBoard.querySelectorAll("[data-task-card]").forEach((card) => {
+    card.addEventListener("mousedown", () => {
+      card.setAttribute("draggable", "true");
+    });
+
     card.addEventListener("dragstart", (event) => {
       if (event.target.closest("select") || event.target.closest("button")) {
         event.preventDefault();

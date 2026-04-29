@@ -1162,6 +1162,8 @@ body::before {
 
 .backlog-slot-cell.is-task {
   cursor: grab;
+  user-select: none;
+  -webkit-user-drag: element;
 }
 
 .backlog-slot-cell.is-task.is-dragging {
@@ -1215,6 +1217,7 @@ body::before {
   color: rgba(129, 149, 131, 0.8);
   font-size: 0.8rem;
   letter-spacing: 0.08em;
+  cursor: grab;
 }
 
 .backlog-slot-cell.is-empty {
@@ -1366,10 +1369,35 @@ body::before {
   flex-wrap: wrap;
 }
 
+.task-card-actions-stacked {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
 .task-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.task-meta-labeled {
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.task-meta-label {
+  color: var(--muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.task-status-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .task-meta-editable {
@@ -1424,6 +1452,11 @@ body::before {
 .stress-low {
   background: rgba(86, 141, 98, 0.12);
   color: #4f8059;
+}
+
+.stress-none {
+  background: rgba(111, 131, 116, 0.1);
+  color: #6b7c6f;
 }
 
 .stress-medium {
