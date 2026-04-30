@@ -1210,6 +1210,13 @@ textarea {
   gap: 20px;
 }
 
+.analytics-row {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.1fr);
+  gap: 20px;
+  align-items: start;
+}
+
 .analytics-multi-select {
   position: relative;
   min-width: 250px;
@@ -1484,6 +1491,7 @@ textarea {
   .metrics-grid,
   .analytics-overview-grid,
   .analytics-overview-grid-compact,
+  .analytics-row,
   .calendar-classic-layout {
     grid-template-columns: 1fr;
   }
