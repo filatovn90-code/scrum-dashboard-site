@@ -14,7 +14,6 @@ const analyticsWeeksOptions = document.getElementById("analyticsWeeksOptions");
 const analyticsOverview = document.getElementById("analyticsOverview");
 const weekdayChart = document.getElementById("weekdayChart");
 const energyTypeChart = document.getElementById("energyTypeChart");
-const activeUserLabels = Array.from(document.querySelectorAll("[data-active-user-name]"));
 
 const BACKLOG_STORAGE_KEY = "scrum-master-backlog-data";
 const userBacklogStorageKey = `${BACKLOG_STORAGE_KEY}:${activeUser}`;
@@ -51,10 +50,6 @@ const fallbackBacklogData = {
     ]
   }
 };
-
-activeUserLabels.forEach((label) => {
-  label.textContent = activeUser;
-});
 
 function loadBacklogData() {
   const userRaw = window.localStorage.getItem(userBacklogStorageKey);
@@ -375,6 +370,21 @@ function renderEnergyWheel(container, rows) {
             <strong>${total}</strong>
             <span>задач</span>
           </div>
+        </div>
+
+        <div class="analytics-wheel-legend">
+          ${rows.map((row) => {
+            const percent = total ? Math.round((row.count / total) * 100) : 0;
+            return `
+              <div class="analytics-wheel-legend-item">
+                <span class="analytics-wheel-dot ${energyTypeClass(row.label)}"></span>
+                <div class="analytics-wheel-legend-text">
+                  <strong>${row.label}</strong>
+                  <span>${row.count} • ${percent}%</span>
+                </div>
+              </div>
+            `;
+          }).join("")}
         </div>
       </div>
     </div>
