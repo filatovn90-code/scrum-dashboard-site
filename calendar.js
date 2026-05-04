@@ -6,476 +6,596 @@ if (!window.localStorage.getItem(AUTH_KEY)) {
 
 const activeUser = window.localStorage.getItem(AUTH_KEY);
 
-const seededCalendarData = {
-  "Апрель 2026": {
-    monthLabel: "Апрель 2026",
-    year: 2026,
-    monthIndex: 3,
-    events: [
-      { id: "apr-03-sync", day: 3, type: "event", title: "Синхронизация с Product Manager", time: "11:00" },
-      { id: "apr-08-review", day: 8, type: "review", title: "Sprint Review", time: "16:00" },
-      { id: "apr-12-deadline", day: 12, type: "deadline", title: "Подготовить квартальный обзор", time: "18:00" },
-      { id: "apr-16-retro", day: 16, type: "review", title: "Ретроспектива команды", time: "15:30" },
-      { id: "apr-21-radar", day: 21, type: "event", title: "Встреча по Agile Radar", time: "13:00" },
-      { id: "apr-28-jira", day: 28, type: "deadline", title: "Финализировать Jira hygiene report", time: "17:00" }
+const TIMELINE_STORAGE_KEY = "scrum-master-calendar-data";
+const TIMELINE_WEEK_STORAGE_KEY = "scrum-master-calendar-week";
+const TIMELINE_DAY_STORAGE_KEY = "scrum-master-calendar-day";
+const userTimelineStorageKey = `${TIMELINE_STORAGE_KEY}:${activeUser}`;
+const userTimelineWeekStorageKey = `${TIMELINE_WEEK_STORAGE_KEY}:${activeUser}`;
+const TIMELINE_YEAR = 2026;
+
+const seededTimelineData = {
+  "Неделя 04.05 - 08.05": {
+    days: [
+      {
+        date: "04.05",
+        weekday: "Понедельник",
+        deadlines: [
+          { id: "may4-overview", title: "Подготовить квартальный обзор", time: "18:00" }
+        ]
+      },
+      {
+        date: "05.05",
+        weekday: "Вторник",
+        deadlines: [
+          { id: "may5-planning", title: "Планирование квартала", time: "10:00" }
+        ]
+      },
+      {
+        date: "06.05",
+        weekday: "Среда",
+        deadlines: []
+      },
+      {
+        date: "07.05",
+        weekday: "Четверг",
+        deadlines: [
+          { id: "may7-sprint", title: "Sprint Planning", time: "12:00" }
+        ]
+      },
+      {
+        date: "08.05",
+        weekday: "Пятница",
+        deadlines: [
+          { id: "may8-radar", title: "Проверить материалы по Agile Radar", time: "16:30" }
+        ]
+      }
     ]
   },
-  "Май 2026": {
-    monthLabel: "Май 2026",
-    year: 2026,
-    monthIndex: 4,
-    events: [
-      { id: "may-05-plan", day: 5, type: "event", title: "Планирование квартала", time: "10:00" },
-      { id: "may-07-sprint", day: 7, type: "review", title: "Sprint Planning", time: "12:00" },
-      { id: "may-14-lt-ttm", day: 14, type: "deadline", title: "Сдать LT / TTM сводку", time: "17:30" },
-      { id: "may-19-1on1", day: 19, type: "event", title: "1:1 с лидом разработки", time: "14:00" },
-      { id: "may-22-retro", day: 22, type: "review", title: "Ретро по квартальным инициативам", time: "16:00" },
-      { id: "may-29-epics", day: 29, type: "deadline", title: "Проверить эпики перед новым циклом", time: "15:00" }
+  "Неделя 11.05 - 15.05": {
+    days: [
+      { date: "11.05", weekday: "Понедельник", deadlines: [] },
+      { date: "12.05", weekday: "Вторник", deadlines: [] },
+      {
+        date: "13.05",
+        weekday: "Среда",
+        deadlines: [{ id: "may13-jira", title: "Финализировать Jira hygiene report", time: "17:00" }]
+      },
+      { date: "14.05", weekday: "Четверг", deadlines: [{ id: "may14-ttm", title: "Сдать LT / TTM сводку", time: "17:30" }] },
+      { date: "15.05", weekday: "Пятница", deadlines: [] }
     ]
   }
 };
 
-const CALENDAR_STORAGE_KEY = "scrum-master-calendar-data";
-const userCalendarStorageKey = `${CALENDAR_STORAGE_KEY}:${activeUser}`;
-
-const monthSelect = document.getElementById("calendarMonthSelect");
-const monthTitle = document.getElementById("calendarMonthTitle");
-const currentDateLabel = document.getElementById("calendarCurrentDate");
-const weekdaysRow = document.getElementById("calendarWeekdays");
-const calendarGrid = document.getElementById("calendarGrid");
-const prevMonthButton = document.getElementById("calendarPrevMonth");
-const nextMonthButton = document.getElementById("calendarNextMonth");
-const selectedDateTitle = document.getElementById("calendarSelectedDate");
-const selectedEvents = document.getElementById("calendarSelectedEvents");
-const monthEventsTitle = document.getElementById("calendarMonthEventsTitle");
-const monthEventsList = document.getElementById("calendarMonthEvents");
-const eventForm = document.getElementById("calendarEventForm");
-const eventTitleInput = document.getElementById("calendarEventTitle");
-const eventTimeInput = document.getElementById("calendarEventTime");
-const eventTypeSelect = document.getElementById("calendarEventType");
-const eventCancelButton = document.getElementById("calendarEventCancel");
-const eventSubmitButton = eventForm.querySelector(".calendar-event-submit");
+const weekSelect = document.getElementById("timelineWeekSelect");
+const prevWeekButton = document.getElementById("timelinePrevWeek");
+const nextWeekButton = document.getElementById("timelineNextWeek");
+const timelineBoard = document.getElementById("timelineBoard");
+const selectedDayTitle = document.getElementById("timelineSelectedDay");
+const selectedList = document.getElementById("timelineSelectedList");
+const weekMeta = document.getElementById("timelineWeekMeta");
+const summaryTitle = document.getElementById("timelineSummaryTitle");
+const summaryList = document.getElementById("timelineSummaryList");
+const deadlineForm = document.getElementById("timelineDeadlineForm");
+const deadlineTitleInput = document.getElementById("timelineDeadlineTitle");
+const deadlineTimeInput = document.getElementById("timelineDeadlineTime");
+const deadlineSubmitButton = document.getElementById("timelineDeadlineSubmit");
+const deadlineCancelButton = document.getElementById("timelineDeadlineCancel");
 const logoutButton = document.getElementById("logoutButton");
-const activeUserLabels = Array.from(document.querySelectorAll("[data-active-user-name]"));
 
-const weekdayShort = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
-const weekdayLong = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
-const today = { year: 2026, monthIndex: 3, day: 26 };
+const weekdayNames = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
+const monthNames = [
+  "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+  "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+];
 
-let calendarData = loadCalendarData();
-let monthNames = getMonthNames(calendarData);
-let activeMonth = monthNames[0];
-let selectedDay = today.day;
-let editingEvent = null;
+let timelineData = loadTimelineData();
+let weekNames = Object.keys(timelineData).sort((a, b) => weekStartValue(a) - weekStartValue(b));
+let activeWeek = resolveDefaultWeek();
+let selectedDay = resolveSelectedDay(activeWeek);
+let editingDeadline = null;
 
-activeUserLabels.forEach((label) => {
-  label.textContent = activeUser;
-});
-
-function cloneSeedData() {
-  return JSON.parse(JSON.stringify(seededCalendarData));
+function formatDate(date) {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${day}.${month}`;
 }
 
-function normalizeMonth(month, fallbackLabel) {
-  const monthLabel = month.monthLabel || fallbackLabel;
+function addDays(date, amount) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
+function weekLabel(startDate, endDate) {
+  return `Неделя ${formatDate(startDate)} - ${formatDate(endDate)}`;
+}
+
+function createEmptyWeek(startDate, endLimit) {
+  const days = [];
+
+  for (let offset = 0; offset < 5; offset += 1) {
+    const date = addDays(startDate, offset);
+    if (date > endLimit || date.getFullYear() !== TIMELINE_YEAR) {
+      break;
+    }
+
+    days.push({
+      date: formatDate(date),
+      weekday: weekdayNames[date.getDay()],
+      deadlines: []
+    });
+  }
+
+  const endDate = addDays(startDate, days.length - 1);
   return {
-    monthLabel,
-    year: month.year,
-    monthIndex: month.monthIndex,
-    events: (month.events || []).map((event, index) => ({
-      id: event.id || `${month.year}-${month.monthIndex + 1}-${event.day}-${index}-${Date.now()}`,
-      day: event.day,
-      type: event.type || "event",
-      title: event.title || "",
-      time: event.time || "09:00"
+    [weekLabel(startDate, endDate)]: { days }
+  };
+}
+
+function generateWeeksUntilYearEnd() {
+  const generated = {};
+  const start = new Date(TIMELINE_YEAR, 3, 20);
+  const yearEnd = new Date(TIMELINE_YEAR, 11, 31);
+  let cursor = new Date(start);
+
+  while (cursor <= yearEnd) {
+    Object.assign(generated, createEmptyWeek(cursor, yearEnd));
+    cursor = addDays(cursor, 7);
+  }
+
+  return generated;
+}
+
+function weekStartValue(label) {
+  const match = label.match(/(\d{2})\.(\d{2})/);
+  if (!match) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const [, day, month] = match;
+  return new Date(TIMELINE_YEAR, Number(month) - 1, Number(day)).getTime();
+}
+
+function shortWeekLabel(label) {
+  const match = label.match(/(\d{2}\.\d{2})\s*-\s*(\d{2}\.\d{2})/);
+  if (!match) {
+    return label;
+  }
+
+  return `${match[1]} - ${match[2]}`;
+}
+
+function monthNameForWeek(label) {
+  const match = label.match(/(\d{2})\.(\d{2})/);
+  if (!match) {
+    return "Без месяца";
+  }
+
+  return monthNames[Number(match[2]) - 1] || "Без месяца";
+}
+
+function normalizeWeek(week) {
+  return {
+    days: (week.days || []).map((day) => ({
+      date: day.date,
+      weekday: day.weekday,
+      deadlines: (day.deadlines || []).map((deadline, index) => ({
+        id: deadline.id || `deadline-${day.date}-${index}-${Date.now()}`,
+        title: deadline.title || "",
+        time: deadline.time || ""
+      }))
     }))
   };
 }
 
-function loadCalendarData() {
-  const seeded = cloneSeedData();
-  const raw = window.localStorage.getItem(userCalendarStorageKey);
-  const legacyRaw = window.localStorage.getItem(CALENDAR_STORAGE_KEY);
+function mergeWeekData(template, stored) {
+  const merged = {};
+
+  Object.entries(template).forEach(([week, value]) => {
+    merged[week] = stored?.[week] ? normalizeWeek(stored[week]) : JSON.parse(JSON.stringify(value));
+  });
+
+  Object.entries(stored || {}).forEach(([week, value]) => {
+    if (!merged[week]) {
+      merged[week] = normalizeWeek(value);
+    }
+  });
+
+  return merged;
+}
+
+function convertLegacyCalendarData(legacy) {
+  const converted = {};
+
+  Object.values(legacy || {}).forEach((month) => {
+    if (!month || typeof month !== "object" || !Array.isArray(month.events)) {
+      return;
+    }
+
+    month.events.forEach((event) => {
+      const date = new Date(month.year, month.monthIndex, event.day);
+      if (Number.isNaN(date.getTime()) || date.getFullYear() !== TIMELINE_YEAR) {
+        return;
+      }
+
+      const weekday = date.getDay();
+      if (weekday === 0 || weekday === 6) {
+        return;
+      }
+
+      const mondayOffset = weekday === 0 ? -6 : 1 - weekday;
+      const monday = addDays(date, mondayOffset);
+      const friday = addDays(monday, 4);
+      const label = weekLabel(monday, friday);
+
+      if (!converted[label]) {
+        converted[label] = {
+          days: Array.from({ length: 5 }, (_, index) => {
+            const dayDate = addDays(monday, index);
+            return {
+              date: formatDate(dayDate),
+              weekday: weekdayNames[dayDate.getDay()],
+              deadlines: []
+            };
+          })
+        };
+      }
+
+      const targetDay = converted[label].days.find((dayItem) => dayItem.date === formatDate(date));
+      if (!targetDay) {
+        return;
+      }
+
+      targetDay.deadlines.push({
+        id: event.id || `legacy-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        title: event.title || "Дедлайн",
+        time: event.time || ""
+      });
+    });
+  });
+
+  return converted;
+}
+
+function loadTimelineData() {
+  const template = mergeWeekData(generateWeeksUntilYearEnd(), seededTimelineData);
+  const raw = window.localStorage.getItem(userTimelineStorageKey);
+  const legacyRaw = window.localStorage.getItem(TIMELINE_STORAGE_KEY);
 
   if (!raw && legacyRaw) {
     try {
-      window.localStorage.setItem(userCalendarStorageKey, legacyRaw);
+      const parsedLegacy = JSON.parse(legacyRaw);
+      const legacyConverted = Object.values(parsedLegacy || {}).some((entry) => Array.isArray(entry?.events))
+        ? convertLegacyCalendarData(parsedLegacy)
+        : parsedLegacy;
+      window.localStorage.setItem(userTimelineStorageKey, JSON.stringify(legacyConverted));
     } catch {
-      // ignore storage copy issues and fall back to seeds
+      // ignore copy failure
     }
   }
 
-  const resolvedRaw = raw || legacyRaw;
-
+  const resolvedRaw = raw || window.localStorage.getItem(userTimelineStorageKey);
   if (!resolvedRaw) {
-    return Object.fromEntries(
-      Object.entries(seeded).map(([label, month]) => [label, normalizeMonth(month, label)])
-    );
+    return template;
   }
 
   try {
     const stored = JSON.parse(resolvedRaw);
-    const merged = { ...seeded, ...stored };
-    return Object.fromEntries(
-      Object.entries(merged).map(([label, month]) => [label, normalizeMonth(month, label)])
-    );
+    const normalizedStored = Object.values(stored || {}).some((entry) => Array.isArray(entry?.events))
+      ? convertLegacyCalendarData(stored)
+      : stored;
+    return mergeWeekData(template, normalizedStored);
   } catch {
-    return Object.fromEntries(
-      Object.entries(seeded).map(([label, month]) => [label, normalizeMonth(month, label)])
-    );
+    return template;
   }
 }
 
-function saveCalendarData() {
-  window.localStorage.setItem(userCalendarStorageKey, JSON.stringify(calendarData));
+function saveTimelineData() {
+  window.localStorage.setItem(userTimelineStorageKey, JSON.stringify(timelineData));
 }
 
-function getMonthNames(data) {
-  return Object.keys(data).sort((left, right) => {
-    const a = data[left];
-    const b = data[right];
-    return new Date(a.year, a.monthIndex, 1) - new Date(b.year, b.monthIndex, 1);
+function getCurrentWeekLabel() {
+  const now = new Date(2026, 4, 4);
+  return weekNames.find((label) => {
+    const week = timelineData[label];
+    return week?.days.some((day) => day.date === formatDate(now));
+  }) || weekNames[0];
+}
+
+function resolveDefaultWeek() {
+  const storedWeek = window.localStorage.getItem(userTimelineWeekStorageKey);
+  return weekNames.includes(storedWeek) ? storedWeek : getCurrentWeekLabel();
+}
+
+function focusDayStorageKey(week) {
+  return `${TIMELINE_DAY_STORAGE_KEY}:${activeUser}:${week}`;
+}
+
+function resolveSelectedDay(week) {
+  const days = timelineData[week]?.days || [];
+  if (!days.length) {
+    return "";
+  }
+
+  const storedDay = window.localStorage.getItem(focusDayStorageKey(week));
+  return days.some((day) => day.date === storedDay) ? storedDay : days[0].date;
+}
+
+function findDay(week, date) {
+  return timelineData[week]?.days.find((day) => day.date === date);
+}
+
+function sortDeadlines(deadlines) {
+  return [...deadlines].sort((left, right) => {
+    const leftTime = left.time || "99:99";
+    const rightTime = right.time || "99:99";
+    if (leftTime !== rightTime) {
+      return leftTime.localeCompare(rightTime);
+    }
+    return left.title.localeCompare(right.title, "ru");
   });
 }
 
-function refreshMonthOptions() {
-  monthNames = getMonthNames(calendarData);
-  monthSelect.innerHTML = "";
-
-  monthNames.forEach((month) => {
-    const option = document.createElement("option");
-    option.value = month;
-    option.textContent = month;
-    option.selected = month === activeMonth;
-    monthSelect.appendChild(option);
-  });
+function getWeekDeadlineCount(week) {
+  return timelineData[week].days.reduce((total, day) => total + day.deadlines.length, 0);
 }
 
-function getCurrentDateText() {
-  const date = new Date(today.year, today.monthIndex, today.day);
-  const weekday = weekdayLong[date.getDay()];
-  const monthName = date.toLocaleString("ru-RU", { month: "long" });
-  return `${weekday}, ${today.day} ${monthName}`;
-}
+function refreshWeekOptions() {
+  weekNames = Object.keys(timelineData).sort((a, b) => weekStartValue(a) - weekStartValue(b));
+  weekSelect.innerHTML = "";
 
-function getMonthMatrix(year, monthIndex) {
-  const firstDay = new Date(year, monthIndex, 1);
-  const lastDay = new Date(year, monthIndex + 1, 0);
-  const firstWeekday = (firstDay.getDay() + 6) % 7;
-  const daysInMonth = lastDay.getDate();
-  const prevMonthLastDay = new Date(year, monthIndex, 0).getDate();
-  const cells = [];
+  const weeksByMonth = weekNames.reduce((groups, week) => {
+    const month = monthNameForWeek(week);
+    if (!groups[month]) {
+      groups[month] = [];
+    }
+    groups[month].push(week);
+    return groups;
+  }, {});
 
-  for (let index = 0; index < firstWeekday; index += 1) {
-    const day = prevMonthLastDay - firstWeekday + index + 1;
-    cells.push({ day, outside: true });
-  }
+  Object.entries(weeksByMonth).forEach(([month, weeks]) => {
+    const optgroup = document.createElement("optgroup");
+    optgroup.label = month;
 
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    cells.push({ day, outside: false });
-  }
-
-  while (cells.length % 7 !== 0) {
-    cells.push({ day: cells.length - (firstWeekday + daysInMonth) + 1, outside: true });
-  }
-
-  return cells;
-}
-
-function eventClass(type) {
-  if (type === "deadline") return "is-deadline";
-  if (type === "review") return "is-review";
-  return "is-event";
-}
-
-function typeLabel(type) {
-  if (type === "deadline") return "Дедлайн";
-  if (type === "review") return "Ритуал";
-  return "Событие";
-}
-
-function weekLabelForDay(year, monthIndex, day) {
-  const date = new Date(year, monthIndex, day);
-  const weekday = (date.getDay() + 6) % 7;
-  const monday = new Date(date);
-  monday.setDate(date.getDate() - weekday);
-  const friday = new Date(monday);
-  friday.setDate(monday.getDate() + 4);
-
-  const startDay = String(monday.getDate()).padStart(2, "0");
-  const endDay = String(friday.getDate()).padStart(2, "0");
-  const endMonth = String(friday.getMonth() + 1).padStart(2, "0");
-
-  return `Неделя ${startDay} - ${endDay}.${endMonth}`;
-}
-
-function sortEvents(events) {
-  return [...events].sort((left, right) => {
-    if (left.day !== right.day) return left.day - right.day;
-    return left.time.localeCompare(right.time);
-  });
-}
-
-function resetEventForm() {
-  editingEvent = null;
-  eventForm.reset();
-  eventTypeSelect.value = "event";
-  eventSubmitButton.textContent = "Добавить событие";
-  eventCancelButton.hidden = true;
-}
-
-function startEditingEvent(monthLabel, eventId) {
-  const month = calendarData[monthLabel];
-  const event = month?.events.find((item) => item.id === eventId);
-  if (!event) {
-    return;
-  }
-
-  activeMonth = monthLabel;
-  selectedDay = event.day;
-  editingEvent = { monthLabel, eventId };
-  eventTitleInput.value = event.title;
-  eventTimeInput.value = event.time;
-  eventTypeSelect.value = event.type;
-  eventSubmitButton.textContent = "Сохранить";
-  eventCancelButton.hidden = false;
-  renderCalendar(activeMonth);
-  eventTitleInput.focus();
-}
-
-function deleteEvent(monthLabel, eventId) {
-  const month = calendarData[monthLabel];
-  if (!month) {
-    return;
-  }
-
-  month.events = month.events.filter((event) => event.id !== eventId);
-  if (editingEvent && editingEvent.monthLabel === monthLabel && editingEvent.eventId === eventId) {
-    resetEventForm();
-  }
-
-  saveCalendarData();
-  renderCalendar(activeMonth);
-}
-
-function bindEventActions() {
-  document.querySelectorAll("[data-event-edit]").forEach((button) => {
-    button.addEventListener("click", () => {
-      startEditingEvent(button.dataset.monthLabel, button.dataset.eventEdit);
+    weeks.forEach((week) => {
+      const option = document.createElement("option");
+      option.value = week;
+      option.textContent = shortWeekLabel(week);
+      option.selected = week === activeWeek;
+      optgroup.appendChild(option);
     });
-  });
 
-  document.querySelectorAll("[data-event-delete]").forEach((button) => {
-    button.addEventListener("click", () => {
-      deleteEvent(button.dataset.monthLabel, button.dataset.eventDelete);
-    });
+    weekSelect.appendChild(optgroup);
   });
+}
+
+function resetDeadlineForm() {
+  editingDeadline = null;
+  deadlineForm.reset();
+  deadlineSubmitButton.textContent = "Добавить дедлайн";
+  deadlineCancelButton.hidden = true;
 }
 
 function renderSelectedDayPanel() {
-  const month = calendarData[activeMonth];
-  const date = new Date(month.year, month.monthIndex, selectedDay);
-  const weekday = weekdayLong[date.getDay()];
-  const monthName = date.toLocaleString("ru-RU", { month: "long" });
-  const events = sortEvents(month.events.filter((event) => event.day === selectedDay));
+  const day = findDay(activeWeek, selectedDay);
+  if (!day) {
+    selectedDayTitle.textContent = "";
+    selectedList.innerHTML = "";
+    return;
+  }
 
-  selectedDateTitle.textContent = `${weekday}, ${selectedDay} ${monthName}`;
-  selectedEvents.innerHTML = events.length
-    ? events.map((event) => `
-        <article class="calendar-selected-event ${eventClass(event.type)}">
-          <span class="calendar-selected-event-time">${event.time}</span>
-          <div class="calendar-selected-event-copy">
-            <strong>${event.title}</strong>
-            <span>${typeLabel(event.type)}</span>
+  selectedDayTitle.textContent = `${day.weekday}, ${day.date}`;
+  weekMeta.innerHTML = `
+    <span class="week-timeline-meta-chip">${day.deadlines.length} дедлайнов</span>
+  `;
+
+  const deadlines = sortDeadlines(day.deadlines);
+  selectedList.innerHTML = deadlines.length
+    ? deadlines.map((deadline) => `
+        <article class="week-deadline-item">
+          <div class="week-deadline-copy">
+            <strong>${deadline.title}</strong>
+            <span>${deadline.time || "Без времени"}</span>
           </div>
           <div class="calendar-event-actions">
-            <button type="button" class="calendar-event-action" data-month-label="${activeMonth}" data-event-edit="${event.id}">Ред.</button>
-            <button type="button" class="calendar-event-action is-danger" data-month-label="${activeMonth}" data-event-delete="${event.id}">Удал.</button>
+            <button type="button" class="calendar-event-action" data-deadline-edit="${deadline.id}" data-deadline-day="${day.date}">Ред.</button>
+            <button type="button" class="calendar-event-action is-danger" data-deadline-delete="${deadline.id}" data-deadline-day="${day.date}">Удал.</button>
           </div>
         </article>
       `).join("")
-    : '<p class="calendar-selected-empty">На этот день пока нет событий.</p>';
+    : '<p class="calendar-selected-empty">На этот день пока нет дедлайнов.</p>';
 }
 
-function renderMonthEventsSidebar() {
-  const month = calendarData[activeMonth];
-  const events = sortEvents(month.events);
+function renderWeekSummary() {
+  const week = timelineData[activeWeek];
+  summaryTitle.textContent = activeWeek;
 
-  monthEventsTitle.textContent = month.monthLabel;
-  if (!events.length) {
-    monthEventsList.innerHTML = '<p class="calendar-selected-empty">На этот месяц пока ничего не запланировано.</p>';
-    return;
-  }
+  const allDeadlines = week.days.flatMap((day) =>
+    sortDeadlines(day.deadlines).map((deadline) => ({
+      ...deadline,
+      dayDate: day.date,
+      dayName: day.weekday
+    }))
+  );
 
-  const grouped = events.reduce((acc, event) => {
-    const label = weekLabelForDay(month.year, month.monthIndex, event.day);
-    if (!acc[label]) {
-      acc[label] = [];
-    }
-    acc[label].push(event);
-    return acc;
-  }, {});
-
-  monthEventsList.innerHTML = Object.entries(grouped).map(([weekLabel, weekEvents]) => `
-    <section class="calendar-month-week-group">
-      <h4 class="calendar-month-week-title">${weekLabel}</h4>
-      <div class="calendar-month-week-events">
-        ${weekEvents.map((event) => `
-          <article class="calendar-month-event ${eventClass(event.type)}">
-            <div class="calendar-month-event-date">
-              <strong>${String(event.day).padStart(2, "0")}</strong>
-              <span>${event.time}</span>
-            </div>
-            <div class="calendar-month-event-copy">
-              <strong>${event.title}</strong>
-              <span>${typeLabel(event.type)}</span>
-            </div>
-            <div class="calendar-event-actions calendar-event-actions-side">
-              <button type="button" class="calendar-event-action" data-month-label="${activeMonth}" data-event-edit="${event.id}">Ред.</button>
-              <button type="button" class="calendar-event-action is-danger" data-month-label="${activeMonth}" data-event-delete="${event.id}">Удал.</button>
-            </div>
-          </article>
-        `).join("")}
-      </div>
-    </section>
-  `).join("");
+  summaryList.innerHTML = allDeadlines.length
+    ? allDeadlines.map((deadline) => `
+        <article class="week-summary-item">
+          <div class="week-summary-date">
+            <strong>${deadline.dayDate}</strong>
+            <span>${deadline.dayName}</span>
+          </div>
+          <div class="week-summary-copy">
+            <strong>${deadline.title}</strong>
+            <span>${deadline.time || "Без времени"}</span>
+          </div>
+        </article>
+      `).join("")
+    : '<p class="calendar-selected-empty">На этой неделе пока нет дедлайнов.</p>';
 }
 
-function renderCalendar(monthLabel) {
-  const month = calendarData[monthLabel];
-  const cells = getMonthMatrix(month.year, month.monthIndex);
-  const eventMap = new Map();
+function renderTimelineBoard() {
+  const week = timelineData[activeWeek];
+  timelineBoard.innerHTML = week.days.map((day) => {
+    const deadlines = sortDeadlines(day.deadlines);
+    const isSelected = day.date === selectedDay;
 
-  month.events.forEach((event) => {
-    if (!eventMap.has(event.day)) {
-      eventMap.set(event.day, []);
-    }
-    eventMap.get(event.day).push(event);
-  });
-
-  activeMonth = monthLabel;
-  refreshMonthOptions();
-  monthSelect.value = monthLabel;
-  monthTitle.textContent = month.monthLabel;
-  currentDateLabel.textContent = getCurrentDateText();
-  calendarGrid.innerHTML = "";
-
-  const daysInMonth = new Date(month.year, month.monthIndex + 1, 0).getDate();
-  if (selectedDay > daysInMonth) {
-    selectedDay = daysInMonth;
-  }
-
-  cells.forEach((cell) => {
-    const dayEvents = !cell.outside ? (eventMap.get(cell.day) || []) : [];
-    const strongestEvent = dayEvents[0];
-    const isToday = !cell.outside
-      && month.year === today.year
-      && month.monthIndex === today.monthIndex
-      && cell.day === today.day;
-    const isSelected = !cell.outside && cell.day === selectedDay;
-
-    const button = document.createElement("button");
-    button.type = "button";
-    button.disabled = cell.outside;
-    button.className = `calendar-classic-day${cell.outside ? " is-outside" : ""}${isToday ? " is-today" : ""}${isSelected ? " is-selected" : ""}${strongestEvent ? ` ${eventClass(strongestEvent.type)}` : ""}`;
-    button.innerHTML = `
-      <span class="calendar-classic-day-number">${cell.day}</span>
-      ${dayEvents.length ? '<span class="calendar-classic-day-dot"></span>' : ""}
+    return `
+      <section class="week-timeline-day${isSelected ? " is-selected" : ""}" data-day-select="${day.date}">
+        <div class="week-timeline-day-header">
+          <div class="week-timeline-day-title">
+            <strong>${day.date}</strong>
+            <span>${day.weekday}</span>
+          </div>
+          <button type="button" class="backlog-day-add-button week-timeline-add-button" data-day-add="${day.date}">Добавить дедлайн</button>
+        </div>
+        <div class="week-timeline-day-list">
+          ${deadlines.length
+            ? deadlines.map((deadline) => `
+                <article class="week-timeline-card" data-day-select="${day.date}">
+                  <div class="week-timeline-card-time">${deadline.time || "Без времени"}</div>
+                  <div class="week-timeline-card-copy">
+                    <strong>${deadline.title}</strong>
+                  </div>
+                </article>
+              `).join("")
+            : '<div class="week-timeline-empty">Дедлайнов нет</div>'}
+        </div>
+      </section>
     `;
+  }).join("");
+}
 
-    if (!cell.outside) {
-      button.addEventListener("click", () => {
-        selectedDay = cell.day;
-        renderCalendar(activeMonth);
-      });
-    }
-
-    calendarGrid.appendChild(button);
+function bindTimelineActions() {
+  timelineBoard.querySelectorAll("[data-day-select]").forEach((element) => {
+    element.addEventListener("click", () => {
+      selectedDay = element.dataset.daySelect;
+      window.localStorage.setItem(focusDayStorageKey(activeWeek), selectedDay);
+      resetDeadlineForm();
+      renderTimeline(activeWeek);
+    });
   });
 
+  timelineBoard.querySelectorAll("[data-day-add]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      selectedDay = button.dataset.dayAdd;
+      window.localStorage.setItem(focusDayStorageKey(activeWeek), selectedDay);
+      resetDeadlineForm();
+      renderTimeline(activeWeek);
+      deadlineTitleInput.focus();
+    });
+  });
+
+  document.querySelectorAll("[data-deadline-edit]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const day = findDay(activeWeek, button.dataset.deadlineDay);
+      const deadline = day?.deadlines.find((item) => item.id === button.dataset.deadlineEdit);
+      if (!deadline) {
+        return;
+      }
+
+      selectedDay = button.dataset.deadlineDay;
+      editingDeadline = { day: button.dataset.deadlineDay, id: deadline.id };
+      deadlineTitleInput.value = deadline.title;
+      deadlineTimeInput.value = deadline.time;
+      deadlineSubmitButton.textContent = "Сохранить";
+      deadlineCancelButton.hidden = false;
+      renderTimeline(activeWeek);
+      deadlineTitleInput.focus();
+    });
+  });
+
+  document.querySelectorAll("[data-deadline-delete]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const day = findDay(activeWeek, button.dataset.deadlineDay);
+      if (!day) {
+        return;
+      }
+
+      day.deadlines = day.deadlines.filter((item) => item.id !== button.dataset.deadlineDelete);
+      if (editingDeadline && editingDeadline.id === button.dataset.deadlineDelete) {
+        resetDeadlineForm();
+      }
+      saveTimelineData();
+      renderTimeline(activeWeek);
+    });
+  });
+}
+
+function renderTimeline(week) {
+  activeWeek = week;
+  selectedDay = findDay(week, selectedDay) ? selectedDay : resolveSelectedDay(week);
+  weekSelect.value = week;
+  renderTimelineBoard();
   renderSelectedDayPanel();
-  renderMonthEventsSidebar();
-  bindEventActions();
+  renderWeekSummary();
+  bindTimelineActions();
 }
 
-function moveMonth(direction) {
-  const currentIndex = monthNames.indexOf(activeMonth);
-  const nextIndex = currentIndex + direction;
-  if (nextIndex < 0 || nextIndex >= monthNames.length) {
+function moveWeek(direction) {
+  const index = weekNames.indexOf(activeWeek);
+  const nextIndex = index + direction;
+  if (nextIndex < 0 || nextIndex >= weekNames.length) {
     return;
   }
 
-  resetEventForm();
-  renderCalendar(monthNames[nextIndex]);
+  resetDeadlineForm();
+  window.localStorage.setItem(userTimelineWeekStorageKey, weekNames[nextIndex]);
+  renderTimeline(weekNames[nextIndex]);
 }
 
-eventForm.addEventListener("submit", (event) => {
+deadlineForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const title = eventTitleInput.value.trim();
-  const time = eventTimeInput.value;
-  const type = eventTypeSelect.value;
+  const title = deadlineTitleInput.value.trim();
+  const time = deadlineTimeInput.value;
 
-  if (!title || !time) {
-    if (!title) {
-      eventTitleInput.focus();
-    } else {
-      eventTimeInput.focus();
-    }
+  if (!title) {
+    deadlineTitleInput.focus();
     return;
   }
 
-  if (editingEvent) {
-    const month = calendarData[editingEvent.monthLabel];
-    const currentEvent = month?.events.find((item) => item.id === editingEvent.eventId);
-    if (currentEvent) {
-      currentEvent.day = selectedDay;
-      currentEvent.title = title;
-      currentEvent.time = time;
-      currentEvent.type = type;
+  const day = findDay(activeWeek, selectedDay);
+  if (!day) {
+    return;
+  }
+
+  if (editingDeadline) {
+    const current = day.deadlines.find((item) => item.id === editingDeadline.id);
+    if (current) {
+      current.title = title;
+      current.time = time;
     }
   } else {
-    calendarData[activeMonth].events.push({
-      id: `event-${Date.now()}`,
-      day: selectedDay,
-      type,
+    day.deadlines.push({
+      id: `deadline-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       title,
       time
     });
   }
 
-  saveCalendarData();
-  resetEventForm();
-  renderCalendar(activeMonth);
+  saveTimelineData();
+  resetDeadlineForm();
+  renderTimeline(activeWeek);
 });
 
-eventCancelButton.addEventListener("click", () => {
-  resetEventForm();
+deadlineCancelButton.addEventListener("click", () => {
+  resetDeadlineForm();
 });
 
-monthSelect.addEventListener("change", (event) => {
-  resetEventForm();
-  renderCalendar(event.target.value);
+weekSelect.addEventListener("change", (event) => {
+  resetDeadlineForm();
+  window.localStorage.setItem(userTimelineWeekStorageKey, event.target.value);
+  renderTimeline(event.target.value);
 });
 
-prevMonthButton.addEventListener("click", () => {
-  moveMonth(-1);
-});
-
-nextMonthButton.addEventListener("click", () => {
-  moveMonth(1);
-});
+prevWeekButton?.addEventListener("click", () => moveWeek(-1));
+nextWeekButton?.addEventListener("click", () => moveWeek(1));
 
 logoutButton?.addEventListener("click", () => {
   window.localStorage.removeItem(AUTH_KEY);
   window.location.replace("index.html");
 });
 
-weekdayShort.forEach((weekday) => {
-  const cell = document.createElement("div");
-  cell.className = "calendar-weekday";
-  cell.textContent = weekday;
-  weekdaysRow.appendChild(cell);
-});
-
-refreshMonthOptions();
-renderCalendar(activeMonth);
+refreshWeekOptions();
+renderTimeline(activeWeek);

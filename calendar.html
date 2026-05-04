@@ -26,61 +26,49 @@
     </header>
 
     <main>
-      <section class="section calendar-classic-section">
-        <div class="calendar-classic-layout">
-          <div class="calendar-classic-shell">
-            <div class="calendar-classic-topbar">
-              <p class="calendar-current-date" id="calendarCurrentDate"></p>
-              <div class="calendar-month-picker">
-                <label class="calendar-picker-label" for="calendarMonthSelect">Месяц</label>
-                <select id="calendarMonthSelect" aria-label="Выбрать месяц"></select>
-              </div>
-            </div>
-
-            <div class="calendar-classic-header">
-              <div>
-                <p class="calendar-classic-kicker">Month overview</p>
-                <h2 id="calendarMonthTitle"></h2>
-              </div>
-              <div class="calendar-classic-nav">
-                <button type="button" class="calendar-nav-button" id="calendarPrevMonth" aria-label="Предыдущий месяц">←</button>
-                <button type="button" class="calendar-nav-button" id="calendarNextMonth" aria-label="Следующий месяц">→</button>
-              </div>
-            </div>
-
-            <div class="calendar-weekdays" id="calendarWeekdays"></div>
-            <div class="calendar-classic-grid" id="calendarGrid"></div>
-
-            <section class="calendar-day-panel" id="calendarDayPanel">
-              <div class="calendar-day-panel-header">
-                <div>
-                  <p class="calendar-day-panel-kicker">Выбранный день</p>
-                  <h3 id="calendarSelectedDate"></h3>
-                </div>
-              </div>
-
-              <div class="calendar-day-events-list" id="calendarSelectedEvents"></div>
-
-              <form class="calendar-event-form" id="calendarEventForm">
-                <input id="calendarEventTitle" type="text" placeholder="Название события" aria-label="Название события">
-                <input id="calendarEventTime" type="time" aria-label="Время события">
-                <select id="calendarEventType" aria-label="Тип события">
-                  <option value="event">Событие</option>
-                  <option value="review">Ритуал</option>
-                  <option value="deadline">Дедлайн</option>
-                </select>
-                <button type="submit" class="calendar-event-submit">Добавить событие</button>
-                <button type="button" class="calendar-event-cancel" id="calendarEventCancel" hidden>Отмена</button>
-              </form>
-            </section>
+      <section class="section week-timeline-section">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Weekly timeline</p>
+            <h2 class="dashboard-section-title">Дедлайны недели</h2>
           </div>
 
-          <aside class="calendar-month-sidebar">
-            <div class="calendar-month-sidebar-header">
-              <p class="calendar-day-panel-kicker">События месяца</p>
-              <h3 id="calendarMonthEventsTitle"></h3>
+          <div class="week-timeline-controls">
+            <div class="quarter-filter">
+              <span>Неделя</span>
+              <select id="timelineWeekSelect" aria-label="Выбрать неделю"></select>
             </div>
-            <div class="calendar-month-events-list" id="calendarMonthEvents"></div>
+          </div>
+        </div>
+
+        <div class="week-timeline-layout">
+          <section class="week-timeline-board" id="timelineBoard"></section>
+
+          <aside class="week-timeline-sidepanel">
+            <div class="week-timeline-sidepanel-header">
+              <div>
+                <p class="calendar-day-panel-kicker">Выбранный день</p>
+                <h3 id="timelineSelectedDay"></h3>
+              </div>
+              <div class="week-timeline-week-meta" id="timelineWeekMeta"></div>
+            </div>
+
+            <div class="week-timeline-selected-list" id="timelineSelectedList"></div>
+
+            <form class="week-timeline-form" id="timelineDeadlineForm">
+              <input id="timelineDeadlineTitle" type="text" placeholder="Название дедлайна" aria-label="Название дедлайна">
+              <input id="timelineDeadlineTime" type="time" aria-label="Время дедлайна">
+              <button type="submit" class="calendar-event-submit" id="timelineDeadlineSubmit">Добавить дедлайн</button>
+              <button type="button" class="calendar-event-cancel" id="timelineDeadlineCancel" hidden>Отмена</button>
+            </form>
+
+            <section class="week-timeline-week-summary">
+              <div class="week-timeline-summary-header">
+                <p class="calendar-day-panel-kicker">Все дедлайны недели</p>
+                <h3 id="timelineSummaryTitle"></h3>
+              </div>
+              <div class="week-timeline-summary-list" id="timelineSummaryList"></div>
+            </section>
           </aside>
         </div>
       </section>

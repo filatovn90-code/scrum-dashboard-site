@@ -64,6 +64,7 @@ const seededBacklogData = {
 };
 
 const weekSelect = document.getElementById("weekSelect");
+const focusTodayPanel = document.getElementById("focusTodayPanel");
 const backlogSummary = document.getElementById("backlogSummary");
 const backlogBoard = document.getElementById("backlogBoard");
 const logoutButton = document.getElementById("logoutButton");
@@ -72,6 +73,8 @@ const activeUserLabels = Array.from(document.querySelectorAll("[data-active-user
 const BACKLOG_STORAGE_KEY = "scrum-master-backlog-data";
 const userBacklogStorageKey = `${BACKLOG_STORAGE_KEY}:${activeUser}`;
 const userBacklogWeekStorageKey = `scrum-master-backlog-week:${activeUser}`;
+const DAILY_FOCUS_STORAGE_KEY = "scrum-master-daily-focus";
+const DAILY_FOCUS_DAY_STORAGE_KEY = "scrum-master-daily-focus-day";
 const BACKLOG_YEAR = 2026;
 
 const timeline = [
@@ -101,6 +104,145 @@ function formatDate(date) {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   return `${day}.${month}`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function focusStorageKey(week, date) {
+  return `${DAILY_FOCUS_STORAGE_KEY}:${activeUser}:${week}:${date}`;
+}
+
+function focusSelectedDayStorageKey(week) {
+  return `${DAILY_FOCUS_DAY_STORAGE_KEY}:${activeUser}:${week}`;
+}
+
+function getFocusDays(week) {
+  return backlogData[week]?.days || [];
+}
+
+function getSelectedFocusDay(week) {
+  const days = getFocusDays(week);
+  if (!days.length) {
+    return "";
+  }
+
+  const stored = window.localStorage.getItem(focusSelectedDayStorageKey(week));
+  return days.some((day) => day.date === stored) ? stored : days[0].date;
+}
+
+function loadDailyFocus(week, date) {
+  const fallback = [0, 1, 2].map(() => ({ text: "", done: false }));
+  const raw = window.localStorage.getItem(focusStorageKey(week, date));
+
+  if (!raw) {
+    return fallback;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    return [0, 1, 2].map((index) => {
+      const item = parsed[index];
+      if (typeof item === "string") {
+        return { text: item, done: false };
+      }
+
+      return {
+        text: item?.text || "",
+        done: Boolean(item?.done)
+      };
+    });
+  } catch {
+    return fallback;
+  }
+}
+
+function saveDailyFocus(week, date, items) {
+  const normalized = items
+    .slice(0, 3)
+    .map((item) => ({
+      text: String(item?.text || "").trim(),
+      done: Boolean(item?.done)
+    }));
+  window.localStorage.setItem(focusStorageKey(week, date), JSON.stringify(normalized));
+}
+
+function renderDailyFocus(week = weekSelect.value) {
+  if (!focusTodayPanel) {
+    return;
+  }
+
+  const days = getFocusDays(week);
+  const selectedDate = getSelectedFocusDay(week);
+  const focusItems = loadDailyFocus(week, selectedDate);
+  const normalizedItems = [0, 1, 2].map((index) => focusItems[index] || { text: "", done: false });
+
+  focusTodayPanel.innerHTML = `
+    <div class="daily-focus-header">
+      <h3 class="daily-focus-title">\u0424\u043e\u043a\u0443\u0441 \u043d\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f</h3>
+    </div>
+    <div class="daily-focus-list">
+      ${normalizedItems.map((item, index) => `
+        <div class="daily-focus-item ${item.text.trim() ? "" : "is-empty"} ${item.done ? "is-done" : ""}">
+          <label class="daily-focus-check">
+            <input type="checkbox" ${item.done ? "checked" : ""} data-focus-done="${index}">
+            <span></span>
+          </label>
+          <input class="daily-focus-input" type="text" maxlength="160" value="${escapeHtml(item.text)}" placeholder="\u041f\u0443\u043d\u043a\u0442 ${index + 1}" data-focus-input="${index}">
+        </div>
+      `).join("")}
+    </div>
+  `;
+
+  const focusHeader = focusTodayPanel.querySelector('.daily-focus-header');
+  if (focusHeader) {
+    const daySelectControl = document.createElement('select');
+    daySelectControl.className = 'daily-focus-select';
+    daySelectControl.id = 'focusDaySelect';
+    daySelectControl.setAttribute('aria-label', '\u0412\u044b\u0431\u0440\u0430\u0442\u044c \u0434\u0435\u043d\u044c \u0444\u043e\u043a\u0443\u0441\u0430');
+    daySelectControl.innerHTML = days.map((day) => (
+      `<option value="${day.date}" ${day.date === selectedDate ? "selected" : ""}>${day.weekday} ? ${day.date}</option>`
+    )).join('');
+    focusHeader.appendChild(daySelectControl);
+  }
+
+  const daySelect = document.getElementById('focusDaySelect');
+  daySelect?.addEventListener('change', () => {
+    window.localStorage.setItem(focusSelectedDayStorageKey(week), daySelect.value);
+    renderDailyFocus(week);
+  });
+
+  function collectFocusState() {
+    return normalizedItems.map((_, index) => {
+      const textField = focusTodayPanel.querySelector(`[data-focus-input="${index}"]`);
+      const doneField = focusTodayPanel.querySelector(`[data-focus-done="${index}"]`);
+
+      return {
+        text: textField?.value.trim() || '',
+        done: Boolean(doneField?.checked)
+      };
+    });
+  }
+
+  focusTodayPanel.querySelectorAll('[data-focus-input]').forEach((input) => {
+    input.addEventListener('change', () => {
+      saveDailyFocus(week, daySelect?.value || selectedDate, collectFocusState());
+      renderDailyFocus(week);
+    });
+  });
+
+  focusTodayPanel.querySelectorAll('[data-focus-done]').forEach((checkbox) => {
+    checkbox.addEventListener('change', () => {
+      saveDailyFocus(week, daySelect?.value || selectedDate, collectFocusState());
+      renderDailyFocus(week);
+    });
+  });
 }
 
 function addDays(date, amount) {
@@ -275,8 +417,22 @@ function findTaskByKey(key) {
   return { day, task, week, date, id: value };
 }
 
+function statusSortOrder(status) {
+  if (status === "Р’ СЂР°Р±РѕС‚Рµ") return 0;
+  if (status === "Р—Р°РїР»Р°РЅРёСЂРѕРІР°РЅРѕ") return 1;
+  if (status === "РЎРґРµР»Р°РЅРѕ") return 2;
+  return 3;
+}
+
 function sortDayItems(day) {
-  day.items.sort((a, b) => timeline.indexOf(a.time) - timeline.indexOf(b.time));
+  day.items.sort((a, b) => {
+    const statusDiff = statusSortOrder(a.status) - statusSortOrder(b.status);
+    if (statusDiff !== 0) {
+      return statusDiff;
+    }
+
+    return timeline.indexOf(a.time) - timeline.indexOf(b.time);
+  });
 }
 
 function renderTimeOptions(day, selectedTime, originalTime = null) {
@@ -350,7 +506,7 @@ function renderTaskEditor(editorKey, day, defaults) {
     <div class="backlog-slot-cell is-editor">
       <div class="inline-task-editor" data-editor="${editorKey}">
         <input class="inline-task-input" type="text" placeholder="Задача" value="${defaults.text}" data-editor-text>
-        <div class="inline-task-row">
+        <div class="inline-task-row ${defaults.hideTime ? "is-single" : ""}">
           ${defaults.hideTime ? "" : `
             <select data-editor-time>
               ${renderTimeOptions(day, defaults.time, defaults.originalTime || defaults.time)}
@@ -593,8 +749,8 @@ function renderBacklog(week) {
         </div>
       </div>
       <div class="backlog-day-list" data-day-drop="${makeCreateKey(week, day.date)}">
-        ${day.items.map((item) => renderTaskCard(week, day, item)).join("")}
         ${renderDayCreateArea(week, day)}
+        ${day.items.map((item) => renderTaskCard(week, day, item)).join("")}
       </div>
     `;
     table.appendChild(column);
@@ -743,6 +899,7 @@ weekSelect.addEventListener("change", (event) => {
   activeEditorState = null;
   draggedTaskKey = null;
   window.localStorage.setItem(userBacklogWeekStorageKey, event.target.value);
+  renderDailyFocus(event.target.value);
   renderBacklog(event.target.value);
 });
 
@@ -751,4 +908,5 @@ logoutButton?.addEventListener("click", () => {
   window.location.replace("index.html");
 });
 
+renderDailyFocus(defaultWeek);
 renderBacklog(defaultWeek);
