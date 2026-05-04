@@ -207,7 +207,7 @@ function renderDailyFocus(week = weekSelect.value) {
     daySelectControl.id = 'focusDaySelect';
     daySelectControl.setAttribute('aria-label', '\u0412\u044b\u0431\u0440\u0430\u0442\u044c \u0434\u0435\u043d\u044c \u0444\u043e\u043a\u0443\u0441\u0430');
     daySelectControl.innerHTML = days.map((day) => (
-      `<option value="${day.date}" ${day.date === selectedDate ? "selected" : ""}>${day.weekday} ? ${day.date}</option>`
+      `<option value="${day.date}" ${day.date === selectedDate ? "selected" : ""}>${day.weekday} · ${day.date}</option>`
     )).join('');
     focusHeader.appendChild(daySelectControl);
   }
