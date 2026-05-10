@@ -1353,15 +1353,18 @@ textarea {
 
 .week-timeline-board {
   padding: 18px;
-  display: grid;
-  grid-template-columns: repeat(5, minmax(180px, 1fr));
+  display: flex;
   gap: 14px;
+  overflow-x: auto;
+  align-items: stretch;
 }
 
 .week-timeline-day {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 220px;
+  flex: 1 0 220px;
   padding: 14px;
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.72);
@@ -1403,81 +1406,58 @@ textarea {
 }
 
 .week-timeline-day-list {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-left: 18px;
-}
-
-.week-timeline-day-list::before {
-  content: "";
-  position: absolute;
-  left: 8px;
-  top: 4px;
-  bottom: 4px;
-  width: 2px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(201, 96, 96, 0.18) 0%, rgba(201, 96, 96, 0.38) 100%);
+  gap: 8px;
 }
 
 .week-timeline-card {
-  position: relative;
-  display: grid;
-  grid-template-columns: 72px 18px minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-  padding: 0;
-  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 12px 12px 14px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(201, 96, 96, 0.12);
+  border-left: 3px solid rgba(201, 96, 96, 0.45);
+  box-shadow: none;
 }
 
 .week-timeline-card-time {
   color: #a24e4e;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   white-space: nowrap;
 }
 
 .week-timeline-card-segment {
-  position: relative;
-  height: 12px;
-  display: flex;
-  align-items: center;
+  display: none;
 }
 
 .week-timeline-card-segment::before {
-  content: "";
-  width: 100%;
-  height: 3px;
-  border-radius: 999px;
-  background: rgba(201, 96, 96, 0.35);
+  display: none;
 }
 
 .week-timeline-card-dot {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  background: #c96060;
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.95);
+  display: none;
 }
 
 .week-timeline-card-copy {
-  padding: 12px 14px;
-  border-radius: 18px;
-  background: #ffffff;
-  border: 1px solid rgba(201, 96, 96, 0.14);
-  box-shadow: 0 10px 24px rgba(34, 49, 35, 0.06);
+  min-width: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .week-timeline-card-copy strong {
   display: block;
-  line-height: 1.45;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .week-timeline-empty {
@@ -1594,10 +1574,6 @@ textarea {
   .week-timeline-controls {
     width: 100%;
     justify-content: space-between;
-  }
-
-  .week-timeline-board {
-    grid-template-columns: repeat(5, minmax(220px, 1fr));
   }
 
   .week-timeline-form {
@@ -3026,5 +3002,156 @@ body {
   .dashboard-theme .goal-edit-grid,
   .dashboard-theme .inline-task-row {
     grid-template-columns: 1fr;
+  }
+}
+
+.ai-assistant-toggle {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 80;
+  min-height: 54px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 999px;
+  background: #154212;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 16px 36px rgba(21, 66, 18, 0.22);
+}
+
+.ai-assistant-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+}
+
+.ai-assistant-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 25, 12, 0.32);
+  backdrop-filter: blur(6px);
+}
+
+.ai-assistant-dialog {
+  position: relative;
+  width: min(560px, calc(100vw - 32px));
+  margin: 48px auto;
+  padding: 22px;
+  border: 1px solid rgba(21, 66, 18, 0.08);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(21, 66, 18, 0.16);
+}
+
+.ai-assistant-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ai-assistant-header h2 {
+  margin: 4px 0 0;
+  font-size: 1.7rem;
+}
+
+.ai-assistant-kicker {
+  margin: 0;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.ai-assistant-close {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--surface-line);
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--text);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ai-assistant-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 320px;
+  overflow: auto;
+  margin-bottom: 16px;
+  padding: 4px 2px;
+}
+
+.ai-message {
+  max-width: 92%;
+  padding: 14px 16px;
+  border-radius: 18px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.ai-message-user {
+  align-self: flex-end;
+  background: #154212;
+  color: #ffffff;
+}
+
+.ai-message-assistant {
+  align-self: flex-start;
+  background: #f2f7f0;
+  color: var(--text);
+  border: 1px solid rgba(21, 66, 18, 0.08);
+}
+
+.ai-assistant-form {
+  display: grid;
+  gap: 12px;
+}
+
+.ai-assistant-form textarea {
+  width: 100%;
+  min-height: 108px;
+  resize: vertical;
+  padding: 16px;
+  border: 1px solid var(--surface-line);
+  border-radius: 18px;
+  background: #fbfdf9;
+  color: var(--text);
+}
+
+.ai-assistant-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ai-assistant-status {
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 640px) {
+  .ai-assistant-dialog {
+    margin: 16px auto;
+    padding: 16px;
+  }
+
+  .ai-assistant-form-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ai-assistant-toggle {
+    right: 16px;
+    left: 16px;
+    bottom: 16px;
   }
 }

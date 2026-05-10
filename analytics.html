@@ -80,6 +80,33 @@
     </main>
   </div>
 
+  <button class="ai-assistant-toggle" id="aiAssistantToggle" type="button">Спросить AI</button>
+
+  <div class="ai-assistant-modal" id="aiAssistantModal" hidden>
+    <div class="ai-assistant-backdrop" id="aiAssistantBackdrop"></div>
+    <div class="ai-assistant-dialog">
+      <div class="ai-assistant-header">
+        <div>
+          <p class="ai-assistant-kicker">AI Assistant</p>
+          <h2>Спросить AI</h2>
+        </div>
+        <button class="ai-assistant-close" id="aiAssistantClose" type="button">×</button>
+      </div>
+      <div class="ai-assistant-messages" id="aiAssistantMessages">
+        <div class="ai-message ai-message-assistant">Можно спросить, что видно по аналитике и как интерпретировать распределение задач.</div>
+      </div>
+      <form class="ai-assistant-form" id="aiAssistantForm">
+        <textarea id="aiAssistantInput" placeholder="Напишите вопрос..." required></textarea>
+        <div class="ai-assistant-form-footer">
+          <span class="ai-assistant-status" id="aiAssistantStatus">Можно задать вопрос по работе и задачам.</span>
+          <button class="form-action-button" id="aiAssistantSubmit" type="submit">Отправить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="shared-storage.js"></script>
+  <script src="ai-assistant.js"></script>
   <script src="analytics.js"></script>
 </body>
 </html>

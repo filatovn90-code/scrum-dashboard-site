@@ -89,7 +89,7 @@ const seedData = {
 };
 
 let state = loadState();
-let activeUser = localStorage.getItem(AUTH_KEY) || "";
+let activeUser = window.appStorage.getItem(AUTH_KEY) || "";
 
 const goalGrid = document.getElementById("goalGrid");
 const metricsGrid = document.getElementById("metricsGrid");
@@ -119,7 +119,7 @@ function cloneSeedData() {
 
 function loadState() {
   try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+    const stored = JSON.parse(window.appStorage.getItem(STORAGE_KEY) || "null");
     if (!stored || !stored.metricsByQuarter || !stored.goalsByQuarter) {
       return cloneSeedData();
     }
@@ -130,7 +130,7 @@ function loadState() {
 }
 
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  window.appStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
 function isAuthenticated() {
@@ -418,7 +418,7 @@ function handleAuthSubmit(event) {
   }
 
   activeUser = user;
-  localStorage.setItem(AUTH_KEY, activeUser);
+  window.appStorage.setItem(AUTH_KEY, activeUser);
   closeAuthModal();
   updateAuthUi();
   renderAll();
@@ -426,7 +426,7 @@ function handleAuthSubmit(event) {
 
 function logout() {
   activeUser = "";
-  localStorage.removeItem(AUTH_KEY);
+  window.appStorage.removeItem(AUTH_KEY);
   updateAuthUi();
   renderAll();
 }

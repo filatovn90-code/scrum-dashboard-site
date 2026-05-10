@@ -1,10 +1,10 @@
 const AUTH_KEY = "scrum-dashboard-auth-user";
 
-if (!window.localStorage.getItem(AUTH_KEY)) {
+if (!window.appStorage.getItem(AUTH_KEY)) {
   window.location.replace("index.html");
 }
 
-const activeUser = window.localStorage.getItem(AUTH_KEY);
+const activeUser = window.appStorage.getItem(AUTH_KEY);
 const logoutButton = document.getElementById("logoutButton");
 const analyticsWeekPicker = document.getElementById("analyticsWeekPicker");
 const analyticsWeeksTrigger = document.getElementById("analyticsWeeksTrigger");
@@ -52,8 +52,8 @@ const fallbackBacklogData = {
 };
 
 function loadBacklogData() {
-  const userRaw = window.localStorage.getItem(userBacklogStorageKey);
-  const legacyRaw = window.localStorage.getItem(BACKLOG_STORAGE_KEY);
+  const userRaw = window.appStorage.getItem(userBacklogStorageKey);
+  const legacyRaw = window.appStorage.getItem(BACKLOG_STORAGE_KEY);
   const raw = userRaw || legacyRaw;
 
   if (!raw) {
@@ -123,11 +123,11 @@ function getBarHeight(value, maxValue) {
 
 const backlogData = loadBacklogData();
 const weekNames = Object.keys(backlogData).sort((a, b) => weekStartValue(a) - weekStartValue(b));
-const storedSingleWeek = window.localStorage.getItem(userBacklogWeekStorageKey);
+const storedSingleWeek = window.appStorage.getItem(userBacklogWeekStorageKey);
 
 function loadSelectedWeeks() {
   try {
-    const stored = JSON.parse(window.localStorage.getItem(userAnalyticsWeeksStorageKey) || "null");
+    const stored = JSON.parse(window.appStorage.getItem(userAnalyticsWeeksStorageKey) || "null");
     if (Array.isArray(stored)) {
       const filtered = stored.filter((week) => weekNames.includes(week));
       if (filtered.length) {
@@ -148,7 +148,7 @@ function loadSelectedWeeks() {
 let activeWeeks = loadSelectedWeeks();
 
 function saveSelectedWeeks() {
-  window.localStorage.setItem(userAnalyticsWeeksStorageKey, JSON.stringify(activeWeeks));
+  window.appStorage.setItem(userAnalyticsWeeksStorageKey, JSON.stringify(activeWeeks));
 }
 
 function updateTriggerLabel() {
@@ -434,7 +434,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 logoutButton?.addEventListener("click", () => {
-  window.localStorage.removeItem(AUTH_KEY);
+  window.appStorage.removeItem(AUTH_KEY);
   window.location.replace("index.html");
 });
 

@@ -1,10 +1,10 @@
 const AUTH_KEY = "scrum-dashboard-auth-user";
 
-if (!window.localStorage.getItem(AUTH_KEY)) {
+if (!window.appStorage.getItem(AUTH_KEY)) {
   window.location.replace("index.html");
 }
 
-const activeUser = window.localStorage.getItem(AUTH_KEY);
+const activeUser = window.appStorage.getItem(AUTH_KEY);
 
 const TIMELINE_STORAGE_KEY = "scrum-master-calendar-data";
 const TIMELINE_WEEK_STORAGE_KEY = "scrum-master-calendar-week";
@@ -259,8 +259,8 @@ function convertLegacyCalendarData(legacy) {
 
 function loadTimelineData() {
   const template = mergeWeekData(generateWeeksUntilYearEnd(), seededTimelineData);
-  const raw = window.localStorage.getItem(userTimelineStorageKey);
-  const legacyRaw = window.localStorage.getItem(TIMELINE_STORAGE_KEY);
+  const raw = window.appStorage.getItem(userTimelineStorageKey);
+  const legacyRaw = window.appStorage.getItem(TIMELINE_STORAGE_KEY);
 
   if (!raw && legacyRaw) {
     try {
@@ -268,13 +268,13 @@ function loadTimelineData() {
       const legacyConverted = Object.values(parsedLegacy || {}).some((entry) => Array.isArray(entry?.events))
         ? convertLegacyCalendarData(parsedLegacy)
         : parsedLegacy;
-      window.localStorage.setItem(userTimelineStorageKey, JSON.stringify(legacyConverted));
+      window.appStorage.setItem(userTimelineStorageKey, JSON.stringify(legacyConverted));
     } catch {
       // ignore copy failure
     }
   }
 
-  const resolvedRaw = raw || window.localStorage.getItem(userTimelineStorageKey);
+  const resolvedRaw = raw || window.appStorage.getItem(userTimelineStorageKey);
   if (!resolvedRaw) {
     return template;
   }
@@ -291,7 +291,7 @@ function loadTimelineData() {
 }
 
 function saveTimelineData() {
-  window.localStorage.setItem(userTimelineStorageKey, JSON.stringify(timelineData));
+  window.appStorage.setItem(userTimelineStorageKey, JSON.stringify(timelineData));
 }
 
 function getCurrentWeekLabel() {
@@ -303,7 +303,7 @@ function getCurrentWeekLabel() {
 }
 
 function resolveDefaultWeek() {
-  const storedWeek = window.localStorage.getItem(userTimelineWeekStorageKey);
+  const storedWeek = window.appStorage.getItem(userTimelineWeekStorageKey);
   return weekNames.includes(storedWeek) ? storedWeek : getCurrentWeekLabel();
 }
 
@@ -317,7 +317,7 @@ function resolveSelectedDay(week) {
     return "";
   }
 
-  const storedDay = window.localStorage.getItem(focusDayStorageKey(week));
+  const storedDay = window.appStorage.getItem(focusDayStorageKey(week));
   return days.some((day) => day.date === storedDay) ? storedDay : days[0].date;
 }
 
@@ -470,7 +470,7 @@ function bindTimelineActions() {
   timelineBoard.querySelectorAll("[data-day-select]").forEach((element) => {
     element.addEventListener("click", () => {
       selectedDay = element.dataset.daySelect;
-      window.localStorage.setItem(focusDayStorageKey(activeWeek), selectedDay);
+      window.appStorage.setItem(focusDayStorageKey(activeWeek), selectedDay);
       resetDeadlineForm();
       renderTimeline(activeWeek);
     });
@@ -480,7 +480,7 @@ function bindTimelineActions() {
     button.addEventListener("click", (event) => {
       event.stopPropagation();
       selectedDay = button.dataset.dayAdd;
-      window.localStorage.setItem(focusDayStorageKey(activeWeek), selectedDay);
+      window.appStorage.setItem(focusDayStorageKey(activeWeek), selectedDay);
       resetDeadlineForm();
       renderTimeline(activeWeek);
       deadlineTitleInput.focus();
@@ -541,7 +541,7 @@ function moveWeek(direction) {
   }
 
   resetDeadlineForm();
-  window.localStorage.setItem(userTimelineWeekStorageKey, weekNames[nextIndex]);
+  window.appStorage.setItem(userTimelineWeekStorageKey, weekNames[nextIndex]);
   renderTimeline(weekNames[nextIndex]);
 }
 
@@ -585,7 +585,7 @@ deadlineCancelButton.addEventListener("click", () => {
 
 weekSelect.addEventListener("change", (event) => {
   resetDeadlineForm();
-  window.localStorage.setItem(userTimelineWeekStorageKey, event.target.value);
+  window.appStorage.setItem(userTimelineWeekStorageKey, event.target.value);
   renderTimeline(event.target.value);
 });
 
@@ -593,7 +593,7 @@ prevWeekButton?.addEventListener("click", () => moveWeek(-1));
 nextWeekButton?.addEventListener("click", () => moveWeek(1));
 
 logoutButton?.addEventListener("click", () => {
-  window.localStorage.removeItem(AUTH_KEY);
+  window.appStorage.removeItem(AUTH_KEY);
   window.location.replace("index.html");
 });
 

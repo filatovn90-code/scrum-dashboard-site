@@ -1,10 +1,10 @@
 const AUTH_KEY = "scrum-dashboard-auth-user";
 
-if (!window.localStorage.getItem(AUTH_KEY)) {
+if (!window.appStorage.getItem(AUTH_KEY)) {
   window.location.replace("index.html");
 }
 
-const activeUser = window.localStorage.getItem(AUTH_KEY);
+const activeUser = window.appStorage.getItem(AUTH_KEY);
 
 const seededBacklogData = {
   "Неделя 20.04 - 24.04": {
@@ -133,13 +133,13 @@ function getSelectedFocusDay(week) {
     return "";
   }
 
-  const stored = window.localStorage.getItem(focusSelectedDayStorageKey(week));
+  const stored = window.appStorage.getItem(focusSelectedDayStorageKey(week));
   return days.some((day) => day.date === stored) ? stored : days[0].date;
 }
 
 function loadDailyFocus(week, date) {
   const fallback = [0, 1, 2].map(() => ({ text: "", done: false }));
-  const raw = window.localStorage.getItem(focusStorageKey(week, date));
+  const raw = window.appStorage.getItem(focusStorageKey(week, date));
 
   if (!raw) {
     return fallback;
@@ -170,7 +170,7 @@ function saveDailyFocus(week, date, items) {
       text: String(item?.text || "").trim(),
       done: Boolean(item?.done)
     }));
-  window.localStorage.setItem(focusStorageKey(week, date), JSON.stringify(normalized));
+  window.appStorage.setItem(focusStorageKey(week, date), JSON.stringify(normalized));
 }
 
 function renderDailyFocus(week = weekSelect.value) {
@@ -214,7 +214,7 @@ function renderDailyFocus(week = weekSelect.value) {
 
   const daySelect = document.getElementById('focusDaySelect');
   daySelect?.addEventListener('change', () => {
-    window.localStorage.setItem(focusSelectedDayStorageKey(week), daySelect.value);
+    window.appStorage.setItem(focusSelectedDayStorageKey(week), daySelect.value);
     renderDailyFocus(week);
   });
 
@@ -357,12 +357,12 @@ function normalizeStoredData(template, stored) {
 }
 
 function loadBacklogData(template) {
-  const raw = window.localStorage.getItem(userBacklogStorageKey);
-  const legacyRaw = window.localStorage.getItem(BACKLOG_STORAGE_KEY);
+  const raw = window.appStorage.getItem(userBacklogStorageKey);
+  const legacyRaw = window.appStorage.getItem(BACKLOG_STORAGE_KEY);
 
   if (!raw && legacyRaw) {
     try {
-      window.localStorage.setItem(userBacklogStorageKey, legacyRaw);
+      window.appStorage.setItem(userBacklogStorageKey, legacyRaw);
     } catch {
       // ignore copy issue
     }
@@ -382,7 +382,7 @@ function loadBacklogData(template) {
 }
 
 function saveBacklogData() {
-  window.localStorage.setItem(userBacklogStorageKey, JSON.stringify(backlogData));
+  window.appStorage.setItem(userBacklogStorageKey, JSON.stringify(backlogData));
 }
 
 function parseKey(key) {
@@ -449,7 +449,7 @@ function getNextAvailableTime(day) {
 const defaultBacklogData = mergeWeekData(generateWeeksUntilYearEnd(), seededBacklogData);
 const backlogData = loadBacklogData(defaultBacklogData);
 const weekNames = Object.keys(backlogData).sort((a, b) => weekStartValue(a) - weekStartValue(b));
-const storedWeek = window.localStorage.getItem(userBacklogWeekStorageKey);
+const storedWeek = window.appStorage.getItem(userBacklogWeekStorageKey);
 const defaultWeek = weekNames.includes(storedWeek) ? storedWeek : weekNames[0];
 
 const weeksByMonth = weekNames.reduce((groups, week) => {
@@ -898,13 +898,13 @@ function bindBoardActions() {
 weekSelect.addEventListener("change", (event) => {
   activeEditorState = null;
   draggedTaskKey = null;
-  window.localStorage.setItem(userBacklogWeekStorageKey, event.target.value);
+  window.appStorage.setItem(userBacklogWeekStorageKey, event.target.value);
   renderDailyFocus(event.target.value);
   renderBacklog(event.target.value);
 });
 
 logoutButton?.addEventListener("click", () => {
-  window.localStorage.removeItem(AUTH_KEY);
+  window.appStorage.removeItem(AUTH_KEY);
   window.location.replace("index.html");
 });
 
