@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Аниме</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell page-shell-wide">
+    <header class="site-header">
+      <div class="site-brand">
+        <p class="section-kicker">Scrum Dashboard</p>
+        <h1>Аниме</h1>
+      </div>
+
+      <div class="site-header-actions">
+        <nav class="site-nav" aria-label="Основная навигация">
+          <a class="nav-link" href="index.html">Метрики</a>
+          <a class="nav-link" href="calendar.html">Календарь</a>
+          <a class="nav-link" href="backlog.html">Бэклог</a>
+          <a class="nav-link" href="analytics.html">Аналитика</a>
+          <a class="nav-link" href="health.html">Здоровье</a>
+          <a class="nav-link" href="books.html">Книги</a>
+          <a class="nav-link is-active" href="anime.html">Аниме</a>
+        </nav>
+        <button class="login-button" id="logoutButton" type="button">Выход</button>
+      </div>
+    </header>
+
+    <main class="books-main">
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Anime list</p>
+            <h2 class="dashboard-section-title">Мой список аниме</h2>
+          </div>
+        </div>
+
+        <form class="books-add-form" id="animeAddForm">
+          <input id="animeTitleInput" type="text" placeholder="Название аниме" required>
+          <input id="animeNoteInput" type="text" placeholder="Комментарий или сезон">
+          <button class="form-action-button" type="submit">Добавить</button>
+        </form>
+      </section>
+
+      <section class="books-board">
+        <article class="section books-column">
+          <div class="books-column-header">
+            <div>
+              <p class="section-kicker">To watch</p>
+              <h3>Нужно посмотреть</h3>
+            </div>
+            <span class="books-count" id="animePlannedCount">0</span>
+          </div>
+          <div class="books-list" id="animePlannedList"></div>
+        </article>
+
+        <article class="section books-column">
+          <div class="books-column-header">
+            <div>
+              <p class="section-kicker">Completed</p>
+              <h3>Уже посмотрел</h3>
+            </div>
+            <span class="books-count" id="animeWatchedCount">0</span>
+          </div>
+          <div class="books-list" id="animeWatchedList"></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <button class="ai-assistant-toggle" id="aiAssistantToggle" type="button">Спросить AI</button>
+
+  <div class="ai-assistant-modal" id="aiAssistantModal" hidden>
+    <div class="ai-assistant-backdrop" id="aiAssistantBackdrop"></div>
+    <div class="ai-assistant-dialog">
+      <div class="ai-assistant-header">
+        <div>
+          <p class="ai-assistant-kicker">AI Assistant</p>
+          <h2>Спросить AI</h2>
+        </div>
+        <button class="ai-assistant-close" id="aiAssistantClose" type="button">×</button>
+      </div>
+      <div class="ai-assistant-messages" id="aiAssistantMessages">
+        <div class="ai-message ai-message-assistant">Можно попросить подобрать аниме по жанру, настроению или составить порядок просмотра.</div>
+      </div>
+      <form class="ai-assistant-form" id="aiAssistantForm">
+        <textarea id="aiAssistantInput" placeholder="Напишите вопрос..." required></textarea>
+        <div class="ai-assistant-form-footer">
+          <span class="ai-assistant-status" id="aiAssistantStatus">Можно задать вопрос по аниме и просмотру.</span>
+          <button class="form-action-button" id="aiAssistantSubmit" type="submit">Отправить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="shared-storage.js"></script>
+  <script src="ai-assistant.js"></script>
+  <script src="anime.js"></script>
+</body>
+</html>

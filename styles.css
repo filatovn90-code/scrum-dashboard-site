@@ -3155,3 +3155,311 @@ body {
     bottom: 16px;
   }
 }
+
+.health-main {
+  display: grid;
+  gap: 18px;
+}
+
+.health-import-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.health-import-chip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #f2f7f0;
+  color: var(--text-soft);
+  font-weight: 700;
+}
+
+.health-upload-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.health-file-input {
+  flex: 1;
+  min-width: 260px;
+  padding: 14px 16px;
+  border: 1px solid var(--surface-line);
+  border-radius: 18px;
+  background: #fbfdf9;
+  color: var(--text);
+}
+
+.health-import-status {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #f2f7f0;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+.health-import-status.is-error {
+  background: #fff0ef;
+  color: #b42318;
+}
+
+.health-range-switch {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.health-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.health-summary-card,
+.health-chart-card {
+  padding: 18px;
+  border: 1px solid var(--surface-line);
+  border-radius: 24px;
+  background: #ffffff;
+}
+
+.health-summary-card p {
+  margin: 0 0 10px;
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+
+.health-summary-card strong {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+
+.health-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.health-chart-card h3 {
+  margin: 0 0 12px;
+}
+
+.health-chart {
+  min-height: 240px;
+}
+
+.health-chart-svg {
+  width: 100%;
+  height: 220px;
+  overflow: visible;
+}
+
+.health-axis {
+  stroke: #d9e5d7;
+  stroke-width: 1.5;
+}
+
+.health-line {
+  stroke: #154212;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.health-line-secondary {
+  stroke: #6d9f47;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.health-dot {
+  fill: #154212;
+}
+
+.health-bar {
+  fill: #154212;
+  opacity: 0.86;
+}
+
+.health-label {
+  fill: #667267;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.health-dual-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+.health-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: #154212;
+}
+
+.health-legend-dot-secondary {
+  background: #6d9f47;
+}
+
+.health-chart-empty,
+.health-empty-row {
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.health-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  border: 1px dashed var(--surface-line);
+  border-radius: 18px;
+  background: #fbfdf9;
+}
+
+.health-table-wrap {
+  overflow-x: auto;
+}
+
+.health-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.health-table th,
+.health-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #edf2eb;
+  text-align: left;
+}
+
+.health-table th {
+  color: var(--text-soft);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 960px) {
+  .health-summary-grid,
+  .health-charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.books-main {
+  display: grid;
+  gap: 18px;
+}
+
+.books-add-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto;
+  gap: 12px;
+}
+
+.books-add-form input {
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--surface-line);
+  border-radius: 18px;
+  background: #fbfdf9;
+  color: var(--text);
+}
+
+.books-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.books-column {
+  min-height: 420px;
+}
+
+.books-column-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.books-column-header h3 {
+  margin: 4px 0 0;
+  font-size: 1.55rem;
+}
+
+.books-count {
+  min-width: 42px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #f2f7f0;
+  color: var(--text-soft);
+  font-weight: 800;
+}
+
+.books-list {
+  display: grid;
+  gap: 12px;
+}
+
+.books-card {
+  padding: 18px;
+  border: 1px solid var(--surface-line);
+  border-radius: 22px;
+  background: #ffffff;
+}
+
+.books-card-copy h4 {
+  margin: 0 0 6px;
+  font-size: 1.08rem;
+  line-height: 1.35;
+}
+
+.books-card-copy p {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+.books-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.books-delete-button {
+  color: #b42318;
+}
+
+.books-empty {
+  padding: 18px;
+  border: 1px dashed var(--surface-line);
+  border-radius: 18px;
+  color: var(--text-soft);
+  text-align: center;
+  background: #fbfdf9;
+}
+
+@media (max-width: 960px) {
+  .books-board,
+  .books-add-form {
+    grid-template-columns: 1fr;
+  }
+}
