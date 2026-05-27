@@ -7,7 +7,8 @@
   const links = [
     { href: "health.html", label: "Здоровье" },
     { href: "books.html", label: "Книги" },
-    { href: "anime.html", label: "Аниме" }
+    { href: "anime.html", label: "Аниме" },
+    { href: "books-title.html", label: "Фильмы" }
   ];
 
   links.forEach(({ href, label }) => {
