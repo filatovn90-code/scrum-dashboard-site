@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сегодня - FocusFlow</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell page-shell-wide today-page">
+    <header class="site-header">
+      <div class="site-brand">
+        <p class="section-kicker">Scrum Dashboard</p>
+        <h1>Сегодня</h1>
+      </div>
+
+      <div class="site-header-actions">
+        <nav class="site-nav" aria-label="Основная навигация">
+          <a class="nav-link is-active" href="today.html">Сегодня</a>
+          <a class="nav-link" href="calendar.html">Календарь</a>
+          <a class="nav-link" href="backlog.html">Бэклог</a>
+          <a class="nav-link" href="analytics.html">Аналитика</a>
+        </nav>
+        <button class="login-button" id="todayLogoutButton" type="button">Выход</button>
+      </div>
+    </header>
+
+    <main class="today-main">
+      <section class="section today-hero-card">
+        <div>
+          <p class="section-kicker">Energy-aware planning</p>
+          <h2 class="dashboard-section-title">Собери реалистичный день без перегруза</h2>
+          <p class="today-hero-copy">
+            Экран помогает понять текущее состояние и оценить, насколько день выглядит комфортным по нагрузке.
+          </p>
+        </div>
+        <div class="health-import-chip" id="todaySessionBadge">Загружаю профиль...</div>
+      </section>
+
+      <div class="auth-status-box today-status-box" id="todayPageStatus" hidden></div>
+
+      <section class="today-grid">
+        <article class="section today-checkin-card">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Daily Check-in</p>
+              <h2 class="dashboard-section-title">Как ты сегодня?</h2>
+              <p class="today-section-copy">Оцени состояние перед планированием дня</p>
+            </div>
+          </div>
+
+          <form id="todayCheckinForm" class="today-checkin-form">
+            <label class="today-range-field">
+              <div class="today-range-copy">
+                <strong>Энергия</strong>
+                <span>Сколько сил сегодня?</span>
+              </div>
+              <div class="today-range-control">
+                <input id="todayEnergyInput" type="range" min="1" max="10" value="6">
+                <output id="todayEnergyValue">6</output>
+              </div>
+            </label>
+
+            <label class="today-range-field">
+              <div class="today-range-copy">
+                <strong>Стресс</strong>
+                <span>Насколько напряженно себя чувствуешь?</span>
+              </div>
+              <div class="today-range-control">
+                <input id="todayStressInput" type="range" min="1" max="10" value="4">
+                <output id="todayStressValue">4</output>
+              </div>
+            </label>
+
+            <label class="today-range-field">
+              <div class="today-range-copy">
+                <strong>Фокус</strong>
+                <span>Насколько легко концентрироваться?</span>
+              </div>
+              <div class="today-range-control">
+                <input id="todayFocusInput" type="range" min="1" max="10" value="6">
+                <output id="todayFocusValue">6</output>
+              </div>
+            </label>
+
+            <div class="today-checkin-selects">
+              <label class="auth-field">
+                <span>Сон</span>
+                <select id="todaySleepSelect">
+                  <option value="">Выбрать</option>
+                  <option value="Плохо">Плохо</option>
+                  <option value="Нормально">Нормально</option>
+                  <option value="Хорошо">Хорошо</option>
+                </select>
+              </label>
+
+              <label class="auth-field">
+                <span>Настроение</span>
+                <select id="todayMoodSelect">
+                  <option value="">Выбрать</option>
+                  <option value="Спокойное">Спокойное</option>
+                  <option value="Нейтральное">Нейтральное</option>
+                  <option value="Тревожное">Тревожное</option>
+                  <option value="Раздраженное">Раздраженное</option>
+                  <option value="Воодушевленное">Воодушевленное</option>
+                  <option value="Уставшее">Уставшее</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="today-card-actions">
+              <button class="form-action-button" id="todayCheckinSubmit" type="submit">Сохранить состояние</button>
+            </div>
+          </form>
+
+          <div class="auth-status-box" id="todayCheckinStatus">Можно сохранить состояние за сегодня.</div>
+        </article>
+
+        <article class="section today-capacity-card">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Capacity</p>
+              <h2 class="dashboard-section-title">Когнитивная емкость</h2>
+              <p class="today-section-copy">Оценка нагрузки на основе сегодняшнего состояния</p>
+            </div>
+          </div>
+
+          <div class="today-capacity-head">
+            <strong id="todayCapacityPercent">0%</strong>
+            <span id="todayCapacityLabel" class="today-capacity-badge">Нормальная нагрузка</span>
+          </div>
+          <div class="today-capacity-bar">
+            <span id="todayCapacityBar"></span>
+          </div>
+          <p id="todayCapacityNote" class="today-capacity-note"></p>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="shared-storage.js"></script>
+  <script type="module" src="today.js"></script>
+</body>
+</html>

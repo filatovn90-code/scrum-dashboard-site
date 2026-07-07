@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Регистрация — FocusFlow</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell page-shell-wide auth-route-page">
+    <header class="site-header">
+      <div class="site-brand">
+        <p class="section-kicker">FocusFlow</p>
+        <h1>Создать аккаунт</h1>
+      </div>
+      <div class="site-header-actions">
+        <nav class="site-nav" aria-label="Навигация">
+          <a class="nav-link" href="index.html">Главная</a>
+          <a class="nav-link" href="login.html">Войти</a>
+          <a class="nav-link is-active" href="signup.html">Начать бесплатно</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="auth-route-main">
+      <section class="section auth-route-card">
+        <p class="section-kicker">Sign up</p>
+        <h2 class="dashboard-section-title">Откройте личное приложение</h2>
+        <p class="auth-route-copy">После регистрации профиль будет создан автоматически, а вы сразу попадёте в защищённую зону.</p>
+
+        <form id="signupPageForm" class="auth-page-form">
+          <input id="signupPageEmail" type="email" placeholder="Email" required>
+          <input id="signupPagePassword" type="password" placeholder="Пароль" required>
+          <input id="signupPagePasswordRepeat" type="password" placeholder="Повторите пароль" required>
+          <button id="signupPageSubmit" class="form-action-button" type="submit">Создать аккаунт</button>
+        </form>
+
+        <div id="signupPageStatus" class="auth-status-box">Используйте рабочий email, который будете дальше использовать для входа.</div>
+
+        <div class="auth-page-actions">
+          <a class="ghost-button auth-page-link" href="login.html">Уже есть аккаунт?</a>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="shared-storage.js"></script>
+  <script type="module" src="signup.js"></script>
+</body>
+</html>

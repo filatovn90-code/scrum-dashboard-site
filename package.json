@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@supabase/supabase-js": "^2.50.0",
     "busboy": "^1.6.0",
     "openai": "^6.0.0",
     "pg": "^8.16.0",

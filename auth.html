@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Аккаунт</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell page-shell-wide">
+    <header class="site-header">
+      <div class="site-brand">
+        <p class="section-kicker">Scrum Dashboard</p>
+        <h1>Аккаунт</h1>
+      </div>
+
+      <div class="site-header-actions">
+        <nav class="site-nav" aria-label="Основная навигация">
+          <a class="nav-link" href="index.html">Главная</a>
+          <a class="nav-link" href="projects.html">Projects</a>
+          <a class="nav-link is-active" href="auth.html">Аккаунт</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="auth-page-main">
+      <section class="section auth-page-grid">
+        <article class="auth-page-card">
+          <p class="section-kicker">Sign up</p>
+          <h2 class="dashboard-section-title">Регистрация</h2>
+          <form id="registerForm" class="auth-page-form">
+            <input id="registerEmail" type="email" placeholder="Email" required>
+            <input id="registerPassword" type="password" placeholder="Пароль" required>
+            <button class="form-action-button" type="submit">Зарегистрироваться</button>
+          </form>
+        </article>
+
+        <article class="auth-page-card">
+          <p class="section-kicker">Sign in</p>
+          <h2 class="dashboard-section-title">Вход</h2>
+          <form id="loginForm" class="auth-page-form">
+            <input id="loginEmail" type="email" placeholder="Email" required>
+            <input id="loginPassword" type="password" placeholder="Пароль" required>
+            <button class="form-action-button" type="submit">Войти</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="section">
+        <p class="section-kicker">Session</p>
+        <h2 class="dashboard-section-title">Текущий статус</h2>
+        <div id="authStatus" class="auth-status-box">Проверяю сессию...</div>
+        <div class="auth-page-actions">
+          <a class="ghost-button auth-page-link" href="projects.html">Открыть Projects</a>
+          <button id="logoutSupabaseButton" class="ghost-button" type="button">Выйти</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="auth.js"></script>
+</body>
+</html>

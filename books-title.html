@@ -2,48 +2,13 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=today.html">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Фильмы</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Перенаправление...</title>
 </head>
 <body>
-  <div class="page-shell page-shell-wide">
-    <header class="site-header">
-      <div class="site-brand">
-        <p class="section-kicker">Scrum Dashboard</p>
-        <h1>Фильмы</h1>
-      </div>
-
-      <div class="site-header-actions">
-        <nav class="site-nav" aria-label="Основная навигация">
-          <a class="nav-link" href="index.html">Метрики</a>
-          <a class="nav-link" href="calendar.html">Календарь</a>
-          <a class="nav-link" href="backlog.html">Бэклог</a>
-          <a class="nav-link" href="analytics.html">Аналитика</a>
-          <a class="nav-link" href="health.html">Здоровье</a>
-          <a class="nav-link" href="books.html">Книги</a>
-          <a class="nav-link" href="anime.html">Аниме</a>
-          <a class="nav-link is-active" href="books-title.html">Фильмы</a>
-        </nav>
-        <button class="login-button" id="logoutButton" type="button">Выход</button>
-      </div>
-    </header>
-
-    <main>
-      <section class="section">
-        <h2 class="dashboard-section-title">Фильмы</h2>
-      </section>
-    </main>
-  </div>
-
-  <script src="shared-storage.js"></script>
-  <script src="nav-health-link.js"></script>
   <script>
-    const logoutButton = document.getElementById("logoutButton");
-    logoutButton?.addEventListener("click", () => {
-      window.appStorage.removeItem("scrum-dashboard-auth-user");
-      window.location.replace("index.html");
-    });
+    window.location.replace("today.html");
   </script>
 </body>
 </html>

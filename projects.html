@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell page-shell-wide">
+    <header class="site-header">
+      <div class="site-brand">
+        <p class="section-kicker">Scrum Dashboard</p>
+        <h1>Projects</h1>
+      </div>
+
+      <div class="site-header-actions">
+        <nav class="site-nav" aria-label="Основная навигация">
+          <a class="nav-link" href="index.html">Главная</a>
+          <a class="nav-link is-active" href="projects.html">Projects</a>
+          <a class="nav-link" href="auth.html">Аккаунт</a>
+        </nav>
+        <button id="projectsLogoutButton" class="login-button" type="button">Выйти</button>
+      </div>
+    </header>
+
+    <main class="projects-main">
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Workspace</p>
+            <h2 class="dashboard-section-title">Мои проекты</h2>
+          </div>
+          <div id="projectsUserBadge" class="health-import-chip">Проверяю пользователя...</div>
+        </div>
+
+        <form id="projectForm" class="projects-create-form">
+          <input id="projectTitleInput" type="text" placeholder="Название проекта" required>
+          <input id="projectDescriptionInput" type="text" placeholder="Краткое описание">
+          <button class="form-action-button" type="submit">Создать проект</button>
+        </form>
+      </section>
+
+      <section class="projects-grid" id="projectsGrid"></section>
+    </main>
+  </div>
+
+  <script type="module" src="projects.js"></script>
+</body>
+</html>

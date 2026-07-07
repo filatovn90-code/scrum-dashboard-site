@@ -137,6 +137,10 @@ function isAuthenticated() {
   return Boolean(activeUser);
 }
 
+function isSupabaseSessionUser() {
+  return typeof activeUser === "string" && activeUser.includes("@");
+}
+
 function isEditingEnabled() {
   return activeUser === "Филатов";
 }
@@ -436,6 +440,10 @@ function updateAuthUi() {
     loginToggle.textContent = "Вход";
     editModeBanner.hidden = true;
     goalCreateForm.hidden = true;
+  } else if (isSupabaseSessionUser()) {
+    loginToggle.textContent = "Профиль";
+    editModeBanner.hidden = true;
+    goalCreateForm.hidden = true;
   } else if (isEditingEnabled()) {
     loginToggle.textContent = "Выход";
     editModeText.textContent = `Режим редактирования: ${activeUser}`;
@@ -533,7 +541,9 @@ quarterSelect.addEventListener("change", (event) => {
 
 goalCreateForm.addEventListener("submit", handleGoalCreate);
 loginToggle.addEventListener("click", () => {
-  if (isEditingEnabled()) {
+  if (isSupabaseSessionUser()) {
+    window.location.href = "profile.html";
+  } else if (isEditingEnabled()) {
     logout();
   } else {
     openAuthModal();

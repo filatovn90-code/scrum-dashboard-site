@@ -3,131 +3,153 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Личный кабинет скрам-мастера</title>
+  <title>FocusFlow — личный SaaS-трекер задач</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="page-shell">
-    <header class="site-header">
+  <div class="page-shell page-shell-wide landing-page">
+    <header class="site-header landing-header">
       <div class="site-brand">
-        <p class="section-kicker">Scrum Dashboard</p>
-        <h1>Личный кабинет скрам-мастера</h1>
+        <p class="section-kicker">FocusFlow</p>
+        <h1>Личный таск-трекер для задач, энергии и фокуса</h1>
       </div>
 
       <div class="site-header-actions">
-        <nav class="site-nav" aria-label="Основная навигация">
-          <a class="nav-link is-active" href="index.html">Метрики</a>
-          <a class="nav-link" href="calendar.html">Календарь</a>
-          <a class="nav-link" href="backlog.html">Бэклог</a>
-          <a class="nav-link" href="analytics.html">Аналитика</a>
+        <nav class="site-nav" aria-label="Публичная навигация">
+          <a class="nav-link is-active" href="index.html">Главная</a>
+          <a class="nav-link" href="login.html">Войти</a>
+          <a class="nav-link" href="signup.html">Начать бесплатно</a>
         </nav>
-        <button class="login-button" id="loginToggle" type="button">Вход</button>
       </div>
     </header>
 
-    <main class="dashboard-main">
-      <div class="edit-mode-banner" id="editModeBanner" hidden>
-        <span id="editModeText">Режим редактирования</span>
-      </div>
-
-      <section class="section metrics-section">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Metrics</p>
-            <h2 class="dashboard-section-title">Метрики</h2>
+    <main class="landing-main">
+      <section class="section landing-hero">
+        <div class="landing-hero-copy">
+          <p class="section-kicker">Personal SaaS Tracker</p>
+          <h2 class="landing-title">Управляйте задачами с учётом энергии, фокуса и когнитивной нагрузки</h2>
+          <p class="landing-description">
+            FocusFlow помогает планировать задачи, держать под контролем нагрузку, вести ежедневный check-in
+            и видеть персональную аналитику без лишнего шума.
+          </p>
+          <div class="landing-actions">
+            <a class="form-action-button landing-action-link" href="signup.html">Начать бесплатно</a>
+            <a class="ghost-button landing-action-link" href="login.html">Войти</a>
           </div>
-          <label class="quarter-filter">
-            <span>Квартал</span>
-            <select id="quarterSelect" aria-label="Выбрать квартал"></select>
-          </label>
         </div>
-        <div class="metrics-grid" id="metricsGrid"></div>
+
+        <div class="landing-hero-card">
+          <p class="section-kicker">Что внутри</p>
+          <ul class="landing-feature-list">
+            <li>Планирование задач и проектов</li>
+            <li>Учёт cognitive load и energy type</li>
+            <li>Ежедневный check-in по энергии, стрессу и фокусу</li>
+            <li>Персональная аналитика по вашему рабочему ритму</li>
+            <li>Приватное хранение данных по каждому пользователю</li>
+          </ul>
+        </div>
       </section>
 
       <section class="section">
-        <div class="section-heading section-heading-stack">
+        <div class="section-heading">
           <div>
-            <p class="section-kicker">Goals</p>
-            <h2 class="dashboard-section-title">Цели</h2>
-          </div>
-          <div class="section-filters">
-            <div class="chip-filter-group">
-              <span class="chip-filter-label">Кварталы</span>
-              <div class="chip-filter-list" id="goalQuarterSelect" aria-label="Выбрать кварталы для целей"></div>
-            </div>
-            <div class="chip-filter-group">
-              <span class="chip-filter-label">Ответственные</span>
-              <div class="chip-filter-list" id="assigneeSelect" aria-label="Выбрать ответственных"></div>
-            </div>
+            <p class="section-kicker">Benefits</p>
+            <h2 class="dashboard-section-title">Почему это удобно</h2>
           </div>
         </div>
 
-        <form class="goal-create-form" id="goalCreateForm" hidden>
-          <div class="goal-create-grid">
-            <input id="newGoalTitle" type="text" placeholder="Название цели" required>
-            <select id="newGoalQuarter" aria-label="Квартал цели"></select>
-            <select id="newGoalOwner" aria-label="Ответственный"></select>
-            <input id="newGoalAcceptance" type="text" placeholder="Критерии приемки" required>
-          </div>
-          <button class="form-action-button" type="submit">Добавить цель</button>
-        </form>
+        <div class="landing-benefits-grid">
+          <article class="landing-benefit-card">
+            <h3>Планирование задач</h3>
+            <p>Собирайте задачи по проектам и не теряйте контекст между рабочими блоками.</p>
+          </article>
+          <article class="landing-benefit-card">
+            <h3>Когнитивная сложность</h3>
+            <p>Отмечайте уровень умственной нагрузки и распределяйте Deep Work осознанно.</p>
+          </article>
+          <article class="landing-benefit-card">
+            <h3>Daily check-in</h3>
+            <p>Фиксируйте энергию, стресс и фокус, чтобы видеть своё реальное состояние, а не только планы.</p>
+          </article>
+          <article class="landing-benefit-card">
+            <h3>Приватность</h3>
+            <p>Каждый пользователь видит только свои данные. Хранение строится на Supabase и RLS.</p>
+          </article>
+        </div>
+      </section>
 
-        <div class="goal-grid" id="goalGrid"></div>
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">How it works</p>
+            <h2 class="dashboard-section-title">Как это работает</h2>
+          </div>
+        </div>
+
+        <div class="landing-steps">
+          <article class="landing-step-card">
+            <strong>1</strong>
+            <h3>Регистрируетесь</h3>
+            <p>Создаёте аккаунт через email и сразу попадаете в личное приложение.</p>
+          </article>
+          <article class="landing-step-card">
+            <strong>2</strong>
+            <h3>Создаёте проекты и задачи</h3>
+            <p>Формируете структуру работы без общего списка для всех пользователей.</p>
+          </article>
+          <article class="landing-step-card">
+            <strong>3</strong>
+            <h3>Оцениваете нагрузку и энергию</h3>
+            <p>Добавляете energy type, стоимость по энергии и ежедневный check-in.</p>
+          </article>
+          <article class="landing-step-card">
+            <strong>4</strong>
+            <h3>Видите распределение фокуса</h3>
+            <p>Следите за задачами, привычками и своим рабочим паттерном в одном месте.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Pricing</p>
+            <h2 class="dashboard-section-title">Будущие тарифы</h2>
+          </div>
+        </div>
+
+        <div class="landing-pricing-grid">
+          <article class="landing-pricing-card">
+            <div class="landing-pricing-head">
+              <h3>Free</h3>
+              <span>Сейчас доступен</span>
+            </div>
+            <ul class="landing-pricing-list">
+              <li>Личный кабинет</li>
+              <li>Проекты и задачи</li>
+              <li>Daily check-in</li>
+              <li>Базовая аналитика</li>
+            </ul>
+          </article>
+
+          <article class="landing-pricing-card landing-pricing-card-accent">
+            <div class="landing-pricing-head">
+              <h3>Pro</h3>
+              <span>Скоро</span>
+            </div>
+            <ul class="landing-pricing-list">
+              <li>Расширенная аналитика</li>
+              <li>Больше автоматизаций</li>
+              <li>Дополнительные интеграции</li>
+              <li>Персональные сценарии планирования</li>
+            </ul>
+          </article>
+        </div>
       </section>
     </main>
   </div>
 
-  <button class="ai-assistant-toggle" id="aiAssistantToggle" type="button">Спросить AI</button>
-
-  <div class="ai-assistant-modal" id="aiAssistantModal" hidden>
-    <div class="ai-assistant-backdrop" id="aiAssistantBackdrop"></div>
-    <div class="ai-assistant-dialog">
-      <div class="ai-assistant-header">
-        <div>
-          <p class="ai-assistant-kicker">AI Assistant</p>
-          <h2>Спросить AI</h2>
-        </div>
-        <button class="ai-assistant-close" id="aiAssistantClose" type="button">×</button>
-      </div>
-      <div class="ai-assistant-messages" id="aiAssistantMessages">
-        <div class="ai-message ai-message-assistant">Можно спросить про метрики, цели, планирование и работу со спринтами.</div>
-      </div>
-      <form class="ai-assistant-form" id="aiAssistantForm">
-        <textarea id="aiAssistantInput" placeholder="Напишите вопрос..." required></textarea>
-        <div class="ai-assistant-form-footer">
-          <span class="ai-assistant-status" id="aiAssistantStatus">Можно задать вопрос по работе и задачам.</span>
-          <button class="form-action-button" id="aiAssistantSubmit" type="submit">Отправить</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="auth-modal" id="authModal" hidden>
-    <div class="auth-backdrop" id="authBackdrop"></div>
-    <div class="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="authTitle">
-      <p class="auth-kicker">Вход в редактирование</p>
-      <h2 id="authTitle">Выберите пользователя</h2>
-      <form id="authForm" class="auth-form">
-        <label class="auth-field">
-          <span>Пользователь</span>
-          <select id="authUser" required></select>
-        </label>
-        <label class="auth-field">
-          <span>Пароль</span>
-          <input id="authPassword" type="password" placeholder="Введите пароль" required>
-        </label>
-        <p class="auth-error" id="authError" hidden>Неверный пользователь или пароль.</p>
-        <div class="auth-actions">
-          <button class="ghost-button" id="authCancel" type="button">Отмена</button>
-          <button class="form-action-button" type="submit">Войти</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <script src="shared-storage.js"></script>
-  <script src="nav-health-link.js"></script>
-  <script src="ai-assistant.js"></script>
-  <script src="script.js"></script>
+  <script type="module" src="public-home.js"></script>
 </body>
 </html>

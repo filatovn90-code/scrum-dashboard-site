@@ -16,7 +16,7 @@
 
       <div class="site-header-actions">
         <nav class="site-nav" aria-label="Основная навигация">
-          <a class="nav-link" href="index.html">Метрики</a>
+          <a class="nav-link" href="today.html">Сегодня</a>
           <a class="nav-link" href="calendar.html">Календарь</a>
           <a class="nav-link" href="backlog.html">Бэклог</a>
           <a class="nav-link is-active" href="analytics.html">Аналитика</a>
@@ -25,57 +25,110 @@
       </div>
     </header>
 
-    <main class="analytics-main">
-      <section class="section">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Weekly analytics</p>
-            <h2 class="dashboard-section-title">Период анализа</h2>
-          </div>
-          <div class="analytics-filter">
-            <span class="analytics-filter-label">Недели</span>
-            <div class="analytics-multi-select" id="analyticsWeekPicker">
-              <button class="analytics-multi-trigger" id="analyticsWeeksTrigger" type="button" aria-haspopup="true" aria-expanded="false">
-                <span id="analyticsWeeksTriggerLabel">Выбрать недели</span>
-              </button>
-              <div class="analytics-multi-menu" id="analyticsWeeksMenu" hidden>
-                <div class="analytics-multi-options" id="analyticsWeeksOptions"></div>
-              </div>
+    <main class="analytics-main analytics-health-main analytics-v0-main">
+      <section class="section analytics-hero-card analytics-v0-hero">
+        <div class="analytics-v0-hero-copy">
+          <p class="section-kicker">Personal insights</p>
+          <h2 class="dashboard-section-title">Связь состояния, нагрузки и темпа работы</h2>
+          <p class="today-section-copy">
+            Здесь видно, как энергия, стресс и фокус меняются вместе с задачами. Это помогает раньше замечать перегруз и собирать более реалистичный ритм недели.
+          </p>
+        </div>
+
+        <aside class="analytics-period-panel analytics-v0-control-card">
+          <div class="analytics-v0-control-top">
+            <span class="analytics-v0-control-icon">AI</span>
+            <div>
+              <p class="analytics-filter-label">Период анализа</p>
+              <strong class="analytics-v0-control-title">Срез по состоянию и задачам</strong>
             </div>
           </div>
-        </div>
+
+          <label class="analytics-filter">
+            <span class="analytics-filter-label">Период</span>
+            <select id="analyticsPeriodSelect" class="analytics-period-select">
+              <option value="this_week">Эта неделя</option>
+              <option value="last_week">Прошлая неделя</option>
+              <option value="last_14_days">Последние 14 дней</option>
+              <option value="last_30_days">Последние 30 дней</option>
+            </select>
+          </label>
+
+          <div class="auth-status-box analytics-inline-status analytics-v0-status" id="analyticsStatus">Загружаю аналитику...</div>
+        </aside>
       </section>
 
-      <div class="analytics-row">
-        <section class="section">
-          <div class="section-heading">
+      <div class="analytics-overview-grid analytics-overview-grid-4 analytics-v0-top-grid" id="analyticsTopCards"></div>
+
+      <section class="analytics-row analytics-row-balanced analytics-v0-primary-row">
+        <article class="section analytics-chart-card analytics-v0-panel">
+          <div class="section-heading analytics-v0-heading">
             <div>
-              <p class="section-kicker">Energy Type</p>
-              <h2 class="dashboard-section-title">Колесо баланса</h2>
+              <p class="section-kicker">State trend</p>
+              <h2 class="dashboard-section-title">Состояние по дням</h2>
+            </div>
+            <span class="analytics-v0-badge">Energy / Stress / Focus</span>
+          </div>
+          <div id="analyticsStateChart" class="analytics-svg-chart"></div>
+          <p id="analyticsStateInsight" class="analytics-inline-note"></p>
+        </article>
+
+        <article class="section analytics-chart-card analytics-v0-panel">
+          <div class="section-heading analytics-v0-heading">
+            <div>
+              <p class="section-kicker">Task load</p>
+              <h2 class="dashboard-section-title">Нагрузка по дням</h2>
+            </div>
+            <span class="analytics-v0-badge">Task load</span>
+          </div>
+          <div id="analyticsLoadChart" class="analytics-bars-chart"></div>
+          <p id="analyticsLoadInsight" class="analytics-inline-note"></p>
+        </article>
+      </section>
+
+      <section class="analytics-row analytics-row-balanced">
+        <article class="section analytics-v0-panel">
+          <div class="section-heading analytics-v0-heading">
+            <div>
+              <p class="section-kicker">Connections</p>
+              <h2 class="dashboard-section-title">Что влияло на состояние</h2>
             </div>
           </div>
-          <div class="analytics-chart-grid analytics-chart-grid-energy" id="energyTypeChart"></div>
-        </section>
+          <div id="analyticsInsights" class="analytics-stack-list"></div>
+        </article>
 
-        <section class="section">
-          <div class="section-heading">
+        <article class="section analytics-v0-panel">
+          <div class="section-heading analytics-v0-heading">
             <div>
-              <p class="section-kicker">Weekday load</p>
-              <h2 class="dashboard-section-title">Задачи по дням недели</h2>
+              <p class="section-kicker">Task types</p>
+              <h2 class="dashboard-section-title">Какие задачи нагружают сильнее всего</h2>
             </div>
           </div>
-          <div class="analytics-chart-grid" id="weekdayChart"></div>
-        </section>
-      </div>
+          <div id="analyticsTaskTypes" class="analytics-type-grid"></div>
+          <p id="analyticsTaskTypesInsight" class="analytics-inline-note"></p>
+        </article>
+      </section>
 
-      <section class="section">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Summary</p>
-            <h2 class="dashboard-section-title">Сводка</h2>
+      <section class="analytics-row analytics-row-balanced">
+        <article class="section analytics-v0-panel">
+          <div class="section-heading analytics-v0-heading">
+            <div>
+              <p class="section-kicker">Overload trend</p>
+              <h2 class="dashboard-section-title">Тренд перегруза</h2>
+            </div>
           </div>
-        </div>
-        <div class="analytics-overview-grid analytics-overview-grid-compact" id="analyticsOverview"></div>
+          <div id="analyticsOverloadTrend" class="analytics-overload-grid"></div>
+        </article>
+
+        <article class="section analytics-v0-panel">
+          <div class="section-heading analytics-v0-heading">
+            <div>
+              <p class="section-kicker">Next week</p>
+              <h2 class="dashboard-section-title">Рекомендации</h2>
+            </div>
+          </div>
+          <div id="analyticsRecommendations" class="analytics-stack-list"></div>
+        </article>
       </section>
     </main>
   </div>
@@ -93,12 +146,12 @@
         <button class="ai-assistant-close" id="aiAssistantClose" type="button">×</button>
       </div>
       <div class="ai-assistant-messages" id="aiAssistantMessages">
-        <div class="ai-message ai-message-assistant">Можно спросить, что видно по аналитике и как интерпретировать распределение задач.</div>
+        <div class="ai-message ai-message-assistant">Можно спросить, что видно по аналитике и как интерпретировать состояние и нагрузку.</div>
       </div>
       <form class="ai-assistant-form" id="aiAssistantForm">
         <textarea id="aiAssistantInput" placeholder="Напишите вопрос..." required></textarea>
         <div class="ai-assistant-form-footer">
-          <span class="ai-assistant-status" id="aiAssistantStatus">Можно задать вопрос по работе и задачам.</span>
+          <span class="ai-assistant-status" id="aiAssistantStatus">Можно задать вопрос по состоянию, фокусу и задачам.</span>
           <button class="form-action-button" id="aiAssistantSubmit" type="submit">Отправить</button>
         </div>
       </form>
@@ -106,8 +159,7 @@
   </div>
 
   <script src="shared-storage.js"></script>
-  <script src="nav-health-link.js"></script>
   <script src="ai-assistant.js"></script>
-  <script src="analytics.js"></script>
+  <script type="module" src="analytics.js"></script>
 </body>
 </html>

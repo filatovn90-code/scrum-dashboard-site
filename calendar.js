@@ -593,8 +593,20 @@ prevWeekButton?.addEventListener("click", () => moveWeek(-1));
 nextWeekButton?.addEventListener("click", () => moveWeek(1));
 
 logoutButton?.addEventListener("click", () => {
-  window.appStorage.removeItem(AUTH_KEY);
-  window.location.replace("index.html");
+  (async () => {
+    try {
+      const [{ signOutCurrentUser }, { landingPath }] = await Promise.all([
+        import("./auth-helpers.js"),
+        import("./route-paths.js")
+      ]);
+      await signOutCurrentUser().catch(() => null);
+      window.appStorage.removeItem(AUTH_KEY);
+      window.location.replace(landingPath());
+    } catch {
+      window.appStorage.removeItem(AUTH_KEY);
+      window.location.replace("index.html");
+    }
+  })();
 });
 
 refreshWeekOptions();

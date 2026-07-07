@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профиль — FocusFlow</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell page-shell-wide profile-page">
+    <header class="site-header">
+      <div class="site-brand">
+        <p class="section-kicker">FocusFlow</p>
+        <h1>Профиль</h1>
+      </div>
+
+      <div class="site-header-actions">
+        <nav class="site-nav" aria-label="Навигация приложения">
+          <a class="nav-link" href="today.html">Сегодня</a>
+          <a class="nav-link is-active" href="profile.html">Профиль</a>
+          <button class="login-button" id="profileLogoutButton" type="button">Выйти</button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="profile-main">
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">User profile</p>
+            <h2 class="dashboard-section-title">Ваши данные</h2>
+          </div>
+        </div>
+
+        <form id="profileForm" class="auth-page-form profile-form">
+          <input id="profileEmail" type="email" placeholder="Email" disabled>
+          <input id="profileFullName" type="text" placeholder="Имя и фамилия">
+          <input id="profileTimezone" type="text" placeholder="Timezone, например Europe/Moscow">
+          <button id="profileSubmit" class="form-action-button" type="submit">Сохранить профиль</button>
+        </form>
+
+        <div id="profileStatus" class="auth-status-box">Загружаю профиль...</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="shared-storage.js"></script>
+  <script type="module" src="profile.js"></script>
+</body>
+</html>
