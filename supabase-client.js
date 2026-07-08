@@ -14,6 +14,20 @@ function isFilePreview() {
   return window.location.protocol === "file:";
 }
 
+function getSupabaseStorage() {
+  return {
+    getItem(key) {
+      return window.appStorage?.getItem(key) ?? null;
+    },
+    setItem(key, value) {
+      window.appStorage?.setItem(key, value);
+    },
+    removeItem(key) {
+      window.appStorage?.removeItem(key);
+    }
+  };
+}
+
 function readJsonStorage(key, fallback) {
   const raw = window.appStorage?.getItem(key);
   if (!raw) {
@@ -499,6 +513,8 @@ async function createRemoteBrowserClient() {
 
   return createClient(url, anonKey, {
     auth: {
+      storage: getSupabaseStorage(),
+      storageKey: "focusflow-supabase-auth",
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true

@@ -1,30 +1,38 @@
-function isNestedRoute(path) {
+function isFilePreview() {
+  return window.location.protocol === "file:";
+}
+
+function isNestedFileRoute(path) {
   return ["/login/", "/signup/", "/forgot-password/", "/app/", "/profile/"].some((segment) => path.includes(segment));
 }
 
 export function rootPrefix() {
+  if (!isFilePreview()) {
+    return "/";
+  }
+
   const path = window.location.pathname.replace(/\\/g, "/");
-  return isNestedRoute(path) ? "../" : "";
+  return isNestedFileRoute(path) ? "../" : "";
 }
 
 export function landingPath() {
-  return `${rootPrefix()}index.html`;
+  return isFilePreview() ? `${rootPrefix()}index.html` : "/";
 }
 
 export function loginPath() {
-  return `${rootPrefix()}login.html`;
+  return isFilePreview() ? `${rootPrefix()}login.html` : "/login";
 }
 
 export function signupPath() {
-  return `${rootPrefix()}signup.html`;
+  return isFilePreview() ? `${rootPrefix()}signup.html` : "/signup";
 }
 
 export function forgotPasswordPath() {
-  return `${rootPrefix()}forgot-password.html`;
+  return isFilePreview() ? `${rootPrefix()}forgot-password.html` : "/forgot-password";
 }
 
 export function todayPath() {
-  return `${rootPrefix()}today.html`;
+  return isFilePreview() ? `${rootPrefix()}today.html` : "/today";
 }
 
 export function appPath() {
@@ -32,9 +40,9 @@ export function appPath() {
 }
 
 export function profilePath() {
-  return `${rootPrefix()}profile.html`;
+  return isFilePreview() ? `${rootPrefix()}profile.html` : "/profile";
 }
 
 export function rootFile(fileName) {
-  return `${rootPrefix()}${fileName}`;
+  return isFilePreview() ? `${rootPrefix()}${fileName}` : `/${String(fileName || "").replace(/^\/+/, "")}`;
 }
