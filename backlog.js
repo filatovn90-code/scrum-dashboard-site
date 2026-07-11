@@ -5,6 +5,7 @@ if (!window.appStorage.getItem(AUTH_KEY)) {
 }
 
 const activeUser = window.appStorage.getItem(AUTH_KEY);
+injectAiCoachLink();
 
 const seededBacklogData = {
   "Неделя 20.04 - 24.04": {
@@ -76,6 +77,19 @@ const userBacklogWeekStorageKey = `scrum-master-backlog-week:${activeUser}`;
 const DAILY_FOCUS_STORAGE_KEY = "scrum-master-daily-focus";
 const DAILY_FOCUS_DAY_STORAGE_KEY = "scrum-master-daily-focus-day";
 const BACKLOG_YEAR = 2026;
+
+function injectAiCoachLink() {
+  const nav = document.querySelector(".site-nav");
+  if (!nav || nav.querySelector('[href="ai-coach.html"]')) {
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.className = "nav-link";
+  link.href = "ai-coach.html";
+  link.textContent = "AI Coach";
+  nav.insertBefore(link, nav.children[1] || null);
+}
 
 const timeline = [
   "09:00", "09:15", "09:30", "09:45",
@@ -348,7 +362,11 @@ function normalizeStoredData(template, stored) {
         status: item.status || "Запланировано",
         stress: item.stress || "Нет",
         taskType: item.taskType || "Low Energy",
-        energyCost: item.energyCost || "M"
+        energyCost: item.energyCost || "M",
+        mentalCost: normalizeLoadValue(item.mentalCost, mapTaskTypeToMentalCost(item.taskType, item.energyCost)),
+        emotionalCost: normalizeLoadValue(item.emotionalCost, mapStressToEmotionalCost(item.stress)),
+        recoveryMinutes: normalizeRecoveryMinutes(item.recoveryMinutes, mapIntensityToRecoveryMinutes(item.taskIntensity, item.energyCost)),
+        taskIntensity: normalizeTaskIntensity(item.taskIntensity, item.energyCost)
       }));
     });
   });
@@ -501,6 +519,76 @@ function energyCostClass(energyCost) {
   return "energy-cost-medium";
 }
 
+function normalizeLoadValue(value, fallback = 1) {
+  const normalized = Number.parseInt(value, 10);
+  if (Number.isFinite(normalized) && normalized >= 1 && normalized <= 5) {
+    return normalized;
+  }
+  return fallback;
+}
+
+function normalizeRecoveryMinutes(value, fallback = 0) {
+  const normalized = Number.parseInt(value, 10);
+  if (Number.isFinite(normalized) && normalized >= 0) {
+    return normalized;
+  }
+  return fallback;
+}
+
+function normalizeTaskIntensity(value, energyCost = "M") {
+  if (value === "low" || value === "medium" || value === "high") {
+    return value;
+  }
+  if (energyCost === "L") {
+    return "high";
+  }
+  if (energyCost === "S") {
+    return "low";
+  }
+  return "medium";
+}
+
+function mapTaskTypeToMentalCost(taskType, energyCost = "M") {
+  const level = energyCost === "L" ? 2 : energyCost === "S" ? 0 : 1;
+
+  if (taskType === "Deep Work") {
+    return Math.min(5, 3 + level);
+  }
+  if (taskType === "High Energy") {
+    return Math.min(5, 2 + level);
+  }
+  return Math.min(5, 1 + level);
+}
+
+function mapStressToEmotionalCost(stress) {
+  if (stress === "Р’С‹СЃРѕРєРёР№") {
+    return 5;
+  }
+  if (stress === "РЎСЂРµРґРЅРёР№") {
+    return 3;
+  }
+  if (stress === "РќРёР·РєРёР№") {
+    return 2;
+  }
+  return 1;
+}
+
+function mapIntensityToRecoveryMinutes(taskIntensity = "medium", energyCost = "M") {
+  if (taskIntensity === "high" || energyCost === "L") {
+    return 30;
+  }
+  if (taskIntensity === "low" || energyCost === "S") {
+    return 5;
+  }
+  return 15;
+}
+
+function intensityLabel(taskIntensity) {
+  if (taskIntensity === "high") return "High";
+  if (taskIntensity === "low") return "Low";
+  return "Medium";
+}
+
 function renderTaskEditor(editorKey, day, defaults) {
   return `
     <div class="backlog-slot-cell is-editor">
@@ -530,6 +618,30 @@ function renderTaskEditor(editorKey, day, defaults) {
             <option value="L" ${defaults.energyCost === "L" ? "selected" : ""}>L — High load</option>
           </select>
         </div>
+        <div class="inline-task-row">
+          <select data-editor-mental-cost>
+            <option value="1" ${defaults.mentalCost === 1 ? "selected" : ""}>Mental Cost 1</option>
+            <option value="2" ${defaults.mentalCost === 2 ? "selected" : ""}>Mental Cost 2</option>
+            <option value="3" ${defaults.mentalCost === 3 ? "selected" : ""}>Mental Cost 3</option>
+            <option value="4" ${defaults.mentalCost === 4 ? "selected" : ""}>Mental Cost 4</option>
+            <option value="5" ${defaults.mentalCost === 5 ? "selected" : ""}>Mental Cost 5</option>
+          </select>
+          <select data-editor-emotional-cost>
+            <option value="1" ${defaults.emotionalCost === 1 ? "selected" : ""}>Emotional Cost 1</option>
+            <option value="2" ${defaults.emotionalCost === 2 ? "selected" : ""}>Emotional Cost 2</option>
+            <option value="3" ${defaults.emotionalCost === 3 ? "selected" : ""}>Emotional Cost 3</option>
+            <option value="4" ${defaults.emotionalCost === 4 ? "selected" : ""}>Emotional Cost 4</option>
+            <option value="5" ${defaults.emotionalCost === 5 ? "selected" : ""}>Emotional Cost 5</option>
+          </select>
+        </div>
+        <div class="inline-task-row">
+          <input type="number" min="0" step="5" value="${defaults.recoveryMinutes}" placeholder="Recovery Time" data-editor-recovery-minutes>
+          <select data-editor-task-intensity>
+            <option value="low" ${defaults.taskIntensity === "low" ? "selected" : ""}>Intensity — Low</option>
+            <option value="medium" ${defaults.taskIntensity === "medium" ? "selected" : ""}>Intensity — Medium</option>
+            <option value="high" ${defaults.taskIntensity === "high" ? "selected" : ""}>Intensity — High</option>
+          </select>
+        </div>
         <div class="inline-task-actions">
           <button type="button" class="inline-action-button is-primary" data-editor-save="${editorKey}">Сохранить</button>
           <button type="button" class="inline-action-button" data-editor-cancel="${editorKey}">Отмена</button>
@@ -550,6 +662,10 @@ function renderDayCreateArea(week, day) {
       stress: "Нет",
       taskType: "Low Energy",
       energyCost: "M",
+      mentalCost: 2,
+      emotionalCost: 1,
+      recoveryMinutes: 15,
+      taskIntensity: "medium",
       hideTime: true
     });
   }
@@ -572,7 +688,11 @@ function renderTaskCard(week, day, item) {
       status: item.status,
       stress: item.stress,
       taskType: item.taskType || "Low Energy",
-      energyCost: item.energyCost || "M"
+      energyCost: item.energyCost || "M",
+      mentalCost: normalizeLoadValue(item.mentalCost, mapTaskTypeToMentalCost(item.taskType, item.energyCost)),
+      emotionalCost: normalizeLoadValue(item.emotionalCost, mapStressToEmotionalCost(item.stress)),
+      recoveryMinutes: normalizeRecoveryMinutes(item.recoveryMinutes, mapIntensityToRecoveryMinutes(item.taskIntensity, item.energyCost)),
+      taskIntensity: normalizeTaskIntensity(item.taskIntensity, item.energyCost)
     });
   }
 
@@ -590,6 +710,30 @@ function renderTaskCard(week, day, item) {
         <div class="task-meta task-meta-labeled">
           <span class="task-meta-label">Energy Cost</span>
           <span class="task-badge ${energyCostClass(item.energyCost || "M")}">${item.energyCost || "M"}</span>
+        </div>
+      `;
+  const mentalCostMarkup = `
+        <div class="task-meta task-meta-labeled">
+          <span class="task-meta-label">Mental Cost</span>
+          <span class="task-badge">${normalizeLoadValue(item.mentalCost, mapTaskTypeToMentalCost(item.taskType, item.energyCost))}/5</span>
+        </div>
+      `;
+  const emotionalCostMarkup = `
+        <div class="task-meta task-meta-labeled">
+          <span class="task-meta-label">Emotional Cost</span>
+          <span class="task-badge">${normalizeLoadValue(item.emotionalCost, mapStressToEmotionalCost(item.stress))}/5</span>
+        </div>
+      `;
+  const recoveryMarkup = `
+        <div class="task-meta task-meta-labeled">
+          <span class="task-meta-label">Recovery Time</span>
+          <span class="task-badge">${normalizeRecoveryMinutes(item.recoveryMinutes, mapIntensityToRecoveryMinutes(item.taskIntensity, item.energyCost))} min</span>
+        </div>
+      `;
+  const intensityMarkup = `
+        <div class="task-meta task-meta-labeled">
+          <span class="task-meta-label">Intensity</span>
+          <span class="task-badge">${intensityLabel(normalizeTaskIntensity(item.taskIntensity, item.energyCost))}</span>
         </div>
       `;
 
@@ -611,6 +755,10 @@ function renderTaskCard(week, day, item) {
             </select>
           </div>
           ${typeMarkup}
+          ${mentalCostMarkup}
+          ${emotionalCostMarkup}
+          ${recoveryMarkup}
+          ${intensityMarkup}
           ${energyCostMarkup}
         </div>
       </div>
@@ -629,6 +777,10 @@ function saveEditor(editorKey) {
   const statusSelect = editor.querySelector("[data-editor-status]");
   const taskTypeSelect = editor.querySelector("[data-editor-task-type]");
   const energyCostSelect = editor.querySelector("[data-editor-energy-cost]");
+  const mentalCostSelect = editor.querySelector("[data-editor-mental-cost]");
+  const emotionalCostSelect = editor.querySelector("[data-editor-emotional-cost]");
+  const recoveryMinutesInput = editor.querySelector("[data-editor-recovery-minutes]");
+  const taskIntensitySelect = editor.querySelector("[data-editor-task-intensity]");
   const text = textInput.value.trim();
 
   if (!text) {
@@ -663,7 +815,11 @@ function saveEditor(editorKey) {
       status: statusSelect.value,
       stress: day.items[taskIndex]?.stress || "Нет",
       taskType: taskTypeSelect.value,
-      energyCost: energyCostSelect.value
+      energyCost: energyCostSelect.value,
+      mentalCost: normalizeLoadValue(mentalCostSelect?.value, mapTaskTypeToMentalCost(taskTypeSelect.value, energyCostSelect.value)),
+      emotionalCost: normalizeLoadValue(emotionalCostSelect?.value, mapStressToEmotionalCost(day.items[taskIndex]?.stress)),
+      recoveryMinutes: normalizeRecoveryMinutes(recoveryMinutesInput?.value, mapIntensityToRecoveryMinutes(taskIntensitySelect?.value, energyCostSelect.value)),
+      taskIntensity: normalizeTaskIntensity(taskIntensitySelect?.value, energyCostSelect.value)
     };
   } else {
     const hasConflict = day.items.some((entry) => entry.time === selectedTime);
@@ -679,7 +835,11 @@ function saveEditor(editorKey) {
       status: statusSelect.value,
       stress: "Нет",
       taskType: taskTypeSelect.value,
-      energyCost: energyCostSelect.value
+      energyCost: energyCostSelect.value,
+      mentalCost: normalizeLoadValue(mentalCostSelect?.value, mapTaskTypeToMentalCost(taskTypeSelect.value, energyCostSelect.value)),
+      emotionalCost: normalizeLoadValue(emotionalCostSelect?.value, 1),
+      recoveryMinutes: normalizeRecoveryMinutes(recoveryMinutesInput?.value, mapIntensityToRecoveryMinutes(taskIntensitySelect?.value, energyCostSelect.value)),
+      taskIntensity: normalizeTaskIntensity(taskIntensitySelect?.value, energyCostSelect.value)
     });
   }
 

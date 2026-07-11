@@ -29,6 +29,11 @@
   }
 
   function openModal() {
+    if (toggleButton.dataset.locked === "true") {
+      window.location.href = toggleButton.dataset.lockHref || "pricing.html";
+      return;
+    }
+
     modal.hidden = false;
     input.focus();
   }

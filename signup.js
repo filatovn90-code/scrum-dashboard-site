@@ -4,8 +4,9 @@ import {
   getSupabase,
   rememberLegacyAuthUser
 } from "./supabase-client.js";
+import { resolvePostAuthPath, startOnboardingForUser } from "./onboarding-helpers.js";
 import { redirectIfAuthenticated } from "./auth-helpers.js";
-import { appPath } from "./route-paths.js";
+import { todayPath } from "./route-paths.js";
 
 const form = document.getElementById("signupPageForm");
 const emailInput = document.getElementById("signupPageEmail");
@@ -14,7 +15,7 @@ const repeatInput = document.getElementById("signupPagePasswordRepeat");
 const submitButton = document.getElementById("signupPageSubmit");
 const statusBox = document.getElementById("signupPageStatus");
 
-redirectIfAuthenticated({ redirectTo: appPath() }).catch(() => null);
+redirectIfAuthenticated({ redirectTo: todayPath() }).catch(() => null);
 
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -48,15 +49,22 @@ form?.addEventListener("submit", async (event) => {
       rememberLegacyAuthUser(data.user);
     }
 
+    if (!data?.session && data?.user) {
+      setStatus("Аккаунт создан, но email еще не подтвержден. Откройте письмо от Supabase и подтвердите почту. Если для прототипа нужен вход сразу после регистрации, отключите Confirm email в настройках Supabase.", true);
+      return;
+    }
+
     await ensureProfile().catch(() => null);
     setStatus("Аккаунт создан. Перенаправляю в приложение...");
-    window.location.replace(appPath());
+    startOnboardingForUser(data.user);
+    window.location.replace(resolvePostAuthPath(data.user));
   } catch (error) {
     if (canUseLocalFallback(error)) {
       try {
-        await createLocalAccount(email, password);
+        const localResult = await createLocalAccount(email, password);
+        startOnboardingForUser(localResult?.user);
         setStatus("Аккаунт создан. Перенаправляю в приложение...");
-        window.location.replace(appPath());
+        window.location.replace(resolvePostAuthPath(localResult?.user));
         return;
       } catch (localError) {
         setStatus(getReadableAuthError(localError, "signup"), true);
@@ -88,15 +96,19 @@ function getReadableAuthError(error, mode) {
   const normalized = rawMessage.toLowerCase();
 
   if (normalized.includes("failed to fetch") || normalized.includes("networkerror")) {
-    return "Не удалось связаться с сервером регистрации. Попробуйте еще раз. Если проблема повторится, сайт все равно сохранит аккаунт локально после доступной попытки.";
+    return "Не удалось связаться с сервером регистрации. Проверьте, что Supabase-проект активен и сайт открыт по публичной ссылке.";
   }
 
   if (normalized.includes("user already registered")) {
     return "Такой email уже зарегистрирован. Попробуйте войти.";
   }
 
+  if (normalized.includes("email not confirmed")) {
+    return "Аккаунт создан, но email еще не подтвержден. Подтвердите почту по письму от Supabase или отключите Confirm email в Supabase, если нужен вход сразу после регистрации.";
+  }
+
   if (normalized.includes("email rate limit exceeded")) {
-    return "Слишком много попыток регистрации подряд. Подождите немного или используйте другой email.";
+    return "Слишком много попыток регистрации подряд. Подождите несколько минут или используйте другой email.";
   }
 
   if (normalized.includes("password should be at least")) {

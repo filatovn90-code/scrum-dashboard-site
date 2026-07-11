@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Бэклог</title>
+  <title>Бэклог — MindPulse</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="page-shell page-shell-wide">
     <header class="site-header">
       <div class="site-brand">
-        <p class="section-kicker">Scrum Dashboard</p>
+        <p class="section-kicker">MindPulse</p>
         <h1>Бэклог</h1>
       </div>
 
@@ -20,6 +20,7 @@
           <a class="nav-link" href="calendar.html">Календарь</a>
           <a class="nav-link is-active" href="backlog.html">Бэклог</a>
           <a class="nav-link" href="analytics.html">Аналитика</a>
+          <a class="nav-link" href="pricing.html">Pricing</a>
         </nav>
         <button class="login-button" id="logoutButton" type="button">Выход</button>
       </div>
@@ -38,40 +39,29 @@
           </div>
         </div>
 
-        <div class="daily-focus-card" id="focusTodayPanel"></div>
-        <div class="backlog-summary" id="backlogSummary"></div>
-        <div class="backlog-board" id="backlogBoard"></div>
+        <div id="backlogSummary"></div>
+
+        <section class="section backlog-focus-strip" id="focusTodayPanel">
+          <div class="section-heading backlog-focus-heading">
+            <div>
+              <p class="section-kicker">Today focus</p>
+              <h3 class="dashboard-section-title">Фокус на сегодня</h3>
+            </div>
+            <div class="quarter-filter">
+              <span>День</span>
+              <select id="focusDaySelect" aria-label="Выбрать день фокуса"></select>
+            </div>
+          </div>
+
+          <div id="focusList" class="backlog-focus-list"></div>
+        </section>
+
+        <div id="backlogBoard" class="weekly-board"></div>
       </section>
     </main>
   </div>
 
-  <button class="ai-assistant-toggle" id="aiAssistantToggle" type="button">Спросить AI</button>
-
-  <div class="ai-assistant-modal" id="aiAssistantModal" hidden>
-    <div class="ai-assistant-backdrop" id="aiAssistantBackdrop"></div>
-    <div class="ai-assistant-dialog">
-      <div class="ai-assistant-header">
-        <div>
-          <p class="ai-assistant-kicker">AI Assistant</p>
-          <h2>Спросить AI</h2>
-        </div>
-        <button class="ai-assistant-close" id="aiAssistantClose" type="button">×</button>
-      </div>
-      <div class="ai-assistant-messages" id="aiAssistantMessages">
-        <div class="ai-message ai-message-assistant">Можно спросить, как лучше разложить задачи по неделе или на чём сфокусироваться сегодня.</div>
-      </div>
-      <form class="ai-assistant-form" id="aiAssistantForm">
-        <textarea id="aiAssistantInput" placeholder="Напишите вопрос..." required></textarea>
-        <div class="ai-assistant-form-footer">
-          <span class="ai-assistant-status" id="aiAssistantStatus">Можно задать вопрос по работе и задачам.</span>
-          <button class="form-action-button" id="aiAssistantSubmit" type="submit">Отправить</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <script src="shared-storage.js"></script>
-  <script src="ai-assistant.js"></script>
-  <script src="backlog.js"></script>
+  <script type="module" src="backlog.js"></script>
 </body>
 </html>

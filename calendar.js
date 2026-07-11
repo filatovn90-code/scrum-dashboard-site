@@ -13,6 +13,21 @@ const userTimelineStorageKey = `${TIMELINE_STORAGE_KEY}:${activeUser}`;
 const userTimelineWeekStorageKey = `${TIMELINE_WEEK_STORAGE_KEY}:${activeUser}`;
 const TIMELINE_YEAR = 2026;
 
+injectAiCoachLink();
+
+function injectAiCoachLink() {
+  const nav = document.querySelector(".site-nav");
+  if (!nav || nav.querySelector('[href="ai-coach.html"]')) {
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.className = "nav-link";
+  link.href = "ai-coach.html";
+  link.textContent = "AI Coach";
+  nav.insertBefore(link, nav.children[1] || null);
+}
+
 const seededTimelineData = {
   "Неделя 04.05 - 08.05": {
     days: [

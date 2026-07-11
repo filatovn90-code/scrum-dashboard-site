@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Календарь</title>
+  <title>Календарь — MindPulse</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="page-shell page-shell-wide">
     <header class="site-header">
       <div class="site-brand">
-        <p class="section-kicker">Scrum Dashboard</p>
+        <p class="section-kicker">MindPulse</p>
         <h1>Календарь</h1>
       </div>
 
@@ -20,6 +20,7 @@
           <a class="nav-link is-active" href="calendar.html">Календарь</a>
           <a class="nav-link" href="backlog.html">Бэклог</a>
           <a class="nav-link" href="analytics.html">Аналитика</a>
+          <a class="nav-link" href="pricing.html">Pricing</a>
         </nav>
         <button class="login-button" id="logoutButton" type="button">Выход</button>
       </div>
@@ -41,33 +42,27 @@
           </div>
         </div>
 
-        <div class="week-timeline-layout">
-          <section class="week-timeline-board" id="timelineBoard"></section>
+        <div class="calendar-layout">
+          <section class="timeline-board" id="timelineBoard"></section>
 
-          <aside class="week-timeline-sidepanel">
-            <div class="week-timeline-sidepanel-header">
-              <div>
-                <p class="calendar-day-panel-kicker">Выбранный день</p>
-                <h3 id="timelineSelectedDay"></h3>
-              </div>
-              <div class="week-timeline-week-meta" id="timelineWeekMeta"></div>
-            </div>
+          <aside class="timeline-sidebar">
+            <section class="section timeline-side-card">
+              <p class="section-kicker">All deadlines</p>
+              <h3 id="timelineWeekLabel">Неделя</h3>
+              <div id="timelineAllDeadlines" class="timeline-deadline-list"></div>
+            </section>
 
-            <div class="week-timeline-selected-list" id="timelineSelectedList"></div>
+            <section class="section timeline-side-card">
+              <p class="section-kicker">Selected day</p>
+              <h3 id="timelineSelectedDayTitle">Выберите день</h3>
+              <div id="timelineSelectedDayMeta" class="timeline-day-meta"></div>
+              <div id="timelineSelectedDayDeadlines" class="timeline-deadline-list"></div>
 
-            <form class="week-timeline-form" id="timelineDeadlineForm">
-              <input id="timelineDeadlineTitle" type="text" placeholder="Название дедлайна" aria-label="Название дедлайна">
-              <input id="timelineDeadlineTime" type="time" aria-label="Время дедлайна">
-              <button type="submit" class="calendar-event-submit" id="timelineDeadlineSubmit">Добавить дедлайн</button>
-              <button type="button" class="calendar-event-cancel" id="timelineDeadlineCancel" hidden>Отмена</button>
-            </form>
-
-            <section class="week-timeline-week-summary">
-              <div class="week-timeline-summary-header">
-                <p class="calendar-day-panel-kicker">Все дедлайны недели</p>
-                <h3 id="timelineSummaryTitle"></h3>
-              </div>
-              <div class="week-timeline-summary-list" id="timelineSummaryList"></div>
+              <form id="timelineDeadlineForm" class="timeline-deadline-form">
+                <input id="timelineDeadlineTitle" type="text" placeholder="Название дедлайна" required>
+                <input id="timelineDeadlineTime" type="time">
+                <button class="form-action-button" type="submit">Добавить дедлайн</button>
+              </form>
             </section>
           </aside>
         </div>
@@ -75,33 +70,7 @@
     </main>
   </div>
 
-  <button class="ai-assistant-toggle" id="aiAssistantToggle" type="button">Спросить AI</button>
-
-  <div class="ai-assistant-modal" id="aiAssistantModal" hidden>
-    <div class="ai-assistant-backdrop" id="aiAssistantBackdrop"></div>
-    <div class="ai-assistant-dialog">
-      <div class="ai-assistant-header">
-        <div>
-          <p class="ai-assistant-kicker">AI Assistant</p>
-          <h2>Спросить AI</h2>
-        </div>
-        <button class="ai-assistant-close" id="aiAssistantClose" type="button">×</button>
-      </div>
-      <div class="ai-assistant-messages" id="aiAssistantMessages">
-        <div class="ai-message ai-message-assistant">Можно спросить про дедлайны недели, приоритеты и загрузку по дням.</div>
-      </div>
-      <form class="ai-assistant-form" id="aiAssistantForm">
-        <textarea id="aiAssistantInput" placeholder="Напишите вопрос..." required></textarea>
-        <div class="ai-assistant-form-footer">
-          <span class="ai-assistant-status" id="aiAssistantStatus">Можно задать вопрос по работе и задачам.</span>
-          <button class="form-action-button" id="aiAssistantSubmit" type="submit">Отправить</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <script src="shared-storage.js"></script>
-  <script src="ai-assistant.js"></script>
-  <script src="calendar.js"></script>
+  <script type="module" src="calendar.js"></script>
 </body>
 </html>

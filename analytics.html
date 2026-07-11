@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Аналитика</title>
+  <title>Аналитика — MindPulse</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="page-shell page-shell-wide">
     <header class="site-header">
       <div class="site-brand">
-        <p class="section-kicker">Scrum Dashboard</p>
+        <p class="section-kicker">MindPulse</p>
         <h1>Аналитика</h1>
       </div>
 
@@ -20,6 +20,7 @@
           <a class="nav-link" href="calendar.html">Календарь</a>
           <a class="nav-link" href="backlog.html">Бэклог</a>
           <a class="nav-link is-active" href="analytics.html">Аналитика</a>
+          <a class="nav-link" href="pricing.html">Pricing</a>
         </nav>
         <button class="login-button" id="logoutButton" type="button">Выход</button>
       </div>
@@ -28,10 +29,10 @@
     <main class="analytics-main analytics-health-main analytics-v0-main">
       <section class="section analytics-hero-card analytics-v0-hero">
         <div class="analytics-v0-hero-copy">
-          <p class="section-kicker">Personal insights</p>
-          <h2 class="dashboard-section-title">Связь состояния, нагрузки и темпа работы</h2>
+          <p class="section-kicker">Personal energy insights</p>
+          <h2 class="dashboard-section-title">Связь энергии, нагрузки и темпа работы</h2>
           <p class="today-section-copy">
-            Здесь видно, как энергия, стресс и фокус меняются вместе с задачами. Это помогает раньше замечать перегруз и собирать более реалистичный ритм недели.
+            Здесь видно, как задачи влияют на энергию, стресс и фокус. Это помогает раньше замечать риск перегруза и собирать более устойчивый ритм недели.
           </p>
         </div>
 
@@ -56,6 +57,32 @@
 
           <div class="auth-status-box analytics-inline-status analytics-v0-status" id="analyticsStatus">Загружаю аналитику...</div>
         </aside>
+      </section>
+
+      <section class="section analytics-v0-panel analytics-weekly-insights-panel">
+        <div class="section-heading analytics-v0-heading">
+          <div>
+            <p class="section-kicker">Weekly summary</p>
+            <h2 class="dashboard-section-title">Главные инсайты недели</h2>
+            <p class="today-section-copy">Сначала смысловые выводы по состоянию и задачам, а ниже — графики и детализация.</p>
+          </div>
+          <span class="analytics-v0-badge">Main takeaways</span>
+        </div>
+        <div id="analyticsWeeklyInsights" class="analytics-weekly-insights-grid"></div>
+      </section>
+
+      <section class="section analytics-v0-panel analytics-weekly-review-panel">
+        <div class="section-heading analytics-v0-heading analytics-weekly-review-head">
+          <div>
+            <p class="section-kicker">Weekly review</p>
+            <h2 class="dashboard-section-title">Weekly Review</h2>
+            <p class="today-section-copy">Сформируйте персональный обзор недели на основе состояния, нагрузки и задач за выбранный период.</p>
+          </div>
+          <button class="form-action-button analytics-weekly-review-button" id="analyticsWeeklyReviewButton" type="button">Сформировать обзор недели</button>
+        </div>
+        <div id="analyticsWeeklyReview" class="analytics-weekly-review-letter">
+          <p>Обзор появится после нажатия на кнопку. Он собирается из ваших check-in и задач за выбранный период.</p>
+        </div>
       </section>
 
       <div class="analytics-overview-grid analytics-overview-grid-4 analytics-v0-top-grid" id="analyticsTopCards"></div>
@@ -83,6 +110,20 @@
           </div>
           <div id="analyticsLoadChart" class="analytics-bars-chart"></div>
           <p id="analyticsLoadInsight" class="analytics-inline-note"></p>
+        </article>
+      </section>
+
+      <section class="analytics-row analytics-row-single">
+        <article class="section analytics-v0-panel">
+          <div class="section-heading analytics-v0-heading">
+            <div>
+              <p class="section-kicker">Energy debt</p>
+              <h2 class="dashboard-section-title">Energy Debt за неделю</h2>
+            </div>
+            <span class="analytics-v0-badge">Weekly trend</span>
+          </div>
+          <div id="analyticsDebtTrend" class="analytics-bars-chart"></div>
+          <p id="analyticsDebtInsight" class="analytics-inline-note"></p>
         </article>
       </section>
 
@@ -146,12 +187,12 @@
         <button class="ai-assistant-close" id="aiAssistantClose" type="button">×</button>
       </div>
       <div class="ai-assistant-messages" id="aiAssistantMessages">
-        <div class="ai-message ai-message-assistant">Можно спросить, что видно по аналитике и как интерпретировать состояние и нагрузку.</div>
+        <div class="ai-message ai-message-assistant">Можно спросить, что видно по аналитике и как интерпретировать состояние, нагрузку и фокус.</div>
       </div>
       <form class="ai-assistant-form" id="aiAssistantForm">
         <textarea id="aiAssistantInput" placeholder="Напишите вопрос..." required></textarea>
         <div class="ai-assistant-form-footer">
-          <span class="ai-assistant-status" id="aiAssistantStatus">Можно задать вопрос по состоянию, фокусу и задачам.</span>
+          <span class="ai-assistant-status" id="aiAssistantStatus">Можно задать вопрос по состоянию, энергии и задачам.</span>
           <button class="form-action-button" id="aiAssistantSubmit" type="submit">Отправить</button>
         </div>
       </form>

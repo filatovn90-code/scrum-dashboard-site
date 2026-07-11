@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Сегодня - FocusFlow</title>
+  <title>Сегодня — MindPulse</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="page-shell page-shell-wide today-page">
     <header class="site-header">
       <div class="site-brand">
-        <p class="section-kicker">Scrum Dashboard</p>
+        <p class="section-kicker">MindPulse</p>
         <h1>Сегодня</h1>
       </div>
 
@@ -20,21 +20,60 @@
           <a class="nav-link" href="calendar.html">Календарь</a>
           <a class="nav-link" href="backlog.html">Бэклог</a>
           <a class="nav-link" href="analytics.html">Аналитика</a>
+          <a class="nav-link" href="pricing.html">Pricing</a>
         </nav>
         <button class="login-button" id="todayLogoutButton" type="button">Выход</button>
       </div>
     </header>
 
     <main class="today-main">
-      <section class="section today-hero-card">
-        <div>
-          <p class="section-kicker">Energy-aware planning</p>
-          <h2 class="dashboard-section-title">Собери реалистичный день без перегруза</h2>
-          <p class="today-hero-copy">
-            Экран помогает понять текущее состояние и оценить, насколько день выглядит комфортным по нагрузке.
-          </p>
+      <section class="section today-summary-card">
+        <div class="today-summary-head">
+          <div>
+            <p class="section-kicker">AI Summary</p>
+            <h2 class="dashboard-section-title" id="todaySummaryGreeting">Добро пожаловать в день</h2>
+            <p class="today-hero-copy" id="todaySummaryIntro">
+              Планируй задачи не только по срокам, но и по своей энергии.
+            </p>
+          </div>
+
+          <div class="today-summary-badges">
+            <div class="health-import-chip" id="todaySessionBadge">Загружаю профиль...</div>
+            <div class="today-readiness-pill">
+              <span>Readiness Score</span>
+              <strong id="todayReadinessScore">0</strong>
+            </div>
+          </div>
         </div>
-        <div class="health-import-chip" id="todaySessionBadge">Загружаю профиль...</div>
+
+        <div class="today-summary-grid">
+          <article class="today-summary-panel">
+            <div class="today-summary-status-row">
+              <div>
+                <p class="today-summary-label">Статус дня</p>
+                <strong class="today-summary-status" id="todayDayStatus">Stable</strong>
+              </div>
+              <span class="today-summary-warning" id="todayDayWarning" hidden>Есть риск перегруза</span>
+            </div>
+            <p class="today-summary-copy" id="todayDayStatusNote">
+              После загрузки состояния и задач появится краткая оценка дня.
+            </p>
+          </article>
+
+          <article class="today-summary-panel">
+            <p class="today-summary-label">Рекомендации</p>
+            <ul class="today-guidance-list" id="todayRecommendationsList">
+              <li>Сводка появится после расчёта состояния дня.</li>
+            </ul>
+          </article>
+
+          <article class="today-summary-panel">
+            <p class="today-summary-label">3 главные задачи дня</p>
+            <div class="today-top-tasks" id="todayTopTasks">
+              <p class="today-summary-empty">Пока нет задач на сегодня.</p>
+            </div>
+          </article>
+        </div>
       </section>
 
       <div class="auth-status-box today-status-box" id="todayPageStatus" hidden></div>
@@ -119,23 +158,118 @@
         <article class="section today-capacity-card">
           <div class="section-heading">
             <div>
-              <p class="section-kicker">Capacity</p>
-              <h2 class="dashboard-section-title">Когнитивная емкость</h2>
-              <p class="today-section-copy">Оценка нагрузки на основе сегодняшнего состояния</p>
+              <p class="section-kicker">Readiness</p>
+              <h2 class="dashboard-section-title">Readiness Score</h2>
+              <p class="today-section-copy">Насколько день подходит для сложной работы с учётом состояния и нагрузки</p>
             </div>
           </div>
 
           <div class="today-capacity-head">
-            <strong id="todayCapacityPercent">0%</strong>
-            <span id="todayCapacityLabel" class="today-capacity-badge">Нормальная нагрузка</span>
+            <strong id="todayCapacityPercent">0</strong>
+            <span id="todayCapacityLabel" class="today-capacity-badge">Stable</span>
           </div>
           <div class="today-capacity-bar">
             <span id="todayCapacityBar"></span>
           </div>
           <p id="todayCapacityNote" class="today-capacity-note"></p>
+          <div class="today-energy-debt-card">
+            <span class="today-summary-label">Energy Debt</span>
+            <div class="today-energy-debt-head">
+              <strong id="todayEnergyDebtValue">0</strong>
+              <span id="todayEnergyDebtStatus" class="today-capacity-badge">Healthy</span>
+            </div>
+            <p id="todayEnergyDebtNote" class="today-capacity-note">Метрика появится после нескольких дней использования.</p>
+          </div>
+          <div class="today-capacity-recommendation">
+            <span class="today-summary-label">Что лучше делать сегодня</span>
+            <strong id="todayCapacityMode">Light Tasks</strong>
+          </div>
         </article>
       </section>
+
+      <section class="section today-energy-map-card">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Energy Map</p>
+            <h2 class="dashboard-section-title">Карта дня по слотам</h2>
+            <p class="today-section-copy">Подсказывает, какой тип активности лучше ставить на утро, середину дня, вторую половину и вечер.</p>
+          </div>
+        </div>
+
+        <div class="today-energy-map-grid" id="todayEnergyMapGrid">
+          <article class="today-energy-slot-card">
+            <span class="today-summary-label">Morning</span>
+            <strong>Deep Work</strong>
+            <p>Рекомендация появится после расчёта состояния дня.</p>
+          </article>
+        </div>
+
+        <div class="auth-status-box today-energy-map-warning" id="todayEnergyMapWarning" hidden></div>
+      </section>
+
+      <section class="section today-task-create-card">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Task planning</p>
+            <h2 class="dashboard-section-title">Новая задача на сегодня</h2>
+            <p class="today-section-copy">Перед сохранением приложение мягко проверит, не станет ли день перегруженным.</p>
+          </div>
+        </div>
+
+        <form id="todayTaskCreateForm" class="today-task-create-form">
+          <input id="todayTaskTitleInput" type="text" placeholder="Название задачи" required>
+
+          <div class="today-task-create-grid">
+            <select id="todayTaskTypeInput">
+              <option value="Deep Work">Deep Work</option>
+              <option value="Meetings">Meetings</option>
+              <option value="Admin">Admin</option>
+              <option value="Recovery">Recovery</option>
+              <option value="Light Tasks">Light Tasks</option>
+            </select>
+
+            <select id="todayTaskMentalCostInput">
+              <option value="1">Mental Cost 1</option>
+              <option value="2">Mental Cost 2</option>
+              <option value="3" selected>Mental Cost 3</option>
+              <option value="4">Mental Cost 4</option>
+              <option value="5">Mental Cost 5</option>
+            </select>
+
+            <select id="todayTaskEmotionalCostInput">
+              <option value="1">Emotional Cost 1</option>
+              <option value="2">Emotional Cost 2</option>
+              <option value="3" selected>Emotional Cost 3</option>
+              <option value="4">Emotional Cost 4</option>
+              <option value="5">Emotional Cost 5</option>
+            </select>
+
+            <input id="todayTaskMinutesInput" type="number" min="10" step="5" value="45" placeholder="Минуты">
+          </div>
+
+          <div class="today-card-actions">
+            <button class="form-action-button" type="submit">Проверить и добавить</button>
+          </div>
+        </form>
+
+        <div class="auth-status-box" id="todayTaskCreateStatus">Можно добавить новую задачу на сегодня.</div>
+      </section>
     </main>
+  </div>
+
+  <div class="auth-modal today-guard-modal" id="todayGuardModal" hidden>
+    <div class="auth-backdrop" id="todayGuardBackdrop"></div>
+    <div class="auth-dialog today-guard-dialog">
+      <p class="auth-kicker">Overload Guard</p>
+      <h2>Похоже, день станет перегруженным. Лучше перенести эту задачу?</h2>
+      <p class="today-summary-copy" id="todayGuardMessage">Приложение заметило несколько сигналов перегруза.</p>
+      <ul class="today-guidance-list" id="todayGuardReasons"></ul>
+      <div class="today-card-actions">
+        <button class="form-action-button" id="todayGuardConfirmButton" type="button">Добавить всё равно</button>
+        <button class="ghost-button" id="todayGuardMoveButton" type="button">Перенести</button>
+        <button class="ghost-button" id="todayGuardCancelButton" type="button">Отмена</button>
+      </div>
+    </div>
   </div>
 
   <script src="shared-storage.js"></script>

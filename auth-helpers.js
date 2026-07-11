@@ -9,6 +9,7 @@ import {
   saveCurrentProfile,
   signOutCurrentUser
 } from "./supabase-client.js";
+import { resolvePostAuthPath } from "./onboarding-helpers.js";
 
 export {
   clearLegacyAuthUser,
@@ -38,7 +39,7 @@ export async function redirectIfAuthenticated({ redirectTo = "app.html" } = {}) 
   const session = await getCurrentSession();
   if (session?.user) {
     rememberLegacyAuthUser(session.user);
-    window.location.replace(redirectTo);
+    window.location.replace(resolvePostAuthPath(session.user) || redirectTo);
     return true;
   }
 

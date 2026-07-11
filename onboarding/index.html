@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Onboarding — MindPulse</title>
+  <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+  <div class="page-shell page-shell-wide onboarding-page">
+    <header class="site-header">
+      <div class="site-brand">
+        <p class="section-kicker">MindPulse</p>
+        <h1>Первые настройки</h1>
+      </div>
+      <div class="site-header-actions">
+        <button class="login-button" id="onboardingLogoutButton" type="button">Выйти</button>
+      </div>
+    </header>
+
+    <main class="onboarding-main">
+      <section class="section onboarding-hero">
+        <div>
+          <p class="section-kicker">Welcome Flow</p>
+          <h2 class="dashboard-section-title">Соберём первый рабочий ритм за несколько шагов</h2>
+          <p class="today-section-copy">Сначала выберем, что вы хотите улучшить, затем сохраним первое состояние дня, первую задачу, фокус и первый AI Summary.</p>
+        </div>
+        <div class="auth-status-box onboarding-status-box" id="onboardingStatus">Загружаю onboarding...</div>
+      </section>
+
+      <section class="section onboarding-progress-card">
+        <div class="onboarding-progress">
+          <div class="onboarding-progress-step is-active" data-step-marker="1"><span>1</span><strong>Что улучшить</strong></div>
+          <div class="onboarding-progress-step" data-step-marker="2"><span>2</span><strong>Daily Check-in</strong></div>
+          <div class="onboarding-progress-step" data-step-marker="3"><span>3</span><strong>Первая задача</strong></div>
+          <div class="onboarding-progress-step" data-step-marker="4"><span>4</span><strong>Фокус дня</strong></div>
+          <div class="onboarding-progress-step" data-step-marker="5"><span>5</span><strong>AI Summary</strong></div>
+        </div>
+      </section>
+
+      <section class="section onboarding-step-card" data-step="1">
+        <p class="section-kicker">Шаг 1</p>
+        <h2 class="dashboard-section-title">Что ты хочешь улучшить?</h2>
+        <div class="onboarding-choice-grid">
+          <button class="onboarding-choice-card" type="button" data-goal="меньше перегружаться">Меньше перегружаться</button>
+          <button class="onboarding-choice-card" type="button" data-goal="лучше планировать день">Лучше планировать день</button>
+          <button class="onboarding-choice-card" type="button" data-goal="видеть причины усталости">Видеть причины усталости</button>
+          <button class="onboarding-choice-card" type="button" data-goal="фокусироваться на главном">Фокусироваться на главном</button>
+        </div>
+        <div class="onboarding-actions">
+          <button class="form-action-button" id="onboardingStepOneNext" type="button">Продолжить</button>
+        </div>
+      </section>
+
+      <section class="section onboarding-step-card" data-step="2" hidden>
+        <p class="section-kicker">Шаг 2</p>
+        <h2 class="dashboard-section-title">Первый Daily Check-in</h2>
+        <form class="today-checkin-form">
+          <label class="today-range-field">
+            <div class="today-range-copy">
+              <strong>Энергия</strong>
+              <span>Сколько сил сегодня?</span>
+            </div>
+            <div class="today-range-control">
+              <input id="onboardingEnergyInput" type="range" min="1" max="10" value="6">
+              <output id="onboardingEnergyValue">6</output>
+            </div>
+          </label>
+
+          <label class="today-range-field">
+            <div class="today-range-copy">
+              <strong>Стресс</strong>
+              <span>Насколько напряженно себя чувствуешь?</span>
+            </div>
+            <div class="today-range-control">
+              <input id="onboardingStressInput" type="range" min="1" max="10" value="4">
+              <output id="onboardingStressValue">4</output>
+            </div>
+          </label>
+
+          <label class="today-range-field">
+            <div class="today-range-copy">
+              <strong>Фокус</strong>
+              <span>Насколько легко концентрироваться?</span>
+            </div>
+            <div class="today-range-control">
+              <input id="onboardingFocusInput" type="range" min="1" max="10" value="6">
+              <output id="onboardingFocusValue">6</output>
+            </div>
+          </label>
+
+          <div class="today-checkin-selects">
+            <label class="auth-field">
+              <span>Сон</span>
+              <select id="onboardingSleepSelect">
+                <option value="">Выбрать</option>
+                <option value="Плохо">Плохо</option>
+                <option value="Нормально">Нормально</option>
+                <option value="Хорошо">Хорошо</option>
+              </select>
+            </label>
+
+            <label class="auth-field">
+              <span>Настроение</span>
+              <select id="onboardingMoodSelect">
+                <option value="">Выбрать</option>
+                <option value="Спокойное">Спокойное</option>
+                <option value="Нейтральное">Нейтральное</option>
+                <option value="Тревожное">Тревожное</option>
+                <option value="Раздраженное">Раздраженное</option>
+                <option value="Воодушевленное">Воодушевленное</option>
+                <option value="Уставшее">Уставшее</option>
+              </select>
+            </label>
+          </div>
+        </form>
+        <div class="onboarding-actions">
+          <button class="ghost-button" id="onboardingBackToGoals" type="button">Назад</button>
+          <button class="form-action-button" id="onboardingSaveCheckin" type="button">Сохранить и дальше</button>
+        </div>
+      </section>
+
+      <section class="section onboarding-step-card" data-step="3" hidden>
+        <p class="section-kicker">Шаг 3</p>
+        <h2 class="dashboard-section-title">Создание первой задачи</h2>
+        <form class="today-task-create-form">
+          <input id="onboardingTaskTitle" type="text" placeholder="Название задачи" required>
+          <div class="today-task-create-grid">
+            <select id="onboardingTaskType">
+              <option value="Deep Work">Deep Work</option>
+              <option value="Admin">Admin</option>
+              <option value="Creative">Creative</option>
+              <option value="Shallow Work">Shallow Work</option>
+              <option value="Recovery">Recovery</option>
+            </select>
+            <select id="onboardingTaskMental">
+              <option value="1">Mental Cost 1</option>
+              <option value="2">Mental Cost 2</option>
+              <option value="3" selected>Mental Cost 3</option>
+              <option value="4">Mental Cost 4</option>
+              <option value="5">Mental Cost 5</option>
+            </select>
+            <select id="onboardingTaskEmotional">
+              <option value="1">Emotional Cost 1</option>
+              <option value="2">Emotional Cost 2</option>
+              <option value="3" selected>Emotional Cost 3</option>
+              <option value="4">Emotional Cost 4</option>
+              <option value="5">Emotional Cost 5</option>
+            </select>
+            <input id="onboardingTaskMinutes" type="number" min="15" step="15" value="30" placeholder="Минуты">
+          </div>
+        </form>
+        <div class="onboarding-task-preview" id="onboardingTaskPreview"></div>
+        <div class="onboarding-actions">
+          <button class="ghost-button" id="onboardingBackToCheckin" type="button">Назад</button>
+          <button class="form-action-button" id="onboardingSaveTask" type="button">Сохранить задачу</button>
+          <button class="ghost-button" id="onboardingGoToFocus" type="button">Дальше к фокусу</button>
+        </div>
+      </section>
+
+      <section class="section onboarding-step-card" data-step="4" hidden>
+        <p class="section-kicker">Шаг 4</p>
+        <h2 class="dashboard-section-title">Выбор 1–3 задач фокуса</h2>
+        <p class="today-section-copy">Выбери только то, что действительно важно сделать сегодня.</p>
+        <div class="onboarding-focus-list" id="onboardingFocusList"></div>
+        <div class="onboarding-actions">
+          <button class="ghost-button" id="onboardingBackToTask" type="button">Назад</button>
+          <button class="form-action-button" id="onboardingSaveFocus" type="button">Сохранить фокус</button>
+        </div>
+      </section>
+
+      <section class="section onboarding-step-card" data-step="5" hidden>
+        <p class="section-kicker">Шаг 5</p>
+        <h2 class="dashboard-section-title">Первый AI Summary</h2>
+        <div class="onboarding-summary-letter" id="onboardingSummaryLetter"></div>
+        <div class="onboarding-actions">
+          <button class="ghost-button" id="onboardingBackToFocus" type="button">Назад</button>
+          <button class="form-action-button" id="onboardingFinish" type="button">Перейти в Сегодня</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../shared-storage.js"></script>
+  <script type="module" src="../onboarding.js"></script>
+</body>
+</html>
