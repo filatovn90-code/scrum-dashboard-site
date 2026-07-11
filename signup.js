@@ -2,6 +2,7 @@ import {
   createLocalAccount,
   ensureProfile,
   getSupabase,
+  waitForSessionPersistence,
   rememberLegacyAuthUser
 } from "./supabase-client.js";
 import { resolvePostAuthPath, startOnboardingForUser } from "./onboarding-helpers.js";
@@ -54,10 +55,13 @@ form?.addEventListener("submit", async (event) => {
       return;
     }
 
+    const activeSession = data?.session || await waitForSessionPersistence();
+    const authUser = activeSession?.user || data?.user;
+
     await ensureProfile().catch(() => null);
     setStatus("Аккаунт создан. Перенаправляю в приложение...");
-    startOnboardingForUser(data.user);
-    window.location.replace(resolvePostAuthPath(data.user));
+    startOnboardingForUser(authUser);
+    window.location.replace(resolvePostAuthPath(authUser));
   } catch (error) {
     if (canUseLocalFallback(error)) {
       try {

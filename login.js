@@ -1,10 +1,12 @@
 import {
   getSupabase,
+  waitForSessionPersistence,
   rememberLegacyAuthUser,
   signInLocalAccount
 } from "./supabase-client.js";
+import { resolvePostAuthPath } from "./onboarding-helpers.js";
 import { redirectIfAuthenticated } from "./auth-helpers.js";
-import { appPath } from "./route-paths.js";
+import { todayPath } from "./route-paths.js";
 
 const form = document.getElementById("loginPageForm");
 const emailInput = document.getElementById("loginPageEmail");
@@ -12,7 +14,7 @@ const passwordInput = document.getElementById("loginPagePassword");
 const submitButton = document.getElementById("loginPageSubmit");
 const statusBox = document.getElementById("loginPageStatus");
 
-redirectIfAuthenticated({ redirectTo: appPath() }).catch(() => null);
+redirectIfAuthenticated({ redirectTo: todayPath() }).catch(() => null);
 
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -35,14 +37,17 @@ form?.addEventListener("submit", async (event) => {
       rememberLegacyAuthUser(data.user);
     }
 
+    const activeSession = data?.session || await waitForSessionPersistence();
+    const authUser = activeSession?.user || data?.user;
+
     setStatus("Вход выполнен. Перенаправляю в приложение...");
-    window.location.replace(appPath());
+    window.location.replace(resolvePostAuthPath(authUser));
   } catch (error) {
     try {
       const localAuth = await signInLocalAccount(email, password);
       if (localAuth?.user) {
         setStatus("Вход выполнен. Перенаправляю в приложение...");
-        window.location.replace(appPath());
+        window.location.replace(resolvePostAuthPath(localAuth.user));
         return;
       }
     } catch {
@@ -65,14 +70,15 @@ function getReadableAuthError(error) {
   const normalized = rawMessage.toLowerCase();
 
   if (normalized.includes("failed to fetch") || normalized.includes("networkerror")) {
-    return "Не удалось связаться с сервером входа. Если аккаунт уже был создан локально, попробуйте войти еще раз. Если нет — сначала создайте аккаунт.";
+    return "Не удалось связаться с сервером входа. Проверьте, что Supabase-проект активен и сайт открыт по публичной ссылке.";
   }
 
-  if (
-    normalized.includes("invalid login credentials") ||
-    normalized.includes("email not confirmed")
-  ) {
-    return "Аккаунт не найден или пароль неверный. Если вы еще не регистрировались в текущей версии сайта, сначала создайте аккаунт.";
+  if (normalized.includes("email not confirmed")) {
+    return "Почта для этого аккаунта еще не подтверждена. Откройте письмо от Supabase и подтвердите email. Если нужен вход сразу после регистрации, отключите Confirm email в настройках Supabase.";
+  }
+
+  if (normalized.includes("invalid login credentials")) {
+    return "Аккаунт не найден или пароль неверный. Если аккаунт только что создан, проверьте, не требуется ли подтверждение почты.";
   }
 
   return rawMessage || "Не удалось выполнить вход.";

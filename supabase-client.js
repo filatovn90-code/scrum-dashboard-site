@@ -53,6 +53,10 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function wait(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
 function createLocalId(prefix = "item") {
   const random = Math.random().toString(36).slice(2, 10);
   return `${prefix}-${Date.now()}-${random}`;
@@ -616,6 +620,43 @@ export async function getCurrentSession() {
   } catch {
     return null;
   }
+}
+
+export async function waitForSessionPersistence({ attempts = 12, delayMs = 150 } = {}) {
+  const localSession = getLocalSessionObject();
+  if (localSession?.user) {
+    return localSession;
+  }
+
+  try {
+    const supabase = await getRemoteSupabase();
+
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        return session;
+      }
+
+      if (attempt < attempts - 1) {
+        await wait(delayMs);
+      }
+    }
+
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      return { user };
+    }
+  } catch {
+    // Ignore and let the caller decide what to do next.
+  }
+
+  return null;
 }
 
 export async function ensureProfile() {

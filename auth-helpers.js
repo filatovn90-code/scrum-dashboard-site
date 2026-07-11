@@ -7,7 +7,8 @@ import {
   getSupabase,
   rememberLegacyAuthUser,
   saveCurrentProfile,
-  signOutCurrentUser
+  signOutCurrentUser,
+  waitForSessionPersistence
 } from "./supabase-client.js";
 import { resolvePostAuthPath } from "./onboarding-helpers.js";
 
@@ -24,7 +25,11 @@ export {
 };
 
 export async function requireAuth({ redirectTo = "login.html" } = {}) {
-  const session = await getCurrentSession();
+  let session = await getCurrentSession();
+  if (!session?.user) {
+    session = await waitForSessionPersistence();
+  }
+
   if (!session?.user) {
     window.location.replace(redirectTo);
     return null;
@@ -36,7 +41,11 @@ export async function requireAuth({ redirectTo = "login.html" } = {}) {
 }
 
 export async function redirectIfAuthenticated({ redirectTo = "app.html" } = {}) {
-  const session = await getCurrentSession();
+  let session = await getCurrentSession();
+  if (!session?.user) {
+    session = await waitForSessionPersistence({ attempts: 2, delayMs: 80 });
+  }
+
   if (session?.user) {
     rememberLegacyAuthUser(session.user);
     window.location.replace(resolvePostAuthPath(session.user) || redirectTo);
