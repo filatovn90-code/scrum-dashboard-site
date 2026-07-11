@@ -1,4 +1,5 @@
 import {
+  cacheRemoteSession,
   getSupabase,
   waitForSessionPersistence,
   rememberLegacyAuthUser,
@@ -35,6 +36,10 @@ form?.addEventListener("submit", async (event) => {
 
     if (data?.user) {
       rememberLegacyAuthUser(data.user);
+    }
+
+    if (data?.session) {
+      cacheRemoteSession(data.session);
     }
 
     const activeSession = data?.session || await waitForSessionPersistence();
