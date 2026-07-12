@@ -8,10 +8,15 @@ export const LEGACY_AUTH_KEY = "scrum-dashboard-auth-user";
 
 const LOCAL_AUTH_ACCOUNTS_KEY = "focusflow-local-auth-accounts";
 const LOCAL_AUTH_SESSION_KEY = "focusflow-local-auth-session";
+const REMOTE_AUTH_SESSION_KEY = "focusflow-remote-auth-session";
 const LOCAL_DB_KEY = "focusflow-local-db";
 
 function isFilePreview() {
   return window.location.protocol === "file:";
+}
+
+export function canUseLocalAuthFallback() {
+  return isFilePreview();
 }
 
 function getSupabaseStorage() {
@@ -102,6 +107,30 @@ function clearLocalSession() {
 
 function getLocalUser() {
   return getLocalSessionObject()?.user || null;
+}
+
+function getRemoteSessionObject() {
+  return readJsonStorage(REMOTE_AUTH_SESSION_KEY, null);
+}
+
+function setRemoteSession(session) {
+  if (!session?.user) {
+    return;
+  }
+
+  writeJsonStorage(REMOTE_AUTH_SESSION_KEY, session);
+}
+
+function clearRemoteSession() {
+  window.appStorage?.removeItem(REMOTE_AUTH_SESSION_KEY);
+}
+
+function getRemoteCachedUser() {
+  return getRemoteSessionObject()?.user || null;
+}
+
+export function cacheRemoteSession(session) {
+  setRemoteSession(session);
 }
 
 function readLocalDb() {
@@ -486,7 +515,7 @@ async function getLocalSupabase() {
 }
 
 export async function getSupabase() {
-  if (getLocalUser()) {
+  if (canUseLocalAuthFallback() && getLocalUser()) {
     return getLocalSupabase();
   }
 
@@ -589,9 +618,16 @@ export function isLocalAuthUser(user = getLocalUser()) {
 }
 
 export async function getCurrentUser() {
-  const localUser = getLocalUser();
-  if (localUser) {
-    return localUser;
+  if (canUseLocalAuthFallback()) {
+    const localUser = getLocalUser();
+    if (localUser) {
+      return localUser;
+    }
+  }
+
+  const cachedRemoteUser = getRemoteCachedUser();
+  if (cachedRemoteUser) {
+    return cachedRemoteUser;
   }
 
   try {
@@ -599,6 +635,19 @@ export async function getCurrentUser() {
     const {
       data: { user }
     } = await supabase.auth.getUser();
+
+    if (user) {
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        setRemoteSession(session);
+      } else {
+        setRemoteSession({ user });
+      }
+    }
+
     return user || null;
   } catch {
     return null;
@@ -606,9 +655,16 @@ export async function getCurrentUser() {
 }
 
 export async function getCurrentSession() {
-  const localSession = getLocalSessionObject();
-  if (localSession?.user) {
-    return localSession;
+  if (canUseLocalAuthFallback()) {
+    const localSession = getLocalSessionObject();
+    if (localSession?.user) {
+      return localSession;
+    }
+  }
+
+  const cachedRemoteSession = getRemoteSessionObject();
+  if (cachedRemoteSession?.user) {
+    return cachedRemoteSession;
   }
 
   try {
@@ -616,6 +672,11 @@ export async function getCurrentSession() {
     const {
       data: { session }
     } = await supabase.auth.getSession();
+
+    if (session?.user) {
+      setRemoteSession(session);
+    }
+
     return session || null;
   } catch {
     return null;
@@ -623,9 +684,16 @@ export async function getCurrentSession() {
 }
 
 export async function waitForSessionPersistence({ attempts = 12, delayMs = 150 } = {}) {
-  const localSession = getLocalSessionObject();
-  if (localSession?.user) {
-    return localSession;
+  if (canUseLocalAuthFallback()) {
+    const localSession = getLocalSessionObject();
+    if (localSession?.user) {
+      return localSession;
+    }
+  }
+
+  const cachedRemoteSession = getRemoteSessionObject();
+  if (cachedRemoteSession?.user) {
+    return cachedRemoteSession;
   }
 
   try {
@@ -637,6 +705,7 @@ export async function waitForSessionPersistence({ attempts = 12, delayMs = 150 }
       } = await supabase.auth.getSession();
 
       if (session?.user) {
+        setRemoteSession(session);
         return session;
       }
 
@@ -650,7 +719,9 @@ export async function waitForSessionPersistence({ attempts = 12, delayMs = 150 }
     } = await supabase.auth.getUser();
 
     if (user) {
-      return { user };
+      const userOnlySession = { user };
+      setRemoteSession(userOnlySession);
+      return userOnlySession;
     }
   } catch {
     // Ignore and let the caller decide what to do next.
@@ -701,6 +772,7 @@ export function clearLegacyAuthUser() {
 
 export async function signOutCurrentUser() {
   clearLocalSession();
+  clearRemoteSession();
 
   try {
     const supabase = await getRemoteSupabase();

@@ -1,12 +1,14 @@
 import {
+  cacheRemoteSession,
+  canUseLocalAuthFallback,
   createLocalAccount,
   ensureProfile,
   getSupabase,
-  waitForSessionPersistence,
-  rememberLegacyAuthUser
+  rememberLegacyAuthUser,
+  waitForSessionPersistence
 } from "./supabase-client.js";
-import { resolvePostAuthPath, startOnboardingForUser } from "./onboarding-helpers.js";
 import { redirectIfAuthenticated } from "./auth-helpers.js";
+import { resolvePostAuthPath, startOnboardingForUser } from "./onboarding-helpers.js";
 import { todayPath } from "./route-paths.js";
 
 const form = document.getElementById("signupPageForm");
@@ -21,12 +23,17 @@ redirectIfAuthenticated({ redirectTo: todayPath() }).catch(() => null);
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
-  const repeatPassword = repeatInput.value;
+  const email = String(emailInput?.value || "").trim();
+  const password = String(passwordInput?.value || "");
+  const repeatPassword = String(repeatInput?.value || "");
 
   if (!email) {
     setStatus("Введите email.", true);
+    return;
+  }
+
+  if (!password) {
+    setStatus("Введите пароль.", true);
     return;
   }
 
@@ -36,7 +43,9 @@ form?.addEventListener("submit", async (event) => {
   }
 
   setStatus("Создаю аккаунт...");
-  submitButton.disabled = true;
+  if (submitButton) {
+    submitButton.disabled = true;
+  }
 
   try {
     const supabase = await getSupabase();
@@ -50,20 +59,29 @@ form?.addEventListener("submit", async (event) => {
       rememberLegacyAuthUser(data.user);
     }
 
+    if (data?.session) {
+      cacheRemoteSession(data.session);
+    }
+
     if (!data?.session && data?.user) {
-      setStatus("Аккаунт создан, но email еще не подтвержден. Откройте письмо от Supabase и подтвердите почту. Если для прототипа нужен вход сразу после регистрации, отключите Confirm email в настройках Supabase.", true);
+      setStatus("Аккаунт создан, но почта еще не подтверждена. Откройте письмо от Supabase и подтвердите email.", true);
       return;
     }
 
     const activeSession = data?.session || await waitForSessionPersistence();
     const authUser = activeSession?.user || data?.user;
 
+    if (!authUser) {
+      throw new Error("Не удалось сохранить сессию после регистрации.");
+    }
+
     await ensureProfile().catch(() => null);
-    setStatus("Аккаунт создан. Перенаправляю в приложение...");
     startOnboardingForUser(authUser);
+    setStatus("Аккаунт создан. Перенаправляю в приложение...");
     window.location.replace(resolvePostAuthPath(authUser));
+    return;
   } catch (error) {
-    if (canUseLocalFallback(error)) {
+    if (canUseLocalAuthFallback() && canUseLocalFallback(error)) {
       try {
         const localResult = await createLocalAccount(email, password);
         startOnboardingForUser(localResult?.user);
@@ -78,11 +96,17 @@ form?.addEventListener("submit", async (event) => {
 
     setStatus(getReadableAuthError(error, "signup"), true);
   } finally {
-    submitButton.disabled = false;
+    if (submitButton) {
+      submitButton.disabled = false;
+    }
   }
 });
 
 function setStatus(message, isError = false) {
+  if (!statusBox) {
+    return;
+  }
+
   statusBox.textContent = message;
   statusBox.classList.toggle("is-error", isError);
 }
@@ -108,7 +132,7 @@ function getReadableAuthError(error, mode) {
   }
 
   if (normalized.includes("email not confirmed")) {
-    return "Аккаунт создан, но email еще не подтвержден. Подтвердите почту по письму от Supabase или отключите Confirm email в Supabase, если нужен вход сразу после регистрации.";
+    return "Аккаунт создан, но email еще не подтвержден. Подтвердите почту по письму от Supabase.";
   }
 
   if (normalized.includes("email rate limit exceeded")) {
@@ -119,8 +143,8 @@ function getReadableAuthError(error, mode) {
     return "Пароль слишком короткий. Используйте более длинный пароль.";
   }
 
-  if (normalized.includes("локально")) {
-    return rawMessage;
+  if (normalized.includes("не удалось сохранить сессию")) {
+    return "Регистрация прошла, но сессия не сохранилась. Обычно это связано с настройками домена, Redirect URL или переменных окружения.";
   }
 
   return rawMessage || (mode === "signup"
