@@ -7,9 +7,18 @@ import {
   updateOnboardingState
 } from "./onboarding-helpers.js";
 import { landingPath, loginPath, todayPath } from "./route-paths.js";
+import {
+  calculateDailyLoadLevel,
+  calculateEnergyDebtSeries,
+  calculateReadinessScore,
+  describeTaskLoad,
+  generateRuleBasedRecommendations,
+  normalizeTask,
+  summarizeEnergyDebt,
+  toIsoDate
+} from "./lib/workload.js";
 
-const today = new Date();
-const todayIso = today.toISOString().slice(0, 10);
+const todayIso = toIsoDate(new Date());
 
 const statusBox = document.getElementById("onboardingStatus");
 const logoutButton = document.getElementById("onboardingLogoutButton");
@@ -34,7 +43,6 @@ const taskTitleInput = document.getElementById("onboardingTaskTitle");
 const taskTypeInput = document.getElementById("onboardingTaskType");
 const taskMentalInput = document.getElementById("onboardingTaskMental");
 const taskEmotionalInput = document.getElementById("onboardingTaskEmotional");
-const taskMinutesInput = document.getElementById("onboardingTaskMinutes");
 const taskPreview = document.getElementById("onboardingTaskPreview");
 const saveTaskButton = document.getElementById("onboardingSaveTask");
 const goToFocusButton = document.getElementById("onboardingGoToFocus");
@@ -74,9 +82,9 @@ function bindEvents() {
     });
   });
 
-  stepOneNextButton?.addEventListener("click", async () => {
+  stepOneNextButton?.addEventListener("click", () => {
     if (!selectedGoal) {
-      setStatus("Сначала выберите, что хотите улучшить.", true);
+      setStatus("Сначала выбери, что хочешь улучшить.", true);
       return;
     }
 
@@ -85,7 +93,7 @@ function bindEvents() {
       currentStep: 2
     });
     showStep(2);
-    setStatus("Отлично. Теперь соберём первое состояние дня.");
+    setStatus("Отлично. Теперь соберем первое состояние дня.");
   });
 
   [energyInput, stressInput, focusInput].forEach((input) => {
@@ -95,14 +103,14 @@ function bindEvents() {
   backToGoalsButton?.addEventListener("click", () => {
     onboardingState = updateOnboardingState(currentUser.id, { currentStep: 1 });
     showStep(1);
-    setStatus("Можно поменять фокус onboarding.");
+    setStatus("Можно поменять главный запрос.");
   });
 
   saveCheckinButton?.addEventListener("click", async () => {
     await saveFirstCheckin();
   });
 
-  [taskTitleInput, taskTypeInput, taskMentalInput, taskEmotionalInput, taskMinutesInput].forEach((input) => {
+  [taskTitleInput, taskTypeInput, taskMentalInput, taskEmotionalInput].forEach((input) => {
     input?.addEventListener("input", renderTaskPreview);
     input?.addEventListener("change", renderTaskPreview);
   });
@@ -119,20 +127,20 @@ function bindEvents() {
 
   goToFocusButton?.addEventListener("click", () => {
     if (!todayTasks.length) {
-      setStatus("Сначала добавьте хотя бы одну задачу.", true);
+      setStatus("Сначала добавь хотя бы одну задачу.", true);
       return;
     }
 
     onboardingState = updateOnboardingState(currentUser.id, { currentStep: 4 });
     renderFocusList();
     showStep(4);
-    setStatus("Теперь выберите 1–3 задачи фокуса.");
+    setStatus("Теперь выбери 1–3 задачи фокуса.");
   });
 
   backToTaskButton?.addEventListener("click", () => {
     onboardingState = updateOnboardingState(currentUser.id, { currentStep: 3 });
     showStep(3);
-    setStatus("Можно отредактировать первую задачу или добавить ещё одну.");
+    setStatus("Можно отредактировать первую задачу или добавить еще одну.");
   });
 
   saveFocusButton?.addEventListener("click", async () => {
@@ -142,7 +150,7 @@ function bindEvents() {
   backToFocusButton?.addEventListener("click", () => {
     onboardingState = updateOnboardingState(currentUser.id, { currentStep: 4 });
     showStep(4);
-    setStatus("Можно поменять фокус дня.");
+    setStatus("Можно поменять задачи фокуса.");
   });
 
   finishButton?.addEventListener("click", () => {
@@ -159,8 +167,8 @@ async function bootstrap() {
 
   supabase = await getSupabase();
   currentProfile = await getCurrentProfile().catch(() => null);
-
   onboardingState = startOnboardingForUser(currentUser);
+
   if (onboardingState?.completed) {
     window.location.replace(todayPath());
     return;
@@ -179,7 +187,7 @@ async function bootstrap() {
 
     const initialStep = clamp(Number(onboardingState?.currentStep || 1), 1, 5);
     showStep(initialStep);
-    setStatus("Давай быстро настроим твой первый рабочий день.");
+    setStatus(`Давай быстро настроим первый день${currentProfile?.full_name ? `, ${currentProfile.full_name}` : ""}.`);
   } catch (error) {
     setStatus(error?.message || "Не удалось открыть onboarding.", true);
   }
@@ -203,7 +211,7 @@ async function loadTodayCheckin() {
 async function loadTodayTasks() {
   let response = await supabase
     .from("tasks")
-    .select("id, title, details, status, planned_date, task_type, cognitive_load, emotional_load, energy_required, estimated_minutes, is_focus, completed_at, archived_at, mental_cost, emotional_cost, recovery_minutes, task_intensity")
+    .select("id, title, details, status, planned_date, task_type, cognitive_load, emotional_load, is_focus, completed_at, archived_at, updated_at, project_id")
     .eq("user_id", currentUser.id)
     .eq("planned_date", todayIso)
     .is("archived_at", null)
@@ -212,7 +220,7 @@ async function loadTodayTasks() {
   if (response.error && shouldFallbackTasks(response.error)) {
     response = await supabase
       .from("tasks")
-      .select("id, title, details, status, planned_date, task_type, cognitive_load, emotional_load, energy_required, estimated_minutes, is_focus, completed_at")
+      .select("id, title, details, status, planned_date, task_type, cognitive_load, emotional_load, is_focus, completed_at, updated_at, project_id")
       .eq("user_id", currentUser.id)
       .eq("planned_date", todayIso)
       .order("updated_at", { ascending: false });
@@ -222,7 +230,7 @@ async function loadTodayTasks() {
     throw response.error;
   }
 
-  todayTasks = normalizeTasks(response.data || []);
+  todayTasks = Array.isArray(response.data) ? response.data.map((task) => normalizeTask(task)) : [];
   if (!selectedFocusIds.size) {
     selectedFocusIds = new Set(todayTasks.filter((task) => task.is_focus).map((task) => task.id));
   }
@@ -309,31 +317,17 @@ function buildTaskDraft() {
     return null;
   }
 
-  const taskType = taskTypeInput?.value || "Deep Work";
-  const mentalCost = clamp(Number(taskMentalInput?.value || 3), 1, 5);
-  const emotionalCost = clamp(Number(taskEmotionalInput?.value || 3), 1, 5);
-  const estimatedMinutes = Math.max(15, Number(taskMinutesInput?.value || 30));
-  const energyRequired = inferEnergyRequired(taskType, mentalCost);
-  const taskIntensity = inferTaskIntensity(taskType, mentalCost, estimatedMinutes);
-  const recoveryMinutes = taskType === "Recovery" ? 25 : taskIntensity === "high" ? 20 : taskIntensity === "low" ? 5 : 10;
-
-  return {
+  return normalizeTask({
     title,
     details: "",
     status: "todo",
     planned_date: todayIso,
-    task_type: taskType,
-    cognitive_load: mentalCost,
-    emotional_load: emotionalCost,
-    energy_required: energyRequired,
-    estimated_minutes: estimatedMinutes,
-    mental_cost: mentalCost,
-    emotional_cost: emotionalCost,
-    recovery_minutes: recoveryMinutes,
-    task_intensity: taskIntensity,
+    task_type: taskTypeInput?.value || "routine",
+    cognitive_load: Number(taskMentalInput?.value || 3),
+    emotional_load: Number(taskEmotionalInput?.value || 2),
     is_focus: false,
     completed_at: null
-  };
+  });
 }
 
 function renderTaskPreview() {
@@ -341,22 +335,23 @@ function renderTaskPreview() {
   if (!draft) {
     taskPreview.innerHTML = `
       <div class="onboarding-inline-note">
-        Первая задача появится здесь после того, как вы введёте название.
+        Первая задача появится здесь после того, как ты введешь название.
       </div>
     `;
     return;
   }
 
+  const details = describeTaskLoad(draft);
   taskPreview.innerHTML = `
     <article class="onboarding-task-card-preview">
       <strong>${escapeHtml(draft.title)}</strong>
       <div class="onboarding-task-preview-meta">
-        <span>${escapeHtml(draft.task_type)}</span>
-        <span>Mental ${draft.mental_cost}/5</span>
-        <span>Emotional ${draft.emotional_cost}/5</span>
-        <span>${draft.estimated_minutes} мин</span>
-        <span>${escapeHtml(intensityLabel(draft.task_intensity))}</span>
+        <span>${escapeHtml(`${details.typeIcon} ${details.typeLabel}`)}</span>
+        <span>Когнитивная: ${details.cognitiveLabel}</span>
+        <span>Эмоциональная: ${details.emotionalLabel}</span>
+        <span>Нагрузка: ${details.intensityLabel}</span>
       </div>
+      <p class="today-section-copy">${escapeHtml(details.recoveryNote)}</p>
     </article>
   `;
 }
@@ -364,7 +359,7 @@ function renderTaskPreview() {
 async function saveFirstTask() {
   const draft = buildTaskDraft();
   if (!draft) {
-    setStatus("Введите название первой задачи.", true);
+    setStatus("Введи название первой задачи.", true);
     return;
   }
 
@@ -380,7 +375,7 @@ async function saveFirstTask() {
     });
     renderFocusList();
     showStep(4);
-    setStatus("Первая задача готова. Теперь выберите 1–3 задачи фокуса.");
+    setStatus("Первая задача готова. Теперь выбери 1–3 задачи фокуса.");
   } catch (error) {
     setStatus(error?.message || "Не удалось сохранить первую задачу.", true);
   } finally {
@@ -389,19 +384,9 @@ async function saveFirstTask() {
 }
 
 async function insertTask(draft) {
-  const fullPayload = {
-    user_id: currentUser.id,
-    ...draft
-  };
-
   let response = await supabase
     .from("tasks")
-    .insert(fullPayload)
-    .select("*")
-    .single();
-
-  if (response.error && shouldFallbackTaskInsert(response.error)) {
-    const fallbackPayload = {
+    .insert({
       user_id: currentUser.id,
       title: draft.title,
       details: draft.details,
@@ -410,24 +395,34 @@ async function insertTask(draft) {
       task_type: draft.task_type,
       cognitive_load: draft.cognitive_load,
       emotional_load: draft.emotional_load,
-      energy_required: draft.energy_required,
-      estimated_minutes: draft.estimated_minutes,
-      is_focus: false,
-      completed_at: null
-    };
+      is_focus: false
+    })
+    .select("*")
+    .single();
 
+  if (response.error && shouldFallbackTasks(response.error)) {
     response = await supabase
       .from("tasks")
-      .insert(fallbackPayload)
+      .insert({
+        user_id: currentUser.id,
+        title: draft.title,
+        details: draft.details,
+        status: draft.status,
+        planned_date: draft.planned_date,
+        task_type: draft.task_type,
+        cognitive_load: draft.cognitive_load,
+        emotional_load: draft.emotional_load,
+        is_focus: false
+      })
       .select("*")
       .single();
   }
 
   if (response.error) {
-    throw response.error;
+    throw humanizeTaskInsertError(response.error);
   }
 
-  return normalizeTask(response.data || fullPayload);
+  return normalizeTask(response.data);
 }
 
 function renderFocusList() {
@@ -438,7 +433,7 @@ function renderFocusList() {
   if (!todayTasks.length) {
     focusList.innerHTML = `
       <div class="onboarding-inline-note">
-        Сначала добавьте хотя бы одну задачу, чтобы выбрать фокус дня.
+        Сначала добавь хотя бы одну задачу, чтобы выбрать фокус дня.
       </div>
     `;
     return;
@@ -446,16 +441,17 @@ function renderFocusList() {
 
   focusList.innerHTML = todayTasks.map((task) => {
     const checked = selectedFocusIds.has(task.id);
+    const details = describeTaskLoad(task);
     return `
       <label class="onboarding-focus-card ${checked ? "is-selected" : ""}">
         <input type="checkbox" value="${escapeHtml(task.id)}" ${checked ? "checked" : ""}>
         <div>
           <strong>${escapeHtml(task.title)}</strong>
           <div class="onboarding-task-preview-meta">
-            <span>${escapeHtml(task.task_type || "Task")}</span>
-            <span>Mental ${Number(task.mental_cost || task.cognitive_load || 1)}/5</span>
-            <span>Emotional ${Number(task.emotional_cost || task.emotional_load || 1)}/5</span>
-            <span>${Number(task.estimated_minutes || 30)} мин</span>
+            <span>${escapeHtml(`${details.typeIcon} ${details.typeLabel}`)}</span>
+            <span>Когнитивная: ${details.cognitiveLabel}</span>
+            <span>Эмоциональная: ${details.emotionalLabel}</span>
+            <span>${details.intensityLabel}</span>
           </div>
         </div>
       </label>
@@ -482,7 +478,7 @@ function renderFocusList() {
 async function saveFocusSelection() {
   const ids = Array.from(selectedFocusIds);
   if (!ids.length) {
-    setStatus("Выберите хотя бы одну задачу фокуса.", true);
+    setStatus("Выбери хотя бы одну задачу фокуса.", true);
     return;
   }
 
@@ -522,7 +518,7 @@ async function saveFocusSelection() {
       focusTaskIds: ids
     });
     showStep(5);
-    setStatus("Фокус дня сохранён. Ниже — первый AI Summary.");
+    setStatus("Фокус дня сохранен. Ниже — первый AI Summary.");
   } catch (error) {
     setStatus(error?.message || "Не удалось сохранить фокус дня.", true);
   } finally {
@@ -536,136 +532,33 @@ function renderSummary() {
 }
 
 function buildSummary() {
-  const state = currentState();
-  const activeTasks = todayTasks.filter((task) => String(task.status || "").toLowerCase() !== "done");
-  const focusTasks = activeTasks.filter((task) => selectedFocusIds.has(task.id) || task.is_focus).slice(0, 3);
-  const totalLoad = activeTasks.reduce((sum, task) => sum + calculateTaskLoad(task), 0);
-  const readiness = calculateReadiness(state, activeTasks, totalLoad);
-  const mode = recommendedMode(readiness.score, state, activeTasks);
-  const recommendations = buildRecommendations(state, activeTasks, totalLoad, readiness, mode);
-  const greeting = buildGreeting();
-  const goalText = selectedGoal ? `Сейчас главный запрос — ${selectedGoal.toLowerCase()}.` : "Сейчас мы собираем спокойный и реалистичный ритм дня.";
-  const focusLine = focusTasks.length
-    ? `Главные задачи дня: ${focusTasks.map((task) => task.title).join(", ")}.`
-    : "Фокус дня пока ещё можно уточнить, но лучше оставить не больше трёх главных задач.";
-  const warningLine = readiness.score < 40 || totalLoad > 120
-    ? "День уже выглядит плотным. Если появится ещё одна тяжёлая задача, лучше перенести её на завтра."
-    : "Нагрузка пока выглядит управляемой, если держаться короткого плана и не добавлять лишнее.";
-
-  return [
-    `${greeting}. Твой первый Readiness Score — ${readiness.score}/100, статус дня: ${readiness.status}.`,
-    `${goalText} Сегодня лучше работать в режиме ${mode}.`,
-    focusLine,
-    warningLine,
-    ...recommendations.slice(0, 3)
-  ];
-}
-
-function currentState() {
-  return {
-    energy: Number(energyInput?.value || 6),
-    stress: Number(stressInput?.value || 4),
-    focus: Number(focusInput?.value || 6),
-    sleep: sleepSelect?.value || "",
+  const checkin = {
+    checkin_date: todayIso,
+    energy_level: Number(energyInput?.value || 6),
+    stress_level: Number(stressInput?.value || 4),
+    focus_level: Number(focusInput?.value || 6),
+    sleep_quality: sleepSelect?.value || "",
     mood: moodSelect?.value || ""
   };
-}
+  const activeTasks = todayTasks.filter((task) => String(task.status || "").toLowerCase() !== "done");
+  const focusTasks = activeTasks.filter((task) => selectedFocusIds.has(task.id) || task.is_focus).slice(0, 3);
+  const energyDebt = summarizeEnergyDebt(calculateEnergyDebtSeries([checkin], activeTasks));
+  const readiness = calculateReadinessScore(checkin, activeTasks, energyDebt);
+  const loadLevel = calculateDailyLoadLevel(activeTasks);
+  const recommendations = generateRuleBasedRecommendations(checkin, activeTasks, { readiness, energyDebt });
+  const goalText = selectedGoal ? `Твой главный запрос сейчас — ${selectedGoal.toLowerCase()}.` : "Сейчас мы собираем спокойный и реалистичный ритм дня.";
+  const focusLine = focusTasks.length
+    ? `Главные задачи дня: ${focusTasks.map((task) => task.title).join(", ")}.`
+    : "Фокус дня пока можно уточнить, но лучше оставить не больше трех главных задач.";
 
-function calculateReadiness(state, tasks, totalLoad) {
-  const energyBonus = Math.round((clamp(state.energy, 1, 10) / 10) * 20);
-  const focusBonus = Math.round((clamp(state.focus, 1, 10) / 10) * 10);
-  const stressPenalty = Math.round((clamp(state.stress, 1, 10) / 10) * 25);
-  const loadPenalty = Math.min(30, Math.round(totalLoad / 5));
-  const score = clamp(70 + energyBonus + focusBonus - stressPenalty - loadPenalty, 0, 100);
-
-  return {
-    score,
-    status: readinessStatus(score)
-  };
-}
-
-function readinessStatus(score) {
-  if (score >= 80) return "Excellent Day";
-  if (score >= 60) return "Stable";
-  if (score >= 40) return "Heavy";
-  return "Recovery Needed";
-}
-
-function recommendedMode(score, state, tasks) {
-  const deepWorkCount = tasks.filter((task) => String(task.task_type || "").toLowerCase().includes("deep")).length;
-  const heavyMentalCount = tasks.filter((task) => Number(task.mental_cost || task.cognitive_load || 1) >= 4).length;
-
-  if (score < 40 || state.stress >= 8) return "Recovery";
-  if (score < 55 || state.energy <= 4) return "Light Tasks";
-  if (state.focus <= 5 || heavyMentalCount >= 3) return "Admin";
-  if (deepWorkCount >= 1 && score >= 75) return "Deep Work";
-  return "Admin";
-}
-
-function buildRecommendations(state, tasks, totalLoad, readiness, mode) {
-  const recommendations = [];
-  const deepWorkCount = tasks.filter((task) => String(task.task_type || "").toLowerCase().includes("deep")).length;
-
-  if (state.energy <= 4) {
-    recommendations.push("Начни с короткой и понятной задачи, чтобы мягко войти в день.");
-  }
-
-  if (state.stress >= 7) {
-    recommendations.push("Не ставь эмоционально тяжёлую задачу первой — сначала снизь внутреннее напряжение.");
-  }
-
-  if (state.focus >= 7 && deepWorkCount) {
-    recommendations.push("Окно высокого фокуса лучше отдать под самую важную Deep Work задачу.");
-  }
-
-  if (deepWorkCount >= 2 || totalLoad > 120) {
-    recommendations.push("Оставь максимум 1–2 тяжёлые задачи, а остальное перенеси в более лёгкий слот.");
-  }
-
-  if (mode === "Recovery") {
-    recommendations.push("Сделай ставку на восстановление, короткие шаги и спокойный ритм без перегруза.");
-  }
-
-  if (readiness.score >= 80) {
-    recommendations.push("Ресурс хороший — используй его на одну действительно важную задачу, а не на распыление.");
-  }
-
-  if (!recommendations.length) {
-    recommendations.push("Планируй короткими блоками и держи фокус только на самом важном.");
-  }
-
-  return recommendations;
-}
-
-function calculateTaskLoad(task) {
-  const mental = Number(task.mental_cost || task.cognitive_load || 1);
-  const emotional = Number(task.emotional_cost || task.emotional_load || 1);
-  const energy = Number(task.energy_required || 1);
-  const minutes = Number(task.estimated_minutes || 30);
-  return mental * 10 + emotional * 8 + energy * 6 + minutes / 10;
-}
-
-function inferEnergyRequired(taskType, mentalCost) {
-  const normalizedType = String(taskType || "").toLowerCase();
-  if (normalizedType.includes("recovery")) return 1;
-  if (normalizedType.includes("admin")) return Math.max(1, mentalCost - 1);
-  if (normalizedType.includes("shallow")) return Math.max(1, mentalCost - 1);
-  if (normalizedType.includes("creative")) return Math.min(5, mentalCost + 1);
-  return Math.min(5, mentalCost);
-}
-
-function inferTaskIntensity(taskType, mentalCost, estimatedMinutes) {
-  const normalizedType = String(taskType || "").toLowerCase();
-  if (normalizedType.includes("recovery")) return "low";
-  if (mentalCost >= 4 || estimatedMinutes >= 90) return "high";
-  if (normalizedType.includes("admin") || estimatedMinutes <= 30) return "low";
-  return "medium";
-}
-
-function intensityLabel(value) {
-  if (value === "high") return "High Intensity";
-  if (value === "low") return "Low Intensity";
-  return "Medium Intensity";
+  return [
+    `${buildGreeting()}. Твой первый Readiness Score — ${readiness.score}/100, статус дня: ${statusTitle(readiness.state)}.`,
+    `${goalText} Сегодня лучше работать в режиме ${readiness.mode}.`,
+    focusLine,
+    `Дневная нагрузка сейчас: ${loadLevel.label.toLowerCase()}. ${loadLevel.note}`,
+    recommendations[0] || "Планируй день короткими блоками и не добавляй лишнее.",
+    recommendations[1] || "Оставь место для паузы между сложными задачами."
+  ];
 }
 
 function buildGreeting() {
@@ -678,47 +571,31 @@ function buildGreeting() {
   return `Добрый вечер${suffix}`;
 }
 
-function normalizeTasks(tasks) {
-  return tasks.map((task) => normalizeTask(task));
+function statusTitle(state) {
+  if (state === "excellent") return "Excellent Day";
+  if (state === "stable") return "Stable";
+  if (state === "heavy") return "Heavy";
+  return "Recovery Needed";
 }
 
-function normalizeTask(task) {
-  return {
-    id: task.id,
-    title: task.title || "Без названия",
-    details: task.details || "",
-    status: task.status || "todo",
-    planned_date: task.planned_date || todayIso,
-    task_type: task.task_type || "Deep Work",
-    cognitive_load: Number(task.cognitive_load || 1),
-    emotional_load: Number(task.emotional_load || 1),
-    energy_required: Number(task.energy_required || 1),
-    estimated_minutes: Number(task.estimated_minutes || 30),
-    mental_cost: Number(task.mental_cost || task.cognitive_load || 1),
-    emotional_cost: Number(task.emotional_cost || task.emotional_load || 1),
-    recovery_minutes: Number(task.recovery_minutes || 0),
-    task_intensity: task.task_intensity || inferTaskIntensity(task.task_type, Number(task.cognitive_load || 1), Number(task.estimated_minutes || 30)),
-    is_focus: Boolean(task.is_focus),
-    completed_at: task.completed_at || null
-  };
+function humanizeTaskInsertError(error) {
+  const message = String(error?.message || "");
+  if (message.includes("project_id")) {
+    return new Error("В базе задач еще требуется project_id. Сначала нужно обновить SQL-структуру задач или добавить проект по умолчанию.");
+  }
+  return error instanceof Error ? error : new Error(message || "Не удалось сохранить задачу.");
 }
 
 function shouldFallbackTasks(error) {
   const message = String(error?.message || "").toLowerCase();
-  return ["mental_cost", "emotional_cost", "recovery_minutes", "task_intensity", "archived_at"].some((part) => message.includes(part));
-}
-
-function shouldFallbackTaskInsert(error) {
-  const message = String(error?.message || "").toLowerCase();
-  return ["mental_cost", "emotional_cost", "recovery_minutes", "task_intensity"].some((part) => message.includes(part));
+  return ["archived_at", "updated_at"].some((part) => message.includes(part));
 }
 
 function withMigrationHint(error, tableName) {
   const message = String(error?.message || "");
   if (message.toLowerCase().includes(`could not find the table 'public.${tableName}'`)) {
-    return new Error(`Таблица ${tableName} пока не создана в Supabase. Сначала выполните SQL-миграцию для этой таблицы.`);
+    return new Error(`Таблица ${tableName} пока не создана в Supabase. Сначала выполни SQL-миграцию для этой таблицы.`);
   }
-
   return error;
 }
 
@@ -732,7 +609,7 @@ function setStatus(message, isError = false) {
 }
 
 function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
+  return Math.min(max, Math.max(min, Number(value) || min));
 }
 
 function escapeHtml(value) {

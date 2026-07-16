@@ -3,6 +3,19 @@ import { getSupabase } from "./supabase-client.js";
 import { aiCoachPath, landingPath, loginPath, todayPath } from "./route-paths.js";
 import { getCurrentPlan, isProPlan } from "./pricing-helpers.js";
 import { requestWeeklyReview } from "./ai-service.js";
+import {
+  calculateDailyLoad,
+  calculateDailyLoadLevel,
+  calculateEnergyDebtSeries,
+  calculateReadinessScore,
+  currentState,
+  generateRuleBasedRecommendations,
+  getTaskTypeLabel,
+  listDates,
+  normalizeTask,
+  summarizeEnergyDebt,
+  toIsoDate
+} from "./lib/workload.js";
 
 const logoutButton = document.getElementById("logoutButton");
 const periodSelect = document.getElementById("analyticsPeriodSelect");
@@ -120,62 +133,20 @@ async function renderAnalytics() {
     fetchTasks(range)
   ]);
 
-  const dataset = buildDataset(range, checkins, tasks);
-  currentDataset = dataset;
+  currentDataset = buildDataset(range, checkins, tasks);
 
-  renderWeeklyInsights(dataset);
-  renderWeeklyReviewPlaceholder(dataset);
-  renderTopCards(dataset);
-  renderStateChart(dataset);
-  renderLoadChart(dataset);
-  renderDebtTrend(dataset);
-  renderInsights(dataset);
-  renderTaskTypes(dataset);
-  renderOverloadTrend(dataset);
-  renderRecommendations(dataset);
+  renderWeeklyInsights(currentDataset);
+  renderWeeklyReviewPlaceholder(currentDataset);
+  renderTopCards(currentDataset);
+  renderStateChart(currentDataset);
+  renderLoadChart(currentDataset);
+  renderDebtTrend(currentDataset);
+  renderInsights(currentDataset);
+  renderTaskTypes(currentDataset);
+  renderOverloadTrend(currentDataset);
+  renderRecommendations(currentDataset);
+
   setStatus(`${PERIOD_OPTIONS[periodKey]} • ${formatDate(range.start)} - ${formatDate(range.end)}`);
-}
-
-function renderLockedProSections() {
-  return;
-  weeklyInsightsBox.innerHTML = buildLockedMarkup({
-    kicker: "Pro insights",
-    title: "Главные инсайты недели доступны в Pro",
-    copy: "В Free остаются базовые графики и показатели, а смысловые персональные выводы откроются в Pro."
-  });
-
-  weeklyReviewButton.disabled = true;
-  weeklyReviewButton.textContent = "Weekly Review — Pro";
-  weeklyReviewBox.innerHTML = buildLockedMarkup({
-    kicker: "Pro review",
-    title: "Weekly Review входит в Pro",
-    copy: "Текстовый обзор недели с выводами и рекомендациями будет доступен в расширенном тарифе."
-  });
-
-  debtTrend.innerHTML = buildLockedMarkup({
-    kicker: "Pro metric",
-    title: "Energy Debt доступен в Pro",
-    copy: "Накопленная энергетическая нагрузка за неделю откроется после подключения Pro."
-  });
-  debtInsight.textContent = "В Free доступна базовая аналитика задач и состояния за текущую неделю.";
-
-  insightsBox.innerHTML = buildLockedMarkup({
-    kicker: "Pro insights",
-    title: "Персональные инсайты доступны в Pro",
-    copy: "Связи между состоянием, нагрузкой и типами задач будут открыты в расширенной версии."
-  });
-
-  overloadTrendBox.innerHTML = buildLockedMarkup({
-    kicker: "Pro trend",
-    title: "Тренд перегруза доступен в Pro",
-    copy: "Подробная оценка перегруза по дням недели откроется в Pro."
-  });
-
-  recommendationsBox.innerHTML = buildLockedMarkup({
-    kicker: "Pro recommendations",
-    title: "Персональные рекомендации доступны в Pro",
-    copy: "MindPulse покажет персональные выводы и рекомендации на следующую неделю в расширенном тарифе."
-  });
 }
 
 async function fetchCheckins(range) {
@@ -203,20 +174,20 @@ async function fetchTasks(range) {
     error
   } = await supabase
     .from("tasks")
-    .select("id, planned_date, status, task_type, cognitive_load, emotional_load, energy_required, estimated_minutes, is_focus, completed_at, archived_at, mental_cost, emotional_cost, recovery_minutes, task_intensity")
+    .select("id, title, details, planned_date, status, task_type, cognitive_load, emotional_load, is_focus, completed_at, archived_at")
     .eq("user_id", currentUser.id)
     .gte("planned_date", range.start)
     .lte("planned_date", range.end)
     .is("archived_at", null)
     .order("planned_date", { ascending: true }));
 
-  if (error && String(error.message || "").includes("mental_cost")) {
+  if (error && String(error.message || "").includes("title")) {
     ({
       data,
       error
     } = await supabase
       .from("tasks")
-      .select("id, planned_date, status, task_type, cognitive_load, emotional_load, energy_required, estimated_minutes, is_focus, completed_at, archived_at")
+      .select("id, planned_date, status, task_type, cognitive_load, emotional_load, is_focus, completed_at, archived_at")
       .eq("user_id", currentUser.id)
       .gte("planned_date", range.start)
       .lte("planned_date", range.end)
@@ -228,7 +199,7 @@ async function fetchTasks(range) {
     throw error;
   }
 
-  const appTasks = data || [];
+  const appTasks = (data || []).map((task) => normalizeTask(task));
   const backlogTasks = loadBacklogTasks(range);
 
   return mergeTaskSources(appTasks, backlogTasks);
@@ -289,136 +260,33 @@ function normalizeBacklogTasks(backlogData, range) {
 }
 
 function mapBacklogItemToTask(item, plannedDate, weekLabel, dayIndex, itemIndex) {
-  const energyCost = item?.energyCost || "M";
-  const taskType = item?.taskType || "Low Energy";
-  const status = mapBacklogStatus(item?.status);
-  const estimatedMinutes = mapEnergyCostToMinutes(energyCost);
-  const cognitiveLoad = mapTaskTypeToCognitiveLoad(taskType, energyCost);
-  const emotionalLoad = mapStressToLoad(item?.stress);
-  const energyRequired = mapTaskTypeToEnergyRequired(taskType, energyCost);
-  const mentalCost = Number(item?.mentalCost || cognitiveLoad);
-  const emotionalCost = Number(item?.emotionalCost || emotionalLoad);
-  const taskIntensity = item?.taskIntensity || mapEnergyCostToIntensity(energyCost);
-  const recoveryMinutes = Number(item?.recoveryMinutes ?? mapIntensityToRecoveryMinutes(taskIntensity, energyCost));
+  const mappedType = mapLegacyTaskType(item?.task_type || item?.taskType);
+  const cognitiveLoad = clampLoad(item?.cognitive_load ?? item?.mentalCost ?? legacyTypeToCognitive(mappedType));
+  const emotionalLoad = clampLoad(item?.emotional_load ?? item?.emotionalCost ?? mapStressToLoad(item?.stress));
 
-  return {
+  return normalizeTask({
     id: item?.id || `backlog-${weekLabel}-${dayIndex}-${itemIndex}`,
     planned_date: plannedDate,
-    status,
-    task_type: taskType,
+    status: mapBacklogStatus(item?.status),
+    task_type: mappedType,
     cognitive_load: cognitiveLoad,
     emotional_load: emotionalLoad,
-    energy_required: energyRequired,
-    estimated_minutes: estimatedMinutes,
-    mental_cost: mentalCost,
-    emotional_cost: emotionalCost,
-    recovery_minutes: recoveryMinutes,
-    task_intensity: taskIntensity,
-    is_focus: false,
-    completed_at: status === "done" ? `${plannedDate}T18:00:00.000Z` : null,
+    is_focus: Boolean(item?.is_focus),
+    completed_at: mapBacklogStatus(item?.status) === "done" ? `${plannedDate}T18:00:00.000Z` : null,
     archived_at: null,
     source: "backlog",
-    title: item?.text || "",
+    title: item?.title || item?.text || "",
     time: item?.time || ""
-  };
-}
-
-function backlogDateToIso(value) {
-  if (!value || typeof value !== "string") {
-    return null;
-  }
-
-  const [day, month] = value.split(".");
-  if (!day || !month) {
-    return null;
-  }
-
-  return `2026-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-
-function mapBacklogStatus(status) {
-  if (status === "Сделано") {
-    return "done";
-  }
-  if (status === "В работе") {
-    return "in_progress";
-  }
-  return "todo";
-}
-
-function mapStressToLoad(stress) {
-  if (stress === "Высокий") {
-    return 5;
-  }
-  if (stress === "Средний") {
-    return 3;
-  }
-  if (stress === "Низкий") {
-    return 2;
-  }
-  return 1;
-}
-
-function mapEnergyCostToMinutes(cost) {
-  if (cost === "L") {
-    return 90;
-  }
-  if (cost === "S") {
-    return 30;
-  }
-  return 60;
-}
-
-function mapEnergyCostToIntensity(cost) {
-  if (cost === "L") {
-    return "high";
-  }
-  if (cost === "S") {
-    return "low";
-  }
-  return "medium";
-}
-
-function mapIntensityToRecoveryMinutes(taskIntensity = "medium", energyCost = "M") {
-  if (taskIntensity === "high" || energyCost === "L") {
-    return 30;
-  }
-  if (taskIntensity === "low" || energyCost === "S") {
-    return 5;
-  }
-  return 15;
-}
-
-function mapTaskTypeToCognitiveLoad(taskType, energyCost) {
-  const level = energyCost === "L" ? 2 : energyCost === "S" ? 0 : 1;
-
-  if (taskType === "Deep Work") {
-    return 3 + level;
-  }
-  if (taskType === "High Energy") {
-    return 2 + level;
-  }
-  return 1 + level;
-}
-
-function mapTaskTypeToEnergyRequired(taskType, energyCost) {
-  const level = energyCost === "L" ? 2 : energyCost === "S" ? 0 : 1;
-
-  if (taskType === "High Energy") {
-    return 3 + level;
-  }
-  if (taskType === "Deep Work") {
-    return 2 + level;
-  }
-  return 1 + level;
+  });
 }
 
 function mergeTaskSources(appTasks, backlogTasks) {
   const merged = new Map();
 
   [...backlogTasks, ...appTasks].forEach((task) => {
-    const key = [task.id, task.planned_date, task.status, task.title || ""].join("::");
-    merged.set(key, task);
+    const normalized = normalizeTask(task);
+    const key = [normalized.id, normalized.planned_date, normalized.title || ""].join("::");
+    merged.set(key, normalized);
   });
 
   return Array.from(merged.values()).sort((left, right) => {
@@ -428,7 +296,6 @@ function mergeTaskSources(appTasks, backlogTasks) {
 
 function buildDataset(range, checkins, tasks) {
   const dayMap = new Map();
-  const taskTypes = new Map();
   const checkinMap = new Map(checkins.map((item) => [item.checkin_date, item]));
 
   for (const date of listDates(range.start, range.end)) {
@@ -438,14 +305,11 @@ function buildDataset(range, checkins, tasks) {
       weekday: weekdayLabel(date),
       checkin: checkinMap.get(date) || null,
       tasks: [],
-      taskLoad: 0,
-      deepWorkCount: 0,
-      totalCognitive: 0,
-      energyDebtDelta: 0,
-      energyDebtValue: 0,
-      energyDebtStatus: "normal",
-      overloadScore: 0,
-      overloadState: "normal"
+      loadValue: 0,
+      loadMeta: calculateDailyLoad([]),
+      readiness: { score: 65, label: "Стабильное состояние", note: "Появится после check-in и задач.", state: "stable" },
+      overloadState: "balanced",
+      overloadLabel: "Сбалансировано"
     });
   }
 
@@ -453,144 +317,99 @@ function buildDataset(range, checkins, tasks) {
     if (!task.planned_date || !dayMap.has(task.planned_date)) {
       return;
     }
-
-    const day = dayMap.get(task.planned_date);
-    day.tasks.push(task);
-
-    const cognitive = Number(task.cognitive_load || 0);
-    const mental = Number(task.mental_cost || task.cognitive_load || 0);
-    const emotional = Number(task.emotional_cost || task.emotional_load || 0);
-    const energyRequired = Number(task.energy_required || 0);
-    const minutes = Number(task.estimated_minutes || 0);
-    const recovery = Number(task.recovery_minutes || 0);
-    const load = mental * 10 + emotional * 8 + energyRequired * 6 + minutes / 10 + recovery / 6;
-
-    day.taskLoad += load;
-    day.totalCognitive += mental;
-    if ((task.task_type || "") === "Deep Work") {
-      day.deepWorkCount += 1;
-    }
-
-    const type = task.task_type || "Без типа";
-    if (!taskTypes.has(type)) {
-      taskTypes.set(type, {
-        label: type,
-        count: 0,
-        mentalTotal: 0,
-        emotionalTotal: 0,
-        recoveryTotal: 0,
-        minutesTotal: 0
-      });
-    }
-
-    const entry = taskTypes.get(type);
-    entry.count += 1;
-    entry.mentalTotal += mental;
-    entry.emotionalTotal += emotional;
-    entry.recoveryTotal += recovery;
-    entry.minutesTotal += minutes;
+    dayMap.get(task.planned_date).tasks.push(normalizeTask(task));
   });
 
   const days = Array.from(dayMap.values());
-  let cumulativeDebt = 0;
+  const recentHistory = [];
+
   days.forEach((day) => {
-    const stress = Number(day.checkin?.stress_level || 0);
-    const energy = Number(day.checkin?.energy_level || 0);
-    const focus = Number(day.checkin?.focus_level || 0);
-    const hasRecoveryTask = day.tasks.some(isRecoveryTask);
-
-    let score = stress * 10 + day.taskLoad / 5;
-    if (energy > 0 && energy <= 4) {
-      score += 20;
-    }
-    if (focus > 0 && focus <= 4) {
-      score += 10;
-    }
-
-    day.overloadScore = Math.round(score);
-    day.overloadState = overloadState(day.overloadScore);
-    day.energyDebtDelta = calculateEnergyDebtDelta(day.checkin, day.taskLoad, hasRecoveryTask);
-    cumulativeDebt = Math.max(0, cumulativeDebt + day.energyDebtDelta);
-    day.energyDebtValue = cumulativeDebt;
-    day.energyDebtStatus = energyDebtState(cumulativeDebt);
+    day.loadMeta = calculateDailyLoad(day.tasks);
+    day.loadValue = day.loadMeta.total;
+    const loadLevel = calculateDailyLoadLevel(day.tasks);
+    day.overloadState = loadLevel.state;
+    day.overloadLabel = loadLevel.label;
+    day.readiness = calculateReadinessScore(day.checkin, day.tasks, recentHistory);
+    recentHistory.push({
+      date: day.date,
+      checkin: day.checkin,
+      tasks: day.tasks
+    });
   });
+
+  const debtSeries = calculateEnergyDebtSeries(checkins, tasks);
+  const debtMap = new Map(debtSeries.map((item) => [item.date, item]));
+
+  days.forEach((day) => {
+    day.debt = debtMap.get(day.date) || {
+      date: day.date,
+      debt: 0,
+      delta: 0,
+      status: "healthy",
+      label: "Устойчивый ритм"
+    };
+  });
+
+  const taskTypes = buildTaskTypeSummary(tasks);
+  const summary = buildSummary(days, tasks, checkins);
 
   return {
     range,
     days,
     checkins,
     tasks,
-    taskTypes: Array.from(taskTypes.values()).sort((a, b) => b.count - a.count),
-    summary: buildSummary(days)
+    taskTypes,
+    summary
   };
 }
 
-function buildSummary(days) {
+function buildTaskTypeSummary(tasks) {
+  const map = new Map();
+
+  tasks.forEach((rawTask) => {
+    const task = normalizeTask(rawTask);
+    const key = task.task_type || "routine";
+    if (!map.has(key)) {
+      map.set(key, {
+        key,
+        label: getTaskTypeLabel(key),
+        count: 0,
+        cognitiveTotal: 0,
+        emotionalTotal: 0,
+        loadTotal: 0
+      });
+    }
+
+    const entry = map.get(key);
+    entry.count += 1;
+    entry.cognitiveTotal += Number(task.cognitive_load || 0);
+    entry.emotionalTotal += Number(task.emotional_load || 0);
+    entry.loadTotal += Number(task.task_load || 0);
+  });
+
+  return Array.from(map.values()).sort((left, right) => right.count - left.count);
+}
+
+function buildSummary(days, tasks, checkins) {
   const checkinDays = days.filter((day) => day.checkin);
   const avgEnergy = average(checkinDays.map((day) => Number(day.checkin.energy_level || 0)));
   const avgStress = average(checkinDays.map((day) => Number(day.checkin.stress_level || 0)));
   const avgFocus = average(checkinDays.map((day) => Number(day.checkin.focus_level || 0)));
-  const overloadRisk = overloadRiskLabel(avgEnergy, avgStress, checkinDays.length);
-  const highLoadDays = days.filter((day) => day.overloadState === "high").length;
-  const riskDays = days.filter((day) => day.overloadState === "risk").length;
-  const currentEnergyDebt = days.length ? days[days.length - 1].energyDebtValue : 0;
-  const energyDebt = energyDebtMeta(currentEnergyDebt);
+  const debtMeta = summarizeEnergyDebt(calculateEnergyDebtSeries(checkins, tasks));
+  const readinessAverage = average(days.map((day) => Number(day.readiness?.score || 0)));
+  const overloadDays = days.filter((day) => day.overloadState === "overload").length;
+  const highDays = days.filter((day) => day.overloadState === "high").length;
 
   return {
     avgEnergy,
     avgStress,
     avgFocus,
-    overloadRisk,
-    highLoadDays,
-    riskDays,
-    energyDebt
+    debt: debtMeta,
+    readinessAverage,
+    overloadRisk: overloadRiskLabel(avgEnergy, avgStress),
+    overloadDays,
+    highDays
   };
-}
-
-function renderTopCards(dataset) {
-  const cards = [
-    {
-      label: "Средняя энергия",
-      value: dataset.summary.avgEnergy ? dataset.summary.avgEnergy.toFixed(1) : "—",
-      note: dataset.checkins.length ? "По Daily Check-in" : "Нет данных состояния"
-    },
-    {
-      label: "Средний стресс",
-      value: dataset.summary.avgStress ? dataset.summary.avgStress.toFixed(1) : "—",
-      note: dataset.checkins.length ? "По Daily Check-in" : "Нет данных состояния"
-    },
-    {
-      label: "Средний фокус",
-      value: dataset.summary.avgFocus ? dataset.summary.avgFocus.toFixed(1) : "—",
-      note: dataset.checkins.length ? "По Daily Check-in" : "Нет данных состояния"
-    },
-    {
-      label: "Риск перегруза",
-      value: dataset.summary.overloadRisk.label,
-      note: dataset.summary.overloadRisk.note,
-      state: dataset.summary.overloadRisk.state
-    },
-    {
-      label: "Energy Debt",
-      value: String(dataset.summary.energyDebt.value),
-      note: dataset.summary.energyDebt.note,
-      state: dataset.summary.energyDebt.state
-    }
-  ];
-
-  topCards.innerHTML = cards.map((card) => `
-    <article class="analytics-card analytics-card-state ${card.state ? `is-${card.state}` : ""}">
-      <p class="analytics-card-label">${card.label}</p>
-      <strong class="analytics-card-value">${card.value}</strong>
-      <span class="analytics-card-note">${card.note}</span>
-    </article>
-  `).join("");
-
-  if (!dataset.checkins.length) {
-    topCards.querySelectorAll(".analytics-card-note").forEach((note) => {
-      note.textContent = "Данные появятся после заполнения состояния дня на странице «Сегодня».";
-    });
-  }
 }
 
 function renderWeeklyInsights(dataset) {
@@ -599,7 +418,6 @@ function renderWeeklyInsights(dataset) {
   }
 
   const insights = analyzeWeeklyInsights(dataset);
-
   weeklyInsightsBox.innerHTML = insights.map((item) => `
     <article class="analytics-weekly-insight-card ${item.state ? `is-${item.state}` : ""}">
       <span class="analytics-card-label">${item.label}</span>
@@ -609,21 +427,72 @@ function renderWeeklyInsights(dataset) {
   `).join("");
 }
 
+function analyzeWeeklyInsights(dataset) {
+  const insights = [];
+  const heavyDay = [...dataset.days].sort((left, right) => right.loadValue - left.loadValue)[0];
+  const emotionalSpike = dataset.taskTypes.find((type) => type.count > 0 && (type.emotionalTotal / type.count) >= 4);
+  const deepWorkDays = dataset.days.filter((day) => day.tasks.filter((task) => task.task_type === "deep_work").length >= 3);
+  const noRecoveryDays = dataset.days.filter((day) => day.tasks.length > 0 && !day.tasks.some((task) => task.task_type === "recovery"));
+
+  if (heavyDay?.tasks?.length) {
+    insights.push({
+      label: "Нагрузка",
+      title: `${heavyDay.weekday} выглядит самым тяжелым днем`,
+      description: `Суммарная нагрузка в этот день была ${Math.round(heavyDay.loadValue)}. Если это повторяется, лучше заранее разгружать середину недели.`,
+      state: heavyDay.overloadState === "overload" ? "risk" : "high"
+    });
+  }
+
+  if (emotionalSpike) {
+    insights.push({
+      label: "Эмоции",
+      title: `${emotionalSpike.label} сильнее всего нагружает эмоционально`,
+      description: `Средняя эмоциональная нагрузка для этого типа задач — ${safeFixed(emotionalSpike.emotionalTotal / emotionalSpike.count)} из 5.`,
+      state: "high"
+    });
+  }
+
+  if (deepWorkDays.length) {
+    insights.push({
+      label: "Фокус",
+      title: "Три и более Deep Work-задачи собираются в один день",
+      description: "Такая связка часто делает день тяжелее и снижает реалистичность плана. Лучше распределять глубокую работу по неделе.",
+      state: "risk"
+    });
+  }
+
+  if (noRecoveryDays.length >= Math.max(2, Math.ceil(dataset.days.length / 2))) {
+    insights.push({
+      label: "Восстановление",
+      title: "Recovery-задач почти не было",
+      description: "Неделя выглядит плотной без пауз на восстановление. Даже короткие восстановительные блоки помогают держать ритм устойчивым.",
+      state: "high"
+    });
+  }
+
+  if (!insights.length) {
+    insights.push({
+      label: "Наблюдение",
+      title: "Инсайты появятся после нескольких дней данных",
+      description: "Когда появятся check-in и задачи за несколько дней, здесь станут видны повторяющиеся закономерности.",
+      state: ""
+    });
+  }
+
+  return insights.slice(0, 4);
+}
+
 function renderWeeklyReviewPlaceholder(dataset) {
   if (!weeklyReviewBox) {
     return;
   }
 
   if (!dataset?.checkins.length && !dataset?.tasks.length) {
-    weeklyReviewBox.innerHTML = `
-      <p>Пока данных мало для недельного обзора. Сначала добавьте задачи и заполните состояние дня хотя бы несколько раз.</p>
-    `;
+    weeklyReviewBox.innerHTML = "<p>Пока данных мало для обзора недели. Сначала добавьте задачи и заполните состояние дня хотя бы несколько раз.</p>";
     return;
   }
 
-  weeklyReviewBox.innerHTML = `
-    <p>Нажмите «Сформировать обзор недели», и здесь появится короткий персональный отчет: что получилось, где была перегрузка и что лучше изменить на следующей неделе.</p>
-  `;
+  weeklyReviewBox.innerHTML = "<p>Нажмите «Сформировать обзор недели», и здесь появится персональный текстовый отчет по состоянию, нагрузке и задачам.</p>";
 }
 
 async function renderWeeklyReview(dataset) {
@@ -665,184 +534,88 @@ function buildWeeklyReview(dataset) {
   }
 
   const completedTasks = dataset.tasks.filter((task) => task.status === "done" || task.completed_at);
-  const incompleteTasks = dataset.tasks.filter((task) => task.status !== "done" && !task.completed_at);
-  const heavyDays = dataset.days.filter((day) => day.overloadState === "risk" || day.taskLoad >= 85);
-  const highLoadDays = dataset.days.filter((day) => day.overloadState === "high");
-  const bestDay = dataset.days.reduce((best, day) => {
-    const score = Number(day.checkin?.focus_level || 0) + Number(day.checkin?.energy_level || 0) - Number(day.checkin?.stress_level || 0);
-    const bestScore = Number(best?.checkin?.focus_level || 0) + Number(best?.checkin?.energy_level || 0) - Number(best?.checkin?.stress_level || 0);
-    return score > bestScore ? day : best;
-  }, dataset.days[0] || null);
-  const topEnergyTasks = [...dataset.tasks]
-    .map((task) => ({
-      ...task,
-      energyBurden: calculateTaskBurden(task)
-    }))
-    .sort((left, right) => right.energyBurden - left.energyBurden)
+  const pendingTasks = dataset.tasks.filter((task) => task.status !== "done" && !task.completed_at);
+  const heavyDays = dataset.days.filter((day) => day.overloadState === "overload" || day.overloadState === "high");
+  const topHeavyTasks = [...dataset.tasks]
+    .sort((left, right) => Number(right.task_load || 0) - Number(left.task_load || 0))
     .slice(0, 3);
-  const topTypes = summarizeTopTypes(dataset.taskTypes);
-  const debt = dataset.summary.energyDebt;
-
-  const intro = bestDay?.checkin
-    ? `На этой неделе лучший рабочий отклик был ${bestDay.weekday.toLowerCase()}, ${bestDay.label}. В среднем период прошел с энергией ${formatMetricValue(dataset.summary.avgEnergy)}, стрессом ${formatMetricValue(dataset.summary.avgStress)} и фокусом ${formatMetricValue(dataset.summary.avgFocus)}.`
-    : `На этой неделе обзор строится в основном по задачам: данных о состоянии пока мало, поэтому выводы больше опираются на фактическую нагрузку и структуру работы.`;
-
-  const whatWorked = completedTasks.length
-    ? `Что получилось: завершено ${completedTasks.length} ${pluralizeTasks(completedTasks.length)}. Лучше всего работали дни с умеренной нагрузкой, когда список задач был более коротким и понятным, без плотного наслоения тяжелой работы.`
-    : `Что получилось: даже если закрытых задач пока немного, уже видно, что устойчивее ощущаются дни с меньшим числом задач и более ясным фокусом.`;
-
-  const overloadText = heavyDays.length || highLoadDays.length
-    ? `Что перегружало: самыми тяжелыми выглядели ${formatDayList(heavyDays, highLoadDays)}. В эти дни нагрузка выходила выше комфортного уровня, а риск перегруза становился заметнее. ${debt.value > 20 ? `Energy Debt сейчас находится в зоне ${debt.label}, поэтому перегруз уже успел накопиться.` : `Пока перегруз скорее точечный, но его уже стоит учитывать при планировании.`}`
-    : `Что перегружало: явных перегруженных дней почти не видно. Это хороший знак, но все равно лучше не собирать несколько cognitively heavy задач в один и тот же день.`;
-
-  const energyTasksText = topEnergyTasks.length
-    ? `Больше всего энергии забирали ${formatTaskSummary(topEnergyTasks)}. По типам сильнее всего нагружали ${topTypes}. Именно такие задачи лучше ставить в более сильные по энергии окна и не складывать подряд без пауз.`
-    : `Пока еще мало задач, чтобы точно назвать самые энергозатратные, но уже можно ориентироваться на задачи с высоким Mental Cost, Emotional Cost и длинной оценкой времени.`;
-
-  const nextWeek = buildNextWeekAdvice(dataset, heavyDays, topEnergyTasks, incompleteTasks);
+  const debt = dataset.summary.debt;
+  const dominantType = dataset.taskTypes[0];
 
   return {
-    paragraphs: [intro, whatWorked, overloadText, energyTasksText, nextWeek]
+    paragraphs: [
+      dataset.checkins.length
+        ? `За период средняя энергия была ${formatMetricValue(dataset.summary.avgEnergy)}, стресс — ${formatMetricValue(dataset.summary.avgStress)}, а фокус — ${formatMetricValue(dataset.summary.avgFocus)}.`
+        : "За период пока мало check-in, поэтому обзор строится в основном по структуре задач и нагрузке.",
+      completedTasks.length
+        ? `Что получилось: завершено ${completedTasks.length} ${pluralizeTasks(completedTasks.length)}. Это хороший признак, что план хотя бы частично совпадал с реальной емкостью недели.`
+        : "Что получилось: пока закрытых задач немного, значит стоит внимательнее смотреть на объем плана и приоритеты дня.",
+      heavyDays.length
+        ? `Что перегружало: самыми тяжелыми были ${formatDayList(heavyDays)}. В эти дни суммарная нагрузка выходила выше комфортного диапазона.`
+        : "Что перегружало: явных дней перегруза почти не видно, ритм недели выглядит относительно ровным.",
+      topHeavyTasks.length
+        ? `Больше всего энергии забрали задачи: ${topHeavyTasks.map((task) => task.title || "Без названия").join(", ")}.`
+        : "Пока недостаточно задач, чтобы выделить самые энергозатратные блоки недели.",
+      dominantType
+        ? `Что изменить дальше: тип задач «${dominantType.label}» встречался чаще всего. Полезно проверить, не сосредоточена ли основная нагрузка вокруг одного и того же формата работы.`
+        : "Что изменить дальше: продолжай вести задачи и состояние дня, чтобы рекомендации стали точнее.",
+      debt.value > 20
+        ? `Energy Debt сейчас в зоне «${debt.label}». Это значит, что последние дни уже накопили усталость, и следующую неделю лучше начинать с более бережного плана.`
+        : "Energy Debt пока не выглядит критичным. Это хороший момент, чтобы удержать устойчивый ритм и не перегружать следующую неделю."
+    ]
   };
 }
 
-function buildNextWeekAdvice(dataset, heavyDays, topEnergyTasks, incompleteTasks) {
-  const deepWorkCount = dataset.tasks.filter((task) => String(task.task_type || "").toLowerCase().includes("deep")).length;
-  const lowEnergyDays = dataset.days.filter((day) => Number(day.checkin?.energy_level || 0) > 0 && Number(day.checkin?.energy_level || 0) <= 4).length;
+function renderTopCards(dataset) {
+  const cards = [
+    {
+      label: "Средняя энергия",
+      value: dataset.summary.avgEnergy ? dataset.summary.avgEnergy.toFixed(1) : "—",
+      note: dataset.checkins.length
+        ? "Появляется после Daily Check-in"
+        : "Появится после нескольких заполнений состояния"
+    },
+    {
+      label: "Средний стресс",
+      value: dataset.summary.avgStress ? dataset.summary.avgStress.toFixed(1) : "—",
+      note: dataset.checkins.length
+        ? "Появляется после Daily Check-in"
+        : "Появится после нескольких заполнений состояния"
+    },
+    {
+      label: "Средний фокус",
+      value: dataset.summary.avgFocus ? dataset.summary.avgFocus.toFixed(1) : "—",
+      note: dataset.checkins.length
+        ? "Появляется после Daily Check-in"
+        : "Появится после нескольких заполнений состояния"
+    },
+    {
+      label: "Риск перегруза",
+      value: dataset.summary.overloadRisk.label,
+      note: dataset.summary.overloadRisk.note,
+      state: dataset.summary.overloadRisk.state
+    },
+    {
+      label: "Energy Debt",
+      value: String(dataset.summary.debt.value),
+      note: dataset.summary.debt.note,
+      state: dataset.summary.debt.state
+    }
+  ];
 
-  if (heavyDays.length >= 2 || dataset.summary.energyDebt.value > 50) {
-    return "Что лучше изменить на следующей неделе: сократите количество тяжелых задач в один день, оставляйте 1–2 главные задачи вместо плотного списка и заранее закладывайте Recovery или легкие административные слоты после самых напряженных дней.";
-  }
-
-  if (deepWorkCount >= 4) {
-    return "Что лучше изменить на следующей неделе: распределите Deep Work тоньше по неделе и не ставьте больше двух тяжелых задач в один день. Так будет проще удерживать фокус без провала к концу недели.";
-  }
-
-  if (lowEnergyDays >= 2) {
-    return "Что лучше изменить на следующей неделе: в дни с низкой энергией переносите акцент на Light Tasks, Admin или Recovery, а самую требовательную работу оставляйте на более сильные окна.";
-  }
-
-  if (incompleteTasks.length >= 5) {
-    return "Что лучше изменить на следующей неделе: план выглядит чуть шире доступной емкости. Полезно уменьшить дневной объем и оставлять в каждом дне небольшой запас.";
-  }
-
-  if (topEnergyTasks.length) {
-    return "Что лучше изменить на следующей неделе: самые энергозатратные задачи планируйте на первую половину дня или на дни с более высоким фокусом, а после них оставляйте короткое восстановление.";
-  }
-
-  return "Что лучше изменить на следующей неделе: продолжайте собирать check-in и задачи в одном ритме. Через несколько дней рекомендации станут еще точнее и начнут лучше отражать ваш рабочий паттерн.";
-}
-
-function calculateTaskBurden(task) {
-  const mental = Number(task.mental_cost || task.cognitive_load || 0);
-  const emotional = Number(task.emotional_cost || task.emotional_load || 0);
-  const energy = Number(task.energy_required || 0);
-  const minutes = Number(task.estimated_minutes || 0);
-  return mental * 10 + emotional * 8 + energy * 6 + minutes / 10;
-}
-
-function summarizeTopTypes(taskTypes) {
-  if (!taskTypes.length) {
-    return "задачи без явного паттерна";
-  }
-
-  return taskTypes
-    .slice(0, 2)
-    .map((type) => `${type.label} (${type.count})`)
-    .join(" и ");
-}
-
-function formatTaskSummary(tasks) {
-  return tasks
-    .map((task) => {
-      const label = task.title?.trim() || task.task_type || "задача";
-      return `«${label}»`;
-    })
-    .join(", ");
-}
-
-function formatDayList(heavyDays, highLoadDays) {
-  const source = heavyDays.length ? heavyDays : highLoadDays;
-  return source
-    .slice(0, 3)
-    .map((day) => `${day.weekday.toLowerCase()} (${day.label})`)
-    .join(", ");
-}
-
-function formatMetricValue(value) {
-  return value ? value.toFixed(1) : "—";
-}
-
-function analyzeWeeklyInsights(dataset) {
-  if (!dataset.checkins.length && !dataset.tasks.length) {
-    return [
-      {
-        label: "Старт аналитики",
-        title: "Данные появятся после первых check-in и задач",
-        description: "Сначала заполни состояние дня и поработай с задачами несколько дней подряд.",
-        state: ""
-      }
-    ];
-  }
-
-  const insights = [];
-  const emotionalDropDay = findEnergyDropAfterEmotionalLoad(dataset.days);
-  const deepWorkFocus = findDeepWorkFocusInsight(dataset.days);
-  const busiestWeekday = findBusiestWeekday(dataset.days);
-  const recoveryInsight = findRecoveryInsight(dataset.tasks, dataset.days);
-
-  if (emotionalDropDay) {
-    insights.push({
-      label: "Энергия",
-      title: "Энергия падала после дней с высоким emotional_cost",
-      description: `${emotionalDropDay.from} дал заметно больше эмоциональной нагрузки, а на следующий день энергия просела.`,
-      state: "high"
-    });
-  }
-
-  if (deepWorkFocus) {
-    insights.push({
-      label: "Deep Work",
-      title: "Deep Work лучше проходил в дни с фокусом выше 7",
-      description: deepWorkFocus,
-      state: "normal"
-    });
-  }
-
-  if (busiestWeekday) {
-    insights.push({
-      label: "Перегрузка",
-      title: `${busiestWeekday.weekday} выглядит самым перегруженным днем`,
-      description: `Средняя нагрузка в этот день недели была ${Math.round(busiestWeekday.avgLoad)}. Это главный кандидат на разгрузку.`,
-      state: busiestWeekday.avgLoad >= 85 ? "risk" : "high"
-    });
-  }
-
-  if (recoveryInsight) {
-    insights.push({
-      label: "Восстановление",
-      title: recoveryInsight.title,
-      description: recoveryInsight.description,
-      state: recoveryInsight.state
-    });
-  }
-
-  if (!insights.length) {
-    insights.push({
-      label: "Наблюдение",
-      title: "Пока рано для сильных выводов",
-      description: "Данные уже есть, но устойчивых закономерностей ещё мало. Продолжай заполнять состояние и вести задачи.",
-      state: ""
-    });
-  }
-
-  return insights.slice(0, 4);
+  topCards.innerHTML = cards.map((card) => `
+    <article class="analytics-card analytics-card-state ${card.state ? `is-${card.state}` : ""}">
+      <p class="analytics-card-label">${card.label}</p>
+      <strong class="analytics-card-value">${card.value}</strong>
+      <span class="analytics-card-note">${card.note}</span>
+    </article>
+  `).join("");
 }
 
 function renderStateChart(dataset) {
   if (!dataset.checkins.length) {
     stateChart.innerHTML = emptyState("Пока нет данных о состоянии.", "Перейти в Сегодня", todayPath());
-    stateInsight.textContent = "Недостаточно данных для вывода. Заполняй check-in несколько дней подряд.";
+    stateInsight.textContent = "Показатели появятся после нескольких заполнений Daily Check-in.";
     return;
   }
 
@@ -854,56 +627,54 @@ function renderStateChart(dataset) {
 
   stateChart.innerHTML = buildLineChart(dataset.days, series);
 
-  const firstHalf = average(dataset.days.slice(0, Math.ceil(dataset.days.length / 2)).map((day) => Number(day.checkin?.energy_level || 0)));
-  const secondHalf = average(dataset.days.slice(Math.ceil(dataset.days.length / 2)).map((day) => Number(day.checkin?.energy_level || 0)));
-  const avgStress = dataset.summary.avgStress;
-  const busiestStressDay = dataset.days.find((day) => day.taskLoad > 0 && Number(day.checkin?.stress_level || 0) >= 7);
+  const lateWeekEnergy = average(dataset.days.slice(-Math.min(3, dataset.days.length)).map((day) => Number(day.checkin?.energy_level || 0)));
+  const earlyWeekEnergy = average(dataset.days.slice(0, Math.min(3, dataset.days.length)).map((day) => Number(day.checkin?.energy_level || 0)));
 
-  if (firstHalf && secondHalf && secondHalf < firstHalf) {
-    stateInsight.textContent = busiestStressDay
-      ? "Энергия снижалась во второй части периода, а в более загруженные дни стресс был выше."
-      : "Энергия снижалась во второй части периода. Стоит внимательнее распределять нагрузку ближе к концу недели.";
+  if (lateWeekEnergy && earlyWeekEnergy && lateWeekEnergy < earlyWeekEnergy) {
+    stateInsight.textContent = "К концу периода энергия снижалась. Полезно разгружать вторую половину недели и не складывать туда самые тяжелые задачи.";
     return;
   }
 
-  if (avgStress >= 6) {
-    stateInsight.textContent = "Стресс в среднем повышен. Полезно чередовать тяжелые и более спокойные дни.";
+  if (dataset.summary.avgStress >= 6) {
+    stateInsight.textContent = "Стресс в среднем повышен. Хорошо работает чередование сложных дней с более спокойными блоками.";
     return;
   }
 
-  stateInsight.textContent = "Состояние выглядит относительно ровным. Хорошо работает умеренная и более предсказуемая нагрузка.";
+  stateInsight.textContent = "Состояние выглядит относительно ровным. Чем стабильнее check-in, тем точнее будут рекомендации по нагрузке.";
 }
 
 function renderLoadChart(dataset) {
   if (!dataset.tasks.length) {
     loadChart.innerHTML = emptyState("Пока нет задач за выбранный период.", "Перейти в Бэклог", "backlog.html");
-    loadInsight.textContent = "Когда появятся задачи, здесь будет видно, в какие дни нагрузка была выше.";
+    loadInsight.textContent = "Когда появятся задачи, здесь будет видно, в какие дни нагрузка выше и где лучше разгружать расписание.";
     return;
   }
 
-  const maxLoad = Math.max(...dataset.days.map((day) => day.taskLoad), 1);
+  const maxLoad = Math.max(...dataset.days.map((day) => day.loadValue), 1);
   loadChart.innerHTML = `
     <div class="analytics-load-bars">
       ${dataset.days.map((day) => `
         <article class="analytics-load-bar-card">
           <div class="analytics-load-bar-top">
-            <strong>${Math.round(day.taskLoad)}</strong>
+            <strong>${Math.round(day.loadValue)}</strong>
             <span>${day.tasks.length} ${pluralizeTasks(day.tasks.length)}</span>
           </div>
           <div class="analytics-load-bar-track">
-            <span class="analytics-load-bar-fill" style="height: ${Math.max(8, (day.taskLoad / maxLoad) * 100)}%"></span>
+            <span class="analytics-load-bar-fill" style="height: ${Math.max(8, (day.loadValue / maxLoad) * 100)}%"></span>
           </div>
           <div class="analytics-load-bar-meta">
             <span>${day.label}</span>
-            <small>Deep Work: ${day.deepWorkCount}</small>
+            <small>${day.overloadLabel}</small>
           </div>
         </article>
       `).join("")}
     </div>
   `;
 
-  const busiestDay = dataset.days.reduce((best, day) => day.taskLoad > best.taskLoad ? day : best, dataset.days[0]);
-  loadInsight.textContent = `Самый загруженный день: ${busiestDay.weekday}, ${busiestDay.label}. Нагрузка: ${Math.round(busiestDay.taskLoad)}.`;
+  const busiestDay = dataset.days.reduce((best, day) => (day.loadValue > best.loadValue ? day : best), dataset.days[0]);
+  loadInsight.textContent = busiestDay?.tasks?.length
+    ? `Самый загруженный день: ${busiestDay.weekday}, ${busiestDay.label}. Суммарная нагрузка — ${Math.round(busiestDay.loadValue)}.`
+    : "Пока недостаточно задач, чтобы выделить самый загруженный день.";
 }
 
 function renderDebtTrend(dataset) {
@@ -913,64 +684,64 @@ function renderDebtTrend(dataset) {
 
   if (!dataset.checkins.length && !dataset.tasks.length) {
     debtTrend.innerHTML = emptyState("Energy Debt появится после нескольких дней использования трекера.", "Перейти в Сегодня", todayPath());
-    debtInsight.textContent = "Сначала нужны check-in и задачи за несколько дней подряд.";
+    debtInsight.textContent = "Сначала нужны несколько check-in и задачи за несколько дней подряд.";
     return;
   }
 
-  const maxDebt = Math.max(...dataset.days.map((day) => day.energyDebtValue), 1);
+  const maxDebt = Math.max(...dataset.days.map((day) => day.debt?.debt || 0), 1);
   debtTrend.innerHTML = `
     <div class="analytics-load-bars">
       ${dataset.days.map((day) => `
         <article class="analytics-load-bar-card">
           <div class="analytics-load-bar-top">
-            <strong>${day.energyDebtValue}</strong>
-            <span>${formatDebtDelta(day.energyDebtDelta)}</span>
+            <strong>${day.debt?.debt || 0}</strong>
+            <span>${formatDebtDelta(day.debt?.delta || 0)}</span>
           </div>
           <div class="analytics-load-bar-track">
-            <span class="analytics-load-bar-fill" style="height: ${Math.max(8, (day.energyDebtValue / maxDebt) * 100)}%"></span>
+            <span class="analytics-load-bar-fill" style="height: ${Math.max(8, ((day.debt?.debt || 0) / maxDebt) * 100)}%"></span>
           </div>
           <div class="analytics-load-bar-meta">
             <span>${day.label}</span>
-            <small>${energyDebtMeta(day.energyDebtValue).label}</small>
+            <small>${day.debt?.label || "Устойчивый ритм"}</small>
           </div>
         </article>
       `).join("")}
     </div>
   `;
 
-  debtInsight.textContent = dataset.summary.energyDebt.value > 50
-    ? "Последние дни ты работаешь в энергетический долг. Лучше снизить нагрузку или добавить восстановление."
-    : dataset.summary.energyDebt.value > 20
-      ? "Нагрузка накапливается. Полезно чередовать тяжёлые задачи с более лёгкими и Recovery-активностями."
-      : "Тренд выглядит устойчиво: серьёзного накопления энергетического долга пока не видно.";
+  debtInsight.textContent = dataset.summary.debt.value > 50
+    ? "Последние дни уже накапливают энергетический долг. Лучше снижать плотность недели и добавлять восстановительные блоки."
+    : dataset.summary.debt.value > 20
+      ? "Нагрузка уже начинает накапливаться. Стоит следить за тяжелыми днями и оставлять паузы после сложных задач."
+      : "Ритм пока выглядит устойчивым: сильного накопления энергетического долга не видно.";
 }
 
 function renderInsights(dataset) {
   const insights = [];
-  const highStressHighLoad = dataset.days.some((day) => day.taskLoad >= 80 && Number(day.checkin?.stress_level || 0) >= 7);
-  const lowEnergyDeepWork = dataset.days.some((day) => Number(day.checkin?.energy_level || 10) <= 4 && day.deepWorkCount >= 2);
-  const bestFocusDay = dataset.days.reduce((best, day) => Number(day.checkin?.focus_level || 0) > Number(best.checkin?.focus_level || 0) ? day : best, dataset.days[0] || {});
+  const highStressHighLoad = dataset.days.some((day) => day.loadValue >= 141 && Number(day.checkin?.stress_level || 0) >= 7);
+  const lowEnergyHeavyCognitive = dataset.days.some((day) => Number(day.checkin?.energy_level || 10) <= 4 && day.tasks.filter((task) => Number(task.cognitive_load || 0) >= 4).length >= 2);
+  const bestFocusDay = dataset.days.reduce((best, day) => Number(day.checkin?.focus_level || 0) > Number(best?.checkin?.focus_level || 0) ? day : best, dataset.days[0] || null);
   const highEmotionalType = dataset.taskTypes.find((type) => type.count && (type.emotionalTotal / type.count) >= 4);
 
   if (highStressHighLoad) {
-    insights.push("В дни с высокой задачной нагрузкой стресс тоже был выше.");
+    insights.push("В дни с высокой суммарной нагрузкой стресс тоже был выше.");
   }
 
-  if (lowEnergyDeepWork) {
-    insights.push("В дни с низкой энергией было запланировано много Deep Work задач. Это может повышать риск перегруза.");
+  if (lowEnergyHeavyCognitive) {
+    insights.push("В дни с низкой энергией оставалось много задач с высокой когнитивной нагрузкой. Это повышает риск перегруза.");
   }
 
-  if (bestFocusDay?.checkin && bestFocusDay.taskLoad > 0 && bestFocusDay.taskLoad <= 70) {
-    insights.push("Лучший фокус был в дни с умеренной нагрузкой.");
+  if (bestFocusDay?.checkin && bestFocusDay.loadValue > 0 && bestFocusDay.loadValue <= 140) {
+    insights.push("Лучший фокус чаще проявлялся в дни с умеренной, а не перегруженной нагрузкой.");
   }
 
   if (highEmotionalType) {
-    insights.push(`Задачи типа ${highEmotionalType.label} давали самую заметную эмоциональную нагрузку.`);
+    insights.push(`Основную эмоциональную нагрузку в этот период создавали задачи типа «${highEmotionalType.label}».`);
   }
 
   if (!insights.length) {
     insights.push(dataset.checkins.length || dataset.tasks.length
-      ? "Пока мало устойчивых закономерностей. Заполняй состояние и продолжай вести задачи несколько дней подряд."
+      ? "Пока данных недостаточно для уверенных выводов. Продолжай заполнять состояние и вести задачи несколько дней подряд."
       : "Аналитика появится после нескольких дней использования трекера.");
   }
 
@@ -995,10 +766,9 @@ function renderTaskTypes(dataset) {
         <span>${type.count} ${pluralizeTasks(type.count)}</span>
       </div>
       <div class="analytics-type-metrics">
-        <span>Mental Cost: ${safeFixed(type.mentalTotal / type.count)}</span>
-        <span>Emotional Cost: ${safeFixed(type.emotionalTotal / type.count)}</span>
-        <span>Recovery Time: ${Math.round(type.recoveryTotal)} min</span>
-        <span>Минут всего: ${Math.round(type.minutesTotal)}</span>
+        <span>Средняя когнитивная: ${safeFixed(type.cognitiveTotal / type.count)}</span>
+        <span>Средняя эмоциональная: ${safeFixed(type.emotionalTotal / type.count)}</span>
+        <span>Средняя нагрузка: ${Math.round(type.loadTotal / type.count)}</span>
       </div>
     </article>
   `).join("");
@@ -1006,7 +776,7 @@ function renderTaskTypes(dataset) {
   const dominant = dataset.taskTypes[0];
   const percent = dominant ? Math.round((dominant.count / dataset.tasks.length) * 100) : 0;
   taskTypesInsight.textContent = dominant
-    ? `${dominant.label} занимает ${percent}% задач периода и даёт основную нагрузку.`
+    ? `${dominant.label} занимает ${percent}% задач периода и формирует основную часть рабочей нагрузки.`
     : "";
 }
 
@@ -1020,7 +790,7 @@ function renderOverloadTrend(dataset) {
     <article class="analytics-overload-card analytics-overload-summary">
       <p class="analytics-card-label">Текущий статус</p>
       <strong class="analytics-card-value">${dataset.summary.overloadRisk.label}</strong>
-      <span class="analytics-card-note">${dataset.summary.riskDays} дней с риском перегруза • ${dataset.summary.highLoadDays} дней с высокой нагрузкой</span>
+      <span class="analytics-card-note">${dataset.summary.overloadDays} дней с риском перегруза • ${dataset.summary.highDays} дней с высокой нагрузкой</span>
     </article>
     ${dataset.days.map((day) => `
       <article class="analytics-overload-card is-${day.overloadState}">
@@ -1028,48 +798,251 @@ function renderOverloadTrend(dataset) {
           <strong>${day.label}</strong>
           <span>${day.weekday}</span>
         </div>
-        <div class="analytics-overload-score">${day.overloadScore}</div>
-        <div class="analytics-overload-badge is-${day.overloadState}">${overloadLabel(day.overloadState)}</div>
+        <div class="analytics-overload-score">${Math.round(day.loadValue)}</div>
+        <div class="analytics-overload-badge is-${day.overloadState}">${day.overloadLabel}</div>
       </article>
     `).join("")}
   `;
 }
 
 function renderRecommendations(dataset) {
-  const recommendations = [];
-  const deepWorkTotal = dataset.tasks.filter((task) => (task.task_type || "") === "Deep Work").length;
-  const incompleteTasks = dataset.tasks.filter((task) => !task.completed_at && task.status !== "done").length;
-  const lateWeekDrop = energyDropsLateWeek(dataset.days);
+  const recommendations = generateRuleBasedRecommendations(
+    currentState(dataset.days[dataset.days.length - 1]?.checkin),
+    dataset.days[dataset.days.length - 1]?.tasks || [],
+    {
+      readiness: dataset.days[dataset.days.length - 1]?.readiness,
+      energyDebt: dataset.summary.debt,
+      dailyLoad: dataset.days[dataset.days.length - 1]?.loadMeta
+    }
+  );
 
-  if (!dataset.checkins.length) {
-    recommendations.push("Заполняй состояние утром — так аналитика станет точнее.");
-  }
+  const output = recommendations.length
+    ? recommendations
+    : ["Сейчас ритм выглядит устойчивым. Старайся держать умеренный объем сложных задач и не забывать про восстановление."];
 
-  if (deepWorkTotal >= Math.max(4, Math.ceil(dataset.days.length / 2))) {
-    recommendations.push("Ограничь Deep Work до 1–2 задач в день.");
-  }
-
-  if (dataset.summary.avgStress >= 6) {
-    recommendations.push("После тяжелых дней добавляй больше Recovery или Admin задач.");
-  }
-
-  if (lateWeekDrop) {
-    recommendations.push("Не ставь самые сложные задачи на четверг и пятницу.");
-  }
-
-  if (incompleteTasks >= 5) {
-    recommendations.push("План выглядит перегруженным. Лучше уменьшить количество задач дня.");
-  }
-
-  if (!recommendations.length) {
-    recommendations.push("Текущий ритм выглядит устойчивым. Сохраняй умеренную нагрузку и следи за состоянием каждый день.");
-  }
-
-  recommendationsBox.innerHTML = recommendations.map((item) => `
+  recommendationsBox.innerHTML = output.map((item) => `
     <article class="analytics-insight-card">
       <p>${item}</p>
     </article>
   `).join("");
+}
+
+function getPeriodRange(periodKey) {
+  const today = new Date();
+  const current = toIsoDate(today);
+
+  if (periodKey === "last_14_days") {
+    return { start: shiftIsoDate(current, -13), end: current };
+  }
+
+  if (periodKey === "last_30_days") {
+    return { start: shiftIsoDate(current, -29), end: current };
+  }
+
+  const day = today.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  const start = new Date(today);
+  start.setDate(today.getDate() + mondayOffset);
+
+  if (periodKey === "last_week") {
+    start.setDate(start.getDate() - 7);
+  }
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+
+  return {
+    start: toIsoDate(start),
+    end: toIsoDate(end)
+  };
+}
+
+function shiftIsoDate(isoDate, days) {
+  const date = new Date(`${isoDate}T12:00:00`);
+  date.setDate(date.getDate() + days);
+  return toIsoDate(date);
+}
+
+function backlogDateToIso(value) {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  const [day, month] = value.split(".");
+  if (!day || !month) {
+    return null;
+  }
+
+  return `2026-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function mapBacklogStatus(status) {
+  if (status === "Сделано") {
+    return "done";
+  }
+  if (status === "В работе") {
+    return "in_progress";
+  }
+  return "todo";
+}
+
+function mapStressToLoad(stress) {
+  if (stress === "Высокий") {
+    return 5;
+  }
+  if (stress === "Средний") {
+    return 3;
+  }
+  if (stress === "Низкий") {
+    return 2;
+  }
+  return 2;
+}
+
+function mapLegacyTaskType(value) {
+  switch (String(value || "").toLowerCase()) {
+    case "deep work":
+    case "deep_work":
+      return "deep_work";
+    case "high energy":
+    case "communication":
+    case "meeting":
+      return "communication";
+    case "creative":
+      return "creative";
+    case "learning":
+      return "learning";
+    case "recovery":
+      return "recovery";
+    case "low energy":
+    case "low_energy":
+    case "shallow_work":
+    case "admin":
+    case "routine":
+    default:
+      return "routine";
+  }
+}
+
+function legacyTypeToCognitive(taskType) {
+  if (taskType === "deep_work") {
+    return 4;
+  }
+  if (taskType === "creative" || taskType === "learning") {
+    return 3;
+  }
+  if (taskType === "communication") {
+    return 3;
+  }
+  if (taskType === "recovery") {
+    return 1;
+  }
+  return 2;
+}
+
+function clampLoad(value) {
+  const normalized = Number.parseInt(value, 10);
+  if (!Number.isFinite(normalized)) {
+    return 3;
+  }
+  return Math.max(1, Math.min(5, normalized));
+}
+
+function overloadRiskLabel(avgEnergy, avgStress) {
+  if (avgStress >= 8 && avgEnergy <= 4) {
+    return {
+      label: "Высокий",
+      note: "Неделя выглядит перегруженной.",
+      state: "risk"
+    };
+  }
+
+  if (avgStress >= 6 || avgEnergy <= 5) {
+    return {
+      label: "Средний",
+      note: "Нагрузка требует внимания.",
+      state: "high"
+    };
+  }
+
+  return {
+    label: "Низкий",
+    note: "Ритм пока выглядит устойчивым.",
+    state: "normal"
+  };
+}
+
+function formatDate(isoDate) {
+  const date = new Date(`${isoDate}T12:00:00`);
+  return `${String(date.getDate()).padStart(2, "0")}.${String(date.getMonth() + 1).padStart(2, "0")}.${date.getFullYear()}`;
+}
+
+function formatShortDate(isoDate) {
+  const date = new Date(`${isoDate}T12:00:00`);
+  return `${String(date.getDate()).padStart(2, "0")}.${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function weekdayLabel(isoDate) {
+  const date = new Date(`${isoDate}T12:00:00`);
+  return ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"][date.getDay()];
+}
+
+function average(values) {
+  const filtered = values.filter((value) => Number.isFinite(value) && value > 0);
+  if (!filtered.length) {
+    return 0;
+  }
+  return filtered.reduce((sum, value) => sum + value, 0) / filtered.length;
+}
+
+function formatMetricValue(value) {
+  return value ? value.toFixed(1) : "—";
+}
+
+function pluralizeTasks(count) {
+  if (count % 10 === 1 && count % 100 !== 11) {
+    return "задача";
+  }
+  if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) {
+    return "задачи";
+  }
+  return "задач";
+}
+
+function formatDayList(days) {
+  return days.map((day) => `${day.weekday.toLowerCase()}, ${day.label}`).join(" и ");
+}
+
+function formatDebtDelta(delta) {
+  if (delta > 0) {
+    return `+${delta}`;
+  }
+  if (delta < 0) {
+    return String(delta);
+  }
+  return "0";
+}
+
+function safeFixed(value) {
+  return Number.isFinite(value) ? value.toFixed(1) : "—";
+}
+
+function emptyState(text, ctaLabel, href) {
+  return `
+    <div class="analytics-empty-state">
+      <p>${text}</p>
+      <a class="analytics-empty-link" href="${href}">${ctaLabel}</a>
+    </div>
+  `;
+}
+
+function setStatus(message, isError = false) {
+  if (!statusBox) {
+    return;
+  }
+
+  statusBox.textContent = message;
+  statusBox.classList.toggle("is-error", Boolean(isError));
 }
 
 function buildLineChart(days, series) {
@@ -1078,7 +1051,6 @@ function buildLineChart(days, series) {
   const padding = { top: 20, right: 20, bottom: 42, left: 34 };
   const innerWidth = width - padding.left - padding.right;
   const innerHeight = height - padding.top - padding.bottom;
-
   const xStep = days.length > 1 ? innerWidth / (days.length - 1) : innerWidth;
   const y = (value) => padding.top + innerHeight - ((value - 1) / 9) * innerHeight;
 
@@ -1120,26 +1092,24 @@ function buildLineChart(days, series) {
     `).join("");
   }).join("");
 
-  const dots = series.map((item) => {
-    return days.map((day, index) => {
-      const value = Number(day.checkin?.[item.key] || 0);
-      if (!value) {
-        return "";
-      }
+  const dots = series.map((item) => days.map((day, index) => {
+    const value = Number(day.checkin?.[item.key] || 0);
+    if (!value) {
+      return "";
+    }
 
-      return `<circle cx="${padding.left + index * xStep}" cy="${y(value)}" r="4" fill="${item.color}"></circle>`;
-    }).join("");
-  }).join("");
-
-  const legend = series.map((item) => `
-    <div class="analytics-legend-item">
-      <span class="analytics-legend-dot" style="background:${item.color}"></span>
-      <span>${item.label}</span>
-    </div>
-  `).join("");
+    return `<circle cx="${padding.left + index * xStep}" cy="${y(value)}" r="4" fill="${item.color}"></circle>`;
+  }).join("")).join("");
 
   return `
-    <div class="analytics-legend">${legend}</div>
+    <div class="analytics-legend">
+      ${series.map((item) => `
+        <div class="analytics-legend-item">
+          <span class="analytics-legend-dot" style="background:${item.color}"></span>
+          <span>${item.label}</span>
+        </div>
+      `).join("")}
+    </div>
     <svg viewBox="0 0 ${width} ${height}" class="analytics-svg">
       ${gridLines}
       ${paths}
@@ -1147,288 +1117,4 @@ function buildLineChart(days, series) {
       ${labels}
     </svg>
   `;
-}
-
-function getPeriodRange(periodKey) {
-  const today = new Date();
-  const current = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const dayIndex = (current.getDay() + 6) % 7;
-
-  if (periodKey === "last_week") {
-    const end = shiftDate(current, -(dayIndex + 1));
-    const start = shiftDate(end, -6);
-    return { start: toIso(start), end: toIso(end) };
-  }
-
-  if (periodKey === "last_14_days") {
-    return { start: toIso(shiftDate(current, -13)), end: toIso(current) };
-  }
-
-  if (periodKey === "last_30_days") {
-    return { start: toIso(shiftDate(current, -29)), end: toIso(current) };
-  }
-
-  const start = shiftDate(current, -dayIndex);
-  const end = shiftDate(start, 6);
-  return { start: toIso(start), end: toIso(end) };
-}
-
-function listDates(startIso, endIso) {
-  const dates = [];
-  let cursor = new Date(startIso);
-  const end = new Date(endIso);
-
-  while (cursor <= end) {
-    dates.push(toIso(cursor));
-    cursor = shiftDate(cursor, 1);
-  }
-
-  return dates;
-}
-
-function overloadRiskLabel(avgEnergy, avgStress, checkinCount = 0) {
-  if (!checkinCount) {
-    return { label: "—", state: "", note: "Нет данных состояния" };
-  }
-  if (avgStress >= 8 && avgEnergy <= 4) {
-    return { label: "Высокий", state: "risk", note: "Стресс высокий, а энергия низкая." };
-  }
-  if (avgStress >= 6 || avgEnergy <= 5) {
-    return { label: "Средний", state: "high", note: "Нагрузка требует внимания." };
-  }
-  return { label: "Низкий", state: "normal", note: "Состояние выглядит устойчиво." };
-}
-
-function overloadState(score) {
-  if (score >= 91) return "risk";
-  if (score >= 61) return "high";
-  return "normal";
-}
-
-function overloadLabel(state) {
-  if (state === "risk") return "Риск перегруза";
-  if (state === "high") return "Высокая нагрузка";
-  return "Нормальная нагрузка";
-}
-
-function energyDropsLateWeek(days) {
-  const lateDays = days.filter((day) => {
-    const week = weekdayLabel(day.date);
-    return week === "Четверг" || week === "Пятница";
-  });
-  const earlyDays = days.filter((day) => {
-    const week = weekdayLabel(day.date);
-    return week === "Понедельник" || week === "Вторник";
-  });
-
-  const lateAvg = average(lateDays.map((day) => Number(day.checkin?.energy_level || 0)));
-  const earlyAvg = average(earlyDays.map((day) => Number(day.checkin?.energy_level || 0)));
-  return lateAvg > 0 && earlyAvg > 0 && lateAvg + 1 < earlyAvg;
-}
-
-function findEnergyDropAfterEmotionalLoad(days) {
-  for (let index = 0; index < days.length - 1; index += 1) {
-    const current = days[index];
-    const next = days[index + 1];
-    const currentEmotionalAvg = current.tasks.length
-      ? current.tasks.reduce((sum, task) => sum + Number(task.emotional_cost || task.emotional_load || 0), 0) / current.tasks.length
-      : 0;
-    const currentEnergy = Number(current.checkin?.energy_level || 0);
-    const nextEnergy = Number(next.checkin?.energy_level || 0);
-
-    if (currentEmotionalAvg >= 4 && currentEnergy > 0 && nextEnergy > 0 && nextEnergy + 1 < currentEnergy) {
-      return {
-        from: `${current.weekday}, ${current.label}`
-      };
-    }
-  }
-
-  return null;
-}
-
-function findDeepWorkFocusInsight(days) {
-  const highFocusDays = days.filter((day) => Number(day.checkin?.focus_level || 0) >= 7 && day.deepWorkCount > 0);
-  if (!highFocusDays.length) {
-    return "";
-  }
-
-  const avgDeepWorkLoad = average(highFocusDays.map((day) => day.taskLoad));
-  return `В дни с фокусом 7+ Deep Work появлялся в ${highFocusDays.length} ${pluralizeDays(highFocusDays.length)}, а средняя нагрузка оставалась на уровне ${Math.round(avgDeepWorkLoad)}.`;
-}
-
-function findBusiestWeekday(days) {
-  const buckets = new Map();
-
-  days.forEach((day) => {
-    if (!buckets.has(day.weekday)) {
-      buckets.set(day.weekday, { weekday: day.weekday, totalLoad: 0, count: 0 });
-    }
-
-    const bucket = buckets.get(day.weekday);
-    bucket.totalLoad += day.taskLoad;
-    bucket.count += 1;
-  });
-
-  const ranked = Array.from(buckets.values())
-    .map((item) => ({ ...item, avgLoad: item.count ? item.totalLoad / item.count : 0 }))
-    .sort((left, right) => right.avgLoad - left.avgLoad);
-
-  return ranked[0]?.avgLoad > 0 ? ranked[0] : null;
-}
-
-function findRecoveryInsight(tasks, days) {
-  const recoveryTasks = tasks.filter((task) => isRecoveryTask(task));
-  if (!tasks.length) {
-    return null;
-  }
-
-  if (recoveryTasks.length <= 1) {
-    return {
-      title: "Recovery задач почти не было",
-      description: "За выбранный период восстановление почти не появлялось в плане. Это может усиливать накопление усталости.",
-      state: "high"
-    };
-  }
-
-  const recoveryShare = Math.round((recoveryTasks.length / tasks.length) * 100);
-  const overloadedDays = days.filter((day) => day.overloadState === "risk").length;
-
-  return {
-    title: "Восстановление пока неравномерное",
-    description: `Recovery занимает около ${recoveryShare}% задач. ${overloadedDays ? "На перегруженные дни стоит ставить его чаще." : "Хороший следующий шаг — ставить его рядом с тяжёлыми днями."}`,
-    state: recoveryShare < 15 ? "high" : "normal"
-  };
-}
-
-function calculateEnergyDebtDelta(checkin, taskLoad, hasRecoveryTask) {
-  let delta = 0;
-
-  if (Number(checkin?.stress_level || 0) >= 7) {
-    delta += 10;
-  }
-  if (Number(checkin?.energy_level || 10) <= 4) {
-    delta += 10;
-  }
-  if (taskLoad >= 85) {
-    delta += 10;
-  }
-  if (hasRecoveryTask || taskLoad <= 50) {
-    delta -= 5;
-  }
-
-  return delta;
-}
-
-function isRecoveryTask(task) {
-  const type = String(task?.task_type || "").toLowerCase();
-  const intensity = String(task?.task_intensity || "").toLowerCase();
-  const recoveryMinutes = Number(task?.recovery_minutes || 0);
-
-  return type.includes("recovery") || intensity === "low" || recoveryMinutes >= 20;
-}
-
-function energyDebtState(value) {
-  if (value <= 20) return "normal";
-  if (value <= 50) return "high";
-  return "risk";
-}
-
-function energyDebtMeta(value) {
-  if (value <= 20) {
-    return {
-      value,
-      label: "Healthy",
-      state: "normal",
-      note: "Накопленной перегрузки почти нет."
-    };
-  }
-
-  if (value <= 50) {
-    return {
-      value,
-      label: "Watch",
-      state: "high",
-      note: "Нагрузка накапливается и требует внимания."
-    };
-  }
-
-  return {
-    value,
-    label: "Overloaded",
-    state: "risk",
-    note: "Последние дни ты работаешь в энергетический долг. Лучше снизить нагрузку или добавить восстановление."
-  };
-}
-
-function formatDebtDelta(value) {
-  if (value > 0) return `+${value} за день`;
-  if (value < 0) return `${value} за день`;
-  return "без изменений";
-}
-
-function emptyState(text, actionLabel, href) {
-  return `
-    <div class="analytics-empty-card">
-      <p class="analytics-empty">${text}</p>
-      ${actionLabel ? `<a class="ghost-button analytics-empty-link" href="${href}">${actionLabel}</a>` : ""}
-    </div>
-  `;
-}
-
-function average(values) {
-  const filtered = values.filter((value) => Number.isFinite(value) && value > 0);
-  if (!filtered.length) {
-    return 0;
-  }
-  return filtered.reduce((sum, value) => sum + value, 0) / filtered.length;
-}
-
-function safeFixed(value) {
-  return Number.isFinite(value) ? value.toFixed(1) : "0.0";
-}
-
-function weekdayLabel(isoDate) {
-  const date = new Date(isoDate);
-  return date.toLocaleDateString("ru-RU", { weekday: "long" }).replace(/^./, (char) => char.toUpperCase());
-}
-
-function formatShortDate(isoDate) {
-  const date = new Date(isoDate);
-  return date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" });
-}
-
-function formatDate(isoDate) {
-  const date = new Date(isoDate);
-  return date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
-}
-
-function pluralizeTasks(count) {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  if (mod10 === 1 && mod100 !== 11) return "задача";
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "задачи";
-  return "задач";
-}
-
-function pluralizeDays(count) {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  if (mod10 === 1 && mod100 !== 11) return "день";
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "дня";
-  return "дней";
-}
-
-function toIso(date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString().slice(0, 10);
-}
-
-function shiftDate(date, diff) {
-  const next = new Date(date);
-  next.setDate(next.getDate() + diff);
-  return next;
-}
-
-function setStatus(message, isError = false) {
-  statusBox.textContent = message;
-  statusBox.classList.toggle("is-error", isError);
 }

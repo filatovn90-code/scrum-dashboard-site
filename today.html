@@ -220,31 +220,39 @@
           <input id="todayTaskTitleInput" type="text" placeholder="Название задачи" required>
 
           <div class="today-task-create-grid">
-            <select id="todayTaskTypeInput">
-              <option value="Deep Work">Deep Work</option>
-              <option value="Meetings">Meetings</option>
-              <option value="Admin">Admin</option>
-              <option value="Recovery">Recovery</option>
-              <option value="Light Tasks">Light Tasks</option>
-            </select>
+            <label class="auth-field">
+              <span>Тип задачи</span>
+              <select id="todayTaskTypeInput">
+                <option value="routine" selected>Рутина</option>
+                <option value="deep_work">Deep Work</option>
+                <option value="communication">Коммуникация</option>
+                <option value="creative">Творческая</option>
+                <option value="learning">Обучение</option>
+                <option value="recovery">Восстановление</option>
+              </select>
+            </label>
 
-            <select id="todayTaskMentalCostInput">
-              <option value="1">Mental Cost 1</option>
-              <option value="2">Mental Cost 2</option>
-              <option value="3" selected>Mental Cost 3</option>
-              <option value="4">Mental Cost 4</option>
-              <option value="5">Mental Cost 5</option>
-            </select>
+            <label class="auth-field">
+              <span>Когнитивная нагрузка</span>
+              <select id="todayTaskMentalCostInput">
+                <option value="1">1 — легко</option>
+                <option value="2">2</option>
+                <option value="3" selected>3 — обычно</option>
+                <option value="4">4</option>
+                <option value="5">5 — очень тяжело</option>
+              </select>
+            </label>
 
-            <select id="todayTaskEmotionalCostInput">
-              <option value="1">Emotional Cost 1</option>
-              <option value="2">Emotional Cost 2</option>
-              <option value="3" selected>Emotional Cost 3</option>
-              <option value="4">Emotional Cost 4</option>
-              <option value="5">Emotional Cost 5</option>
-            </select>
-
-            <input id="todayTaskMinutesInput" type="number" min="10" step="5" value="45" placeholder="Минуты">
+            <label class="auth-field">
+              <span>Эмоциональная нагрузка</span>
+              <select id="todayTaskEmotionalCostInput">
+                <option value="1">1 — спокойно</option>
+                <option value="2" selected>2</option>
+                <option value="3">3 — заметно</option>
+                <option value="4">4</option>
+                <option value="5">5 — очень тяжело</option>
+              </select>
+            </label>
           </div>
 
           <div class="today-card-actions">

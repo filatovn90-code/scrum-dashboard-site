@@ -126,28 +126,37 @@
         <form class="today-task-create-form">
           <input id="onboardingTaskTitle" type="text" placeholder="Название задачи" required>
           <div class="today-task-create-grid">
-            <select id="onboardingTaskType">
-              <option value="Deep Work">Deep Work</option>
-              <option value="Admin">Admin</option>
-              <option value="Creative">Creative</option>
-              <option value="Shallow Work">Shallow Work</option>
-              <option value="Recovery">Recovery</option>
-            </select>
-            <select id="onboardingTaskMental">
-              <option value="1">Mental Cost 1</option>
-              <option value="2">Mental Cost 2</option>
-              <option value="3" selected>Mental Cost 3</option>
-              <option value="4">Mental Cost 4</option>
-              <option value="5">Mental Cost 5</option>
-            </select>
-            <select id="onboardingTaskEmotional">
-              <option value="1">Emotional Cost 1</option>
-              <option value="2">Emotional Cost 2</option>
-              <option value="3" selected>Emotional Cost 3</option>
-              <option value="4">Emotional Cost 4</option>
-              <option value="5">Emotional Cost 5</option>
-            </select>
-            <input id="onboardingTaskMinutes" type="number" min="15" step="15" value="30" placeholder="Минуты">
+            <label class="auth-field">
+              <span>Тип задачи</span>
+              <select id="onboardingTaskType">
+                <option value="routine" selected>Рутина</option>
+                <option value="deep_work">Deep Work</option>
+                <option value="communication">Коммуникация</option>
+                <option value="creative">Творческая</option>
+                <option value="learning">Обучение</option>
+                <option value="recovery">Восстановление</option>
+              </select>
+            </label>
+            <label class="auth-field">
+              <span>Когнитивная нагрузка</span>
+              <select id="onboardingTaskMental">
+                <option value="1">1 — легко</option>
+                <option value="2">2</option>
+                <option value="3" selected>3 — обычно</option>
+                <option value="4">4</option>
+                <option value="5">5 — очень тяжело</option>
+              </select>
+            </label>
+            <label class="auth-field">
+              <span>Эмоциональная нагрузка</span>
+              <select id="onboardingTaskEmotional">
+                <option value="1">1 — спокойно</option>
+                <option value="2" selected>2</option>
+                <option value="3">3 — заметно</option>
+                <option value="4">4</option>
+                <option value="5">5 — очень тяжело</option>
+              </select>
+            </label>
           </div>
         </form>
         <div class="onboarding-task-preview" id="onboardingTaskPreview"></div>

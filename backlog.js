@@ -1,3 +1,12 @@
+import { signOutCurrentUser } from "./auth-helpers.js";
+import { landingPath } from "./route-paths.js";
+import {
+  calculateTaskIntensity,
+  getTaskTypeIcon,
+  getTaskTypeLabel,
+  normalizeTask
+} from "./lib/workload.js";
+
 const AUTH_KEY = "scrum-dashboard-auth-user";
 
 if (!window.appStorage.getItem(AUTH_KEY)) {
@@ -5,91 +14,18 @@ if (!window.appStorage.getItem(AUTH_KEY)) {
 }
 
 const activeUser = window.appStorage.getItem(AUTH_KEY);
-injectAiCoachLink();
-
-const seededBacklogData = {
-  "Неделя 20.04 - 24.04": {
-    totalMeetingHours: "8 ч 30 мин",
-    days: [
-      {
-        date: "20.04",
-        weekday: "Понедельник",
-        items: [
-          { id: "20-0900", time: "09:00", text: "Написать расписание встреч по планированию", status: "В работе", stress: "Средний" },
-          { id: "20-1430", time: "14:30", text: "Заполнить еженедельный отчет", status: "Сделано", stress: "Низкий" },
-          { id: "20-1445", time: "14:45", text: "Подготовиться к встрече завтра с ИТ", status: "Сделано", stress: "Низкий" },
-          { id: "20-1515", time: "15:15", text: "Дать ОС по сбору ЛМГ", status: "Сделано", stress: "Низкий" }
-        ]
-      },
-      {
-        date: "21.04",
-        weekday: "Вторник",
-        items: [
-          { id: "21-0915", time: "09:15", text: "Подготовиться к встрече с ИТ", status: "Сделано", stress: "Низкий" },
-          { id: "21-0930", time: "09:30", text: "Сделать презентацию для встречи в среду", status: "Сделано", stress: "Средний" },
-          { id: "21-1015", time: "10:15", text: "Перенести данные для викли", status: "Сделано", stress: "Низкий" },
-          { id: "21-1045", time: "10:45", text: "Написать минутки после встречи с ИТ", status: "Сделано", stress: "Низкий" }
-        ]
-      },
-      {
-        date: "22.04",
-        weekday: "Среда",
-        items: [
-          { id: "22-0915", time: "09:15", text: "Поставить встречу по анализу TTM и LT", status: "Запланировано", stress: "Средний" },
-          { id: "22-0930", time: "09:30", text: "Перенести общие встречи по планированию", status: "Запланировано", stress: "Низкий" },
-          { id: "22-1000", time: "10:00", text: "Протестировать календарь Димы", status: "В работе", stress: "Средний" },
-          { id: "22-1230", time: "12:30", text: "Написать минутки по встрече с Discovery", status: "Запланировано", stress: "Средний" },
-          { id: "22-1245", time: "12:45", text: "Перенести первую встречу по планированию", status: "Запланировано", stress: "Низкий" }
-        ]
-      },
-      {
-        date: "23.04",
-        weekday: "Четверг",
-        items: [
-          { id: "23-0900", time: "09:00", text: "Проверить бэклог перед планированием", status: "Запланировано", stress: "Низкий" },
-          { id: "23-1030", time: "10:30", text: "Подготовить синк по Agile Radar", status: "В работе", stress: "Высокий" },
-          { id: "23-1315", time: "13:15", text: "Разобрать блокеры по Jira hygiene", status: "Запланировано", stress: "Средний" }
-        ]
-      },
-      {
-        date: "24.04",
-        weekday: "Пятница",
-        items: [
-          { id: "24-0915", time: "09:15", text: "Сверить загрузку команды на цели МП", status: "Запланировано", stress: "Средний" },
-          { id: "24-1100", time: "11:00", text: "Подготовить материалы к ретро", status: "Запланировано", stress: "Низкий" },
-          { id: "24-1500", time: "15:00", text: "Обновить квартальные метрики", status: "Запланировано", stress: "Средний" }
-        ]
-      }
-    ]
-  }
-};
-
 const weekSelect = document.getElementById("weekSelect");
 const focusTodayPanel = document.getElementById("focusTodayPanel");
 const backlogSummary = document.getElementById("backlogSummary");
 const backlogBoard = document.getElementById("backlogBoard");
 const logoutButton = document.getElementById("logoutButton");
-const activeUserLabels = Array.from(document.querySelectorAll("[data-active-user-name]"));
 
 const BACKLOG_STORAGE_KEY = "scrum-master-backlog-data";
-const userBacklogStorageKey = `${BACKLOG_STORAGE_KEY}:${activeUser}`;
-const userBacklogWeekStorageKey = `scrum-master-backlog-week:${activeUser}`;
 const DAILY_FOCUS_STORAGE_KEY = "scrum-master-daily-focus";
 const DAILY_FOCUS_DAY_STORAGE_KEY = "scrum-master-daily-focus-day";
+const userBacklogStorageKey = `${BACKLOG_STORAGE_KEY}:${activeUser}`;
+const userBacklogWeekStorageKey = `scrum-master-backlog-week:${activeUser}`;
 const BACKLOG_YEAR = 2026;
-
-function injectAiCoachLink() {
-  const nav = document.querySelector(".site-nav");
-  if (!nav || nav.querySelector('[href="ai-coach.html"]')) {
-    return;
-  }
-
-  const link = document.createElement("a");
-  link.className = "nav-link";
-  link.href = "ai-coach.html";
-  link.textContent = "AI Coach";
-  nav.insertBefore(link, nav.children[1] || null);
-}
 
 const timeline = [
   "09:00", "09:15", "09:30", "09:45",
@@ -107,12 +43,77 @@ const monthNames = [
   "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
 ];
 
+const seededBacklogData = {
+  "Неделя 20.04 - 24.04": {
+    days: [
+      {
+        date: "20.04",
+        weekday: "Понедельник",
+        items: [
+          { id: "20-0900", time: "09:00", text: "Написать расписание встреч по планированию", status: "В работе", task_type: "communication", cognitive_load: 3, emotional_load: 3 },
+          { id: "20-1430", time: "14:30", text: "Заполнить еженедельный отчет", status: "Сделано", task_type: "routine", cognitive_load: 2, emotional_load: 1 },
+          { id: "20-1445", time: "14:45", text: "Подготовиться к встрече завтра с ИТ", status: "Сделано", task_type: "deep_work", cognitive_load: 4, emotional_load: 2 },
+          { id: "20-1515", time: "15:15", text: "Дать ОС по сбору ЛМГ", status: "Сделано", task_type: "communication", cognitive_load: 2, emotional_load: 2 }
+        ]
+      },
+      {
+        date: "21.04",
+        weekday: "Вторник",
+        items: [
+          { id: "21-0915", time: "09:15", text: "Подготовиться к встрече с ИТ", status: "Сделано", task_type: "deep_work", cognitive_load: 4, emotional_load: 2 },
+          { id: "21-0930", time: "09:30", text: "Сделать презентацию для встречи в среду", status: "Сделано", task_type: "creative", cognitive_load: 4, emotional_load: 2 },
+          { id: "21-1015", time: "10:15", text: "Перенести данные для викли", status: "Сделано", task_type: "routine", cognitive_load: 2, emotional_load: 1 },
+          { id: "21-1045", time: "10:45", text: "Написать минутки после встречи с ИТ", status: "Сделано", task_type: "communication", cognitive_load: 2, emotional_load: 2 }
+        ]
+      },
+      {
+        date: "22.04",
+        weekday: "Среда",
+        items: [
+          { id: "22-0915", time: "09:15", text: "Поставить встречу по анализу TTM и LT", status: "Запланировано", task_type: "communication", cognitive_load: 2, emotional_load: 3 },
+          { id: "22-0930", time: "09:30", text: "Перенести общие встречи по планированию", status: "Запланировано", task_type: "routine", cognitive_load: 1, emotional_load: 1 },
+          { id: "22-1000", time: "10:00", text: "Протестировать календарь Димы", status: "В работе", task_type: "deep_work", cognitive_load: 4, emotional_load: 2 }
+        ]
+      },
+      {
+        date: "23.04",
+        weekday: "Четверг",
+        items: [
+          { id: "23-0900", time: "09:00", text: "Проверить бэклог перед планированием", status: "Запланировано", task_type: "routine", cognitive_load: 2, emotional_load: 1 },
+          { id: "23-1030", time: "10:30", text: "Подготовить синк по Agile Radar", status: "В работе", task_type: "communication", cognitive_load: 3, emotional_load: 4 },
+          { id: "23-1315", time: "13:15", text: "Разобрать блокеры по Jira hygiene", status: "Запланировано", task_type: "deep_work", cognitive_load: 4, emotional_load: 3 }
+        ]
+      },
+      {
+        date: "24.04",
+        weekday: "Пятница",
+        items: [
+          { id: "24-0915", time: "09:15", text: "Сверить загрузку команды на цели МП", status: "Запланировано", task_type: "deep_work", cognitive_load: 4, emotional_load: 3 },
+          { id: "24-1100", time: "11:00", text: "Подготовить материалы к ретро", status: "Запланировано", task_type: "creative", cognitive_load: 3, emotional_load: 2 },
+          { id: "24-1500", time: "15:00", text: "Обновить квартальные метрики", status: "Запланировано", task_type: "routine", cognitive_load: 2, emotional_load: 1 }
+        ]
+      }
+    ]
+  }
+};
+
 let activeEditorState = null;
 let draggedTaskKey = null;
 
-activeUserLabels.forEach((label) => {
-  label.textContent = activeUser;
-});
+injectAiCoachLink();
+
+function injectAiCoachLink() {
+  const nav = document.querySelector(".site-nav");
+  if (!nav || nav.querySelector('[href="ai-coach.html"]')) {
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.className = "nav-link";
+  link.href = "ai-coach.html";
+  link.textContent = "AI Coach";
+  nav.insertBefore(link, nav.children[1] || null);
+}
 
 function formatDate(date) {
   const day = String(date.getDate()).padStart(2, "0");
@@ -129,134 +130,32 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
-function focusStorageKey(week, date) {
-  return `${DAILY_FOCUS_STORAGE_KEY}:${activeUser}:${week}:${date}`;
-}
-
-function focusSelectedDayStorageKey(week) {
-  return `${DAILY_FOCUS_DAY_STORAGE_KEY}:${activeUser}:${week}`;
-}
-
-function getFocusDays(week) {
-  return backlogData[week]?.days || [];
-}
-
-function getSelectedFocusDay(week) {
-  const days = getFocusDays(week);
-  if (!days.length) {
-    return "";
+function weekStartValue(label) {
+  const match = label.match(/(\d{2})\.(\d{2})/);
+  if (!match) {
+    return Number.MAX_SAFE_INTEGER;
   }
 
-  const stored = window.appStorage.getItem(focusSelectedDayStorageKey(week));
-  return days.some((day) => day.date === stored) ? stored : days[0].date;
+  const [, day, month] = match;
+  return new Date(BACKLOG_YEAR, Number(month) - 1, Number(day)).getTime();
 }
 
-function loadDailyFocus(week, date) {
-  const fallback = [0, 1, 2].map(() => ({ text: "", done: false }));
-  const raw = window.appStorage.getItem(focusStorageKey(week, date));
-
-  if (!raw) {
-    return fallback;
+function monthNameForWeek(week) {
+  const match = week.match(/(\d{2})\.(\d{2})/);
+  if (!match) {
+    return "Без месяца";
   }
 
-  try {
-    const parsed = JSON.parse(raw);
-    return [0, 1, 2].map((index) => {
-      const item = parsed[index];
-      if (typeof item === "string") {
-        return { text: item, done: false };
-      }
-
-      return {
-        text: item?.text || "",
-        done: Boolean(item?.done)
-      };
-    });
-  } catch {
-    return fallback;
-  }
+  return monthNames[Number(match[2]) - 1] || "Без месяца";
 }
 
-function saveDailyFocus(week, date, items) {
-  const normalized = items
-    .slice(0, 3)
-    .map((item) => ({
-      text: String(item?.text || "").trim(),
-      done: Boolean(item?.done)
-    }));
-  window.appStorage.setItem(focusStorageKey(week, date), JSON.stringify(normalized));
-}
-
-function renderDailyFocus(week = weekSelect.value) {
-  if (!focusTodayPanel) {
-    return;
+function shortWeekLabel(week) {
+  const match = week.match(/(\d{2}\.\d{2})\s*-\s*(\d{2}\.\d{2})/);
+  if (!match) {
+    return week;
   }
 
-  const days = getFocusDays(week);
-  const selectedDate = getSelectedFocusDay(week);
-  const focusItems = loadDailyFocus(week, selectedDate);
-  const normalizedItems = [0, 1, 2].map((index) => focusItems[index] || { text: "", done: false });
-
-  focusTodayPanel.innerHTML = `
-    <div class="daily-focus-header">
-      <h3 class="daily-focus-title">\u0424\u043e\u043a\u0443\u0441 \u043d\u0430 \u0441\u0435\u0433\u043e\u0434\u043d\u044f</h3>
-    </div>
-    <div class="daily-focus-list">
-      ${normalizedItems.map((item, index) => `
-        <div class="daily-focus-item ${item.text.trim() ? "" : "is-empty"} ${item.done ? "is-done" : ""}">
-          <label class="daily-focus-check">
-            <input type="checkbox" ${item.done ? "checked" : ""} data-focus-done="${index}">
-            <span></span>
-          </label>
-          <input class="daily-focus-input" type="text" maxlength="160" value="${escapeHtml(item.text)}" placeholder="\u041f\u0443\u043d\u043a\u0442 ${index + 1}" data-focus-input="${index}">
-        </div>
-      `).join("")}
-    </div>
-  `;
-
-  const focusHeader = focusTodayPanel.querySelector('.daily-focus-header');
-  if (focusHeader) {
-    const daySelectControl = document.createElement('select');
-    daySelectControl.className = 'daily-focus-select';
-    daySelectControl.id = 'focusDaySelect';
-    daySelectControl.setAttribute('aria-label', '\u0412\u044b\u0431\u0440\u0430\u0442\u044c \u0434\u0435\u043d\u044c \u0444\u043e\u043a\u0443\u0441\u0430');
-    daySelectControl.innerHTML = days.map((day) => (
-      `<option value="${day.date}" ${day.date === selectedDate ? "selected" : ""}>${day.weekday} · ${day.date}</option>`
-    )).join('');
-    focusHeader.appendChild(daySelectControl);
-  }
-
-  const daySelect = document.getElementById('focusDaySelect');
-  daySelect?.addEventListener('change', () => {
-    window.appStorage.setItem(focusSelectedDayStorageKey(week), daySelect.value);
-    renderDailyFocus(week);
-  });
-
-  function collectFocusState() {
-    return normalizedItems.map((_, index) => {
-      const textField = focusTodayPanel.querySelector(`[data-focus-input="${index}"]`);
-      const doneField = focusTodayPanel.querySelector(`[data-focus-done="${index}"]`);
-
-      return {
-        text: textField?.value.trim() || '',
-        done: Boolean(doneField?.checked)
-      };
-    });
-  }
-
-  focusTodayPanel.querySelectorAll('[data-focus-input]').forEach((input) => {
-    input.addEventListener('change', () => {
-      saveDailyFocus(week, daySelect?.value || selectedDate, collectFocusState());
-      renderDailyFocus(week);
-    });
-  });
-
-  focusTodayPanel.querySelectorAll('[data-focus-done]').forEach((checkbox) => {
-    checkbox.addEventListener('change', () => {
-      saveDailyFocus(week, daySelect?.value || selectedDate, collectFocusState());
-      renderDailyFocus(week);
-    });
-  });
+  return `${match[1]} - ${match[2]}`;
 }
 
 function addDays(date, amount) {
@@ -285,10 +184,7 @@ function createEmptyWeek(startDate, endLimit) {
   const label = `Неделя ${formatDate(startDate)} - ${formatDate(endDate)}`;
 
   return {
-    [label]: {
-      totalMeetingHours: "0 ч 00 мин",
-      days
-    }
+    [label]: { days }
   };
 }
 
@@ -322,55 +218,84 @@ function mergeWeekData(template, stored) {
   return merged;
 }
 
-function weekStartValue(label) {
-  const match = label.match(/(\d{2})\.(\d{2})/);
-  if (!match) {
-    return Number.MAX_SAFE_INTEGER;
+function mapLegacyTaskType(value) {
+  switch (String(value || "").toLowerCase()) {
+    case "deep work":
+    case "deep_work":
+      return "deep_work";
+    case "high energy":
+    case "communication":
+    case "meeting":
+      return "communication";
+    case "creative":
+      return "creative";
+    case "learning":
+      return "learning";
+    case "recovery":
+      return "recovery";
+    case "low energy":
+    case "low_energy":
+    case "shallow_work":
+    case "admin":
+    case "routine":
+    default:
+      return "routine";
   }
-
-  const [, day, month] = match;
-  return new Date(BACKLOG_YEAR, Number(month) - 1, Number(day)).getTime();
 }
 
-function monthNameForWeek(week) {
-  const match = week.match(/(\d{2})\.(\d{2})/);
-  if (!match) {
-    return "Без месяца";
+function clampLoad(value, fallback) {
+  const parsed = Number.parseInt(value, 10);
+  if (Number.isFinite(parsed)) {
+    return Math.max(1, Math.min(5, parsed));
   }
-
-  return monthNames[Number(match[2]) - 1] || "Без месяца";
+  return fallback;
 }
 
-function shortWeekLabel(week) {
-  const match = week.match(/(\d{2}\.\d{2})\s*-\s*(\d{2}\.\d{2})/);
-  if (!match) {
-    return week;
-  }
+function fallbackCognitiveLoad(taskType) {
+  if (taskType === "deep_work") return 4;
+  if (taskType === "communication" || taskType === "creative" || taskType === "learning") return 3;
+  if (taskType === "recovery") return 1;
+  return 2;
+}
 
-  return `${match[1]} - ${match[2]}`;
+function fallbackEmotionalLoad(stress) {
+  const value = String(stress || "").toLowerCase();
+  if (value.includes("выс") || value.includes("high")) return 5;
+  if (value.includes("сред") || value.includes("medium")) return 3;
+  if (value.includes("низ") || value.includes("low")) return 2;
+  return 2;
+}
+
+function normalizeBacklogTaskItem(item, date = "") {
+  const taskType = mapLegacyTaskType(item?.task_type || item?.taskType);
+  const cognitiveLoad = clampLoad(item?.cognitive_load ?? item?.mentalCost, fallbackCognitiveLoad(taskType));
+  const emotionalLoad = clampLoad(item?.emotional_load ?? item?.emotionalCost, fallbackEmotionalLoad(item?.stress));
+  const normalized = normalizeTask({
+    task_type: taskType,
+    cognitive_load: cognitiveLoad,
+    emotional_load: emotionalLoad,
+    title: item?.title || item?.text || "",
+    planned_date: date
+  });
+
+  return {
+    id: item?.id || `task-${date}-${item?.time || "09:00"}-${Math.random().toString(36).slice(2, 8)}`,
+    time: item?.time || "09:00",
+    text: item?.text || item?.title || "",
+    status: item?.status || "Запланировано",
+    task_type: normalized.task_type,
+    cognitive_load: normalized.cognitive_load,
+    emotional_load: normalized.emotional_load
+  };
 }
 
 function normalizeStoredData(template, stored) {
   const merged = mergeWeekData(template, stored);
-
   Object.values(merged).forEach((week) => {
     week.days.forEach((day) => {
-      day.items = (day.items || []).map((item) => ({
-        id: item.id || `task-${day.date}-${item.time}-${Math.random().toString(36).slice(2, 8)}`,
-        time: item.time,
-        text: item.text || "",
-        status: item.status || "Запланировано",
-        stress: item.stress || "Нет",
-        taskType: item.taskType || "Low Energy",
-        energyCost: item.energyCost || "M",
-        mentalCost: normalizeLoadValue(item.mentalCost, mapTaskTypeToMentalCost(item.taskType, item.energyCost)),
-        emotionalCost: normalizeLoadValue(item.emotionalCost, mapStressToEmotionalCost(item.stress)),
-        recoveryMinutes: normalizeRecoveryMinutes(item.recoveryMinutes, mapIntensityToRecoveryMinutes(item.taskIntensity, item.energyCost)),
-        taskIntensity: normalizeTaskIntensity(item.taskIntensity, item.energyCost)
-      }));
+      day.items = (day.items || []).map((item) => normalizeBacklogTaskItem(item, day.date));
     });
   });
-
   return merged;
 }
 
@@ -382,7 +307,7 @@ function loadBacklogData(template) {
     try {
       window.appStorage.setItem(userBacklogStorageKey, legacyRaw);
     } catch {
-      // ignore copy issue
+      // noop
     }
   }
 
@@ -392,8 +317,7 @@ function loadBacklogData(template) {
   }
 
   try {
-    const stored = JSON.parse(resolvedRaw);
-    return normalizeStoredData(template, stored);
+    return normalizeStoredData(template, JSON.parse(resolvedRaw));
   } catch {
     return normalizeStoredData(template);
   }
@@ -432,13 +356,13 @@ function findTaskByKey(key) {
   const { week, date, value } = parseKey(key);
   const day = findDay(week, date);
   const task = day?.items.find((entry) => entry.id === value);
-  return { day, task, week, date, id: value };
+  return { week, date, id: value, day, task };
 }
 
 function statusSortOrder(status) {
-  if (status === "Р’ СЂР°Р±РѕС‚Рµ") return 0;
-  if (status === "Р—Р°РїР»Р°РЅРёСЂРѕРІР°РЅРѕ") return 1;
-  if (status === "РЎРґРµР»Р°РЅРѕ") return 2;
+  if (status === "В работе") return 0;
+  if (status === "Запланировано") return 1;
+  if (status === "Сделано") return 2;
   return 3;
 }
 
@@ -448,7 +372,6 @@ function sortDayItems(day) {
     if (statusDiff !== 0) {
       return statusDiff;
     }
-
     return timeline.indexOf(a.time) - timeline.indexOf(b.time);
   });
 }
@@ -482,7 +405,6 @@ const weeksByMonth = weekNames.reduce((groups, week) => {
 Object.entries(weeksByMonth).forEach(([month, weeks]) => {
   const optgroup = document.createElement("optgroup");
   optgroup.label = month;
-
   weeks.forEach((week) => {
     const option = document.createElement("option");
     option.value = week;
@@ -490,110 +412,150 @@ Object.entries(weeksByMonth).forEach(([month, weeks]) => {
     option.selected = week === defaultWeek;
     optgroup.appendChild(option);
   });
-
   weekSelect.appendChild(optgroup);
 });
 
-function statusClass(status) {
-  if (status === "Сделано") return "status-done";
-  if (status === "В работе") return "status-progress";
-  return "status-planned";
+function focusStorageKey(week, date) {
+  return `${DAILY_FOCUS_STORAGE_KEY}:${activeUser}:${week}:${date}`;
 }
 
-function stressClass(stress) {
-  if (stress === "Высокий") return "stress-high";
-  if (stress === "Средний") return "stress-medium";
-  if (stress === "Нет") return "stress-none";
-  return "stress-low";
+function focusSelectedDayStorageKey(week) {
+  return `${DAILY_FOCUS_DAY_STORAGE_KEY}:${activeUser}:${week}`;
 }
 
-function taskTypeClass(taskType) {
-  if (taskType === "Deep Work") return "task-type-deep";
-  if (taskType === "High Energy") return "task-type-high";
-  return "task-type-low";
+function getFocusDays(week) {
+  return backlogData[week]?.days || [];
 }
 
-function energyCostClass(energyCost) {
-  if (energyCost === "L") return "energy-cost-high";
-  if (energyCost === "S") return "energy-cost-low";
-  return "energy-cost-medium";
+function getSelectedFocusDay(week) {
+  const days = getFocusDays(week);
+  if (!days.length) return "";
+  const stored = window.appStorage.getItem(focusSelectedDayStorageKey(week));
+  return days.some((day) => day.date === stored) ? stored : days[0].date;
 }
 
-function normalizeLoadValue(value, fallback = 1) {
-  const normalized = Number.parseInt(value, 10);
-  if (Number.isFinite(normalized) && normalized >= 1 && normalized <= 5) {
-    return normalized;
+function loadDailyFocus(week, date) {
+  const fallback = [0, 1, 2].map(() => ({ text: "", done: false }));
+  const raw = window.appStorage.getItem(focusStorageKey(week, date));
+  if (!raw) return fallback;
+
+  try {
+    const parsed = JSON.parse(raw);
+    return [0, 1, 2].map((index) => ({
+      text: parsed[index]?.text || "",
+      done: Boolean(parsed[index]?.done)
+    }));
+  } catch {
+    return fallback;
   }
-  return fallback;
 }
 
-function normalizeRecoveryMinutes(value, fallback = 0) {
-  const normalized = Number.parseInt(value, 10);
-  if (Number.isFinite(normalized) && normalized >= 0) {
-    return normalized;
-  }
-  return fallback;
+function saveDailyFocus(week, date, items) {
+  const normalized = items.slice(0, 3).map((item) => ({
+    text: String(item?.text || "").trim(),
+    done: Boolean(item?.done)
+  }));
+  window.appStorage.setItem(focusStorageKey(week, date), JSON.stringify(normalized));
 }
 
-function normalizeTaskIntensity(value, energyCost = "M") {
-  if (value === "low" || value === "medium" || value === "high") {
-    return value;
+function renderDailyFocus(week = weekSelect.value) {
+  if (!focusTodayPanel) return;
+
+  const days = getFocusDays(week);
+  const selectedDate = getSelectedFocusDay(week);
+  const focusItems = loadDailyFocus(week, selectedDate);
+
+  focusTodayPanel.innerHTML = `
+    <div class="daily-focus-header">
+      <h3 class="daily-focus-title">Фокус на сегодня</h3>
+    </div>
+    <div class="daily-focus-list">
+      ${focusItems.map((item, index) => `
+        <div class="daily-focus-item ${item.text.trim() ? "" : "is-empty"} ${item.done ? "is-done" : ""}">
+          <label class="daily-focus-check">
+            <input type="checkbox" ${item.done ? "checked" : ""} data-focus-done="${index}">
+            <span></span>
+          </label>
+          <input class="daily-focus-input" type="text" maxlength="160" value="${escapeHtml(item.text)}" placeholder="Пункт ${index + 1}" data-focus-input="${index}">
+        </div>
+      `).join("")}
+    </div>
+  `;
+
+  const header = focusTodayPanel.querySelector(".daily-focus-header");
+  if (header) {
+    const daySelectControl = document.createElement("select");
+    daySelectControl.className = "daily-focus-select";
+    daySelectControl.id = "focusDaySelect";
+    daySelectControl.innerHTML = days.map((day) => (
+      `<option value="${day.date}" ${day.date === selectedDate ? "selected" : ""}>${day.weekday} · ${day.date}</option>`
+    )).join("");
+    header.appendChild(daySelectControl);
   }
-  if (energyCost === "L") {
-    return "high";
+
+  const daySelect = document.getElementById("focusDaySelect");
+  daySelect?.addEventListener("change", () => {
+    window.appStorage.setItem(focusSelectedDayStorageKey(week), daySelect.value);
+    renderDailyFocus(week);
+  });
+
+  function collectFocusState() {
+    return [0, 1, 2].map((index) => {
+      const textField = focusTodayPanel.querySelector(`[data-focus-input="${index}"]`);
+      const doneField = focusTodayPanel.querySelector(`[data-focus-done="${index}"]`);
+      return {
+        text: textField?.value.trim() || "",
+        done: Boolean(doneField?.checked)
+      };
+    });
   }
-  if (energyCost === "S") {
-    return "low";
-  }
-  return "medium";
+
+  focusTodayPanel.querySelectorAll("[data-focus-input], [data-focus-done]").forEach((field) => {
+    field.addEventListener("change", () => {
+      saveDailyFocus(week, daySelect?.value || selectedDate, collectFocusState());
+      renderDailyFocus(week);
+    });
+  });
 }
 
-function mapTaskTypeToMentalCost(taskType, energyCost = "M") {
-  const level = energyCost === "L" ? 2 : energyCost === "S" ? 0 : 1;
+function renderBacklogSummary(week) {
+  const days = backlogData[week]?.days || [];
+  const tasks = days.flatMap((day) => day.items);
+  const deepWorkCount = tasks.filter((task) => task.task_type === "deep_work").length;
+  const heavyCognitiveCount = tasks.filter((task) => Number(task.cognitive_load || 0) >= 4).length;
+  const heavyEmotionalCount = tasks.filter((task) => Number(task.emotional_load || 0) >= 4).length;
 
-  if (taskType === "Deep Work") {
-    return Math.min(5, 3 + level);
-  }
-  if (taskType === "High Energy") {
-    return Math.min(5, 2 + level);
-  }
-  return Math.min(5, 1 + level);
-}
-
-function mapStressToEmotionalCost(stress) {
-  if (stress === "Р’С‹СЃРѕРєРёР№") {
-    return 5;
-  }
-  if (stress === "РЎСЂРµРґРЅРёР№") {
-    return 3;
-  }
-  if (stress === "РќРёР·РєРёР№") {
-    return 2;
-  }
-  return 1;
-}
-
-function mapIntensityToRecoveryMinutes(taskIntensity = "medium", energyCost = "M") {
-  if (taskIntensity === "high" || energyCost === "L") {
-    return 30;
-  }
-  if (taskIntensity === "low" || energyCost === "S") {
-    return 5;
-  }
-  return 15;
-}
-
-function intensityLabel(taskIntensity) {
-  if (taskIntensity === "high") return "High";
-  if (taskIntensity === "low") return "Low";
-  return "Medium";
+  backlogSummary.innerHTML = `
+    <div class="analytics-overview-grid analytics-overview-grid-4">
+      <article class="analytics-card">
+        <p class="analytics-card-label">Всего задач</p>
+        <strong class="analytics-card-value">${tasks.length}</strong>
+        <span class="analytics-card-note">На выбранную неделю</span>
+      </article>
+      <article class="analytics-card">
+        <p class="analytics-card-label">Deep Work</p>
+        <strong class="analytics-card-value">${deepWorkCount}</strong>
+        <span class="analytics-card-note">Задачи глубокой концентрации</span>
+      </article>
+      <article class="analytics-card">
+        <p class="analytics-card-label">Когнитивно тяжелые</p>
+        <strong class="analytics-card-value">${heavyCognitiveCount}</strong>
+        <span class="analytics-card-note">С нагрузкой 4/5 и выше</span>
+      </article>
+      <article class="analytics-card">
+        <p class="analytics-card-label">Эмоционально тяжелые</p>
+        <strong class="analytics-card-value">${heavyEmotionalCount}</strong>
+        <span class="analytics-card-note">С нагрузкой 4/5 и выше</span>
+      </article>
+    </div>
+  `;
 }
 
 function renderTaskEditor(editorKey, day, defaults) {
   return `
     <div class="backlog-slot-cell is-editor">
       <div class="inline-task-editor" data-editor="${editorKey}">
-        <input class="inline-task-input" type="text" placeholder="Задача" value="${defaults.text}" data-editor-text>
+        <input class="inline-task-input" type="text" placeholder="Задача" value="${escapeHtml(defaults.text)}" data-editor-text>
         <div class="inline-task-row ${defaults.hideTime ? "is-single" : ""}">
           ${defaults.hideTime ? "" : `
             <select data-editor-time>
@@ -608,38 +570,20 @@ function renderTaskEditor(editorKey, day, defaults) {
         </div>
         <div class="inline-task-row">
           <select data-editor-task-type>
-            <option value="Deep Work" ${defaults.taskType === "Deep Work" ? "selected" : ""}>🔵 Deep Work</option>
-            <option value="High Energy" ${defaults.taskType === "High Energy" ? "selected" : ""}>🔴 High Energy</option>
-            <option value="Low Energy" ${defaults.taskType === "Low Energy" ? "selected" : ""}>🟢 Low Energy</option>
+            <option value="routine" ${defaults.task_type === "routine" ? "selected" : ""}>Рутина</option>
+            <option value="deep_work" ${defaults.task_type === "deep_work" ? "selected" : ""}>Deep Work</option>
+            <option value="communication" ${defaults.task_type === "communication" ? "selected" : ""}>Коммуникация</option>
+            <option value="creative" ${defaults.task_type === "creative" ? "selected" : ""}>Творческая</option>
+            <option value="learning" ${defaults.task_type === "learning" ? "selected" : ""}>Обучение</option>
+            <option value="recovery" ${defaults.task_type === "recovery" ? "selected" : ""}>Восстановление</option>
           </select>
-          <select data-editor-energy-cost>
-            <option value="S" ${defaults.energyCost === "S" ? "selected" : ""}>S — Low load</option>
-            <option value="M" ${defaults.energyCost === "M" ? "selected" : ""}>M — Medium load</option>
-            <option value="L" ${defaults.energyCost === "L" ? "selected" : ""}>L — High load</option>
-          </select>
-        </div>
-        <div class="inline-task-row">
-          <select data-editor-mental-cost>
-            <option value="1" ${defaults.mentalCost === 1 ? "selected" : ""}>Mental Cost 1</option>
-            <option value="2" ${defaults.mentalCost === 2 ? "selected" : ""}>Mental Cost 2</option>
-            <option value="3" ${defaults.mentalCost === 3 ? "selected" : ""}>Mental Cost 3</option>
-            <option value="4" ${defaults.mentalCost === 4 ? "selected" : ""}>Mental Cost 4</option>
-            <option value="5" ${defaults.mentalCost === 5 ? "selected" : ""}>Mental Cost 5</option>
-          </select>
-          <select data-editor-emotional-cost>
-            <option value="1" ${defaults.emotionalCost === 1 ? "selected" : ""}>Emotional Cost 1</option>
-            <option value="2" ${defaults.emotionalCost === 2 ? "selected" : ""}>Emotional Cost 2</option>
-            <option value="3" ${defaults.emotionalCost === 3 ? "selected" : ""}>Emotional Cost 3</option>
-            <option value="4" ${defaults.emotionalCost === 4 ? "selected" : ""}>Emotional Cost 4</option>
-            <option value="5" ${defaults.emotionalCost === 5 ? "selected" : ""}>Emotional Cost 5</option>
+          <select data-editor-cognitive-load>
+            ${[1, 2, 3, 4, 5].map((value) => `<option value="${value}" ${defaults.cognitive_load === value ? "selected" : ""}>Когнитивная ${value}/5</option>`).join("")}
           </select>
         </div>
         <div class="inline-task-row">
-          <input type="number" min="0" step="5" value="${defaults.recoveryMinutes}" placeholder="Recovery Time" data-editor-recovery-minutes>
-          <select data-editor-task-intensity>
-            <option value="low" ${defaults.taskIntensity === "low" ? "selected" : ""}>Intensity — Low</option>
-            <option value="medium" ${defaults.taskIntensity === "medium" ? "selected" : ""}>Intensity — Medium</option>
-            <option value="high" ${defaults.taskIntensity === "high" ? "selected" : ""}>Intensity — High</option>
+          <select data-editor-emotional-load>
+            ${[1, 2, 3, 4, 5].map((value) => `<option value="${value}" ${defaults.emotional_load === value ? "selected" : ""}>Эмоциональная ${value}/5</option>`).join("")}
           </select>
         </div>
         <div class="inline-task-actions">
@@ -659,25 +603,18 @@ function renderDayCreateArea(week, day) {
       time: getNextAvailableTime(day),
       text: "",
       status: "Запланировано",
-      stress: "Нет",
-      taskType: "Low Energy",
-      energyCost: "M",
-      mentalCost: 2,
-      emotionalCost: 1,
-      recoveryMinutes: 15,
-      taskIntensity: "medium",
+      task_type: "routine",
+      cognitive_load: 3,
+      emotional_load: 2,
       hideTime: true
     });
   }
 
-  return `
-    <button type="button" class="backlog-day-add-button" data-day-add="${createKey}">
-      Добавить
-    </button>
-  `;
+  return `<button type="button" class="backlog-day-add-button" data-day-add="${createKey}">Добавить</button>`;
 }
 
-function renderTaskCard(week, day, item) {
+function renderTaskCard(week, day, rawItem) {
+  const item = normalizeBacklogTaskItem(rawItem, day.date);
   const taskKey = makeTaskKey(week, day.date, item.id);
 
   if (isEditEditor(taskKey)) {
@@ -686,63 +623,21 @@ function renderTaskCard(week, day, item) {
       originalTime: item.time,
       text: item.text,
       status: item.status,
-      stress: item.stress,
-      taskType: item.taskType || "Low Energy",
-      energyCost: item.energyCost || "M",
-      mentalCost: normalizeLoadValue(item.mentalCost, mapTaskTypeToMentalCost(item.taskType, item.energyCost)),
-      emotionalCost: normalizeLoadValue(item.emotionalCost, mapStressToEmotionalCost(item.stress)),
-      recoveryMinutes: normalizeRecoveryMinutes(item.recoveryMinutes, mapIntensityToRecoveryMinutes(item.taskIntensity, item.energyCost)),
-      taskIntensity: normalizeTaskIntensity(item.taskIntensity, item.energyCost)
+      task_type: item.task_type,
+      cognitive_load: item.cognitive_load,
+      emotional_load: item.emotional_load
     });
   }
 
-  const cardStateClass = item.status === "Сделано" ? "is-done" : "";
-  const doneMark = item.status === "Сделано"
-    ? '<span class="task-done-mark" aria-label="Задача выполнена">✓</span>'
-    : "";
-  const typeMarkup = `
-        <div class="task-meta task-meta-labeled">
-          <span class="task-meta-label">Energy Type</span>
-          <span class="task-badge ${taskTypeClass(item.taskType || "Low Energy")}">${item.taskType || "Low Energy"}</span>
-        </div>
-      `;
-  const energyCostMarkup = `
-        <div class="task-meta task-meta-labeled">
-          <span class="task-meta-label">Energy Cost</span>
-          <span class="task-badge ${energyCostClass(item.energyCost || "M")}">${item.energyCost || "M"}</span>
-        </div>
-      `;
-  const mentalCostMarkup = `
-        <div class="task-meta task-meta-labeled">
-          <span class="task-meta-label">Mental Cost</span>
-          <span class="task-badge">${normalizeLoadValue(item.mentalCost, mapTaskTypeToMentalCost(item.taskType, item.energyCost))}/5</span>
-        </div>
-      `;
-  const emotionalCostMarkup = `
-        <div class="task-meta task-meta-labeled">
-          <span class="task-meta-label">Emotional Cost</span>
-          <span class="task-badge">${normalizeLoadValue(item.emotionalCost, mapStressToEmotionalCost(item.stress))}/5</span>
-        </div>
-      `;
-  const recoveryMarkup = `
-        <div class="task-meta task-meta-labeled">
-          <span class="task-meta-label">Recovery Time</span>
-          <span class="task-badge">${normalizeRecoveryMinutes(item.recoveryMinutes, mapIntensityToRecoveryMinutes(item.taskIntensity, item.energyCost))} min</span>
-        </div>
-      `;
-  const intensityMarkup = `
-        <div class="task-meta task-meta-labeled">
-          <span class="task-meta-label">Intensity</span>
-          <span class="task-badge">${intensityLabel(normalizeTaskIntensity(item.taskIntensity, item.energyCost))}</span>
-        </div>
-      `;
+  const intensity = calculateTaskIntensity(item);
+  const doneMark = item.status === "Сделано" ? '<span class="task-done-mark" aria-hidden="true">✓</span>' : "";
 
   return `
     <div class="backlog-slot-cell is-task" draggable="true" data-task-card="${taskKey}">
-      <div class="task-card ${cardStateClass}">
+      <div class="task-card ${item.status === "Сделано" ? "is-done" : ""}">
         ${doneMark}
         <span class="task-drag-hint" aria-hidden="true">::</span>
-        <p>${item.text}</p>
+        <p>${escapeHtml(item.text)}</p>
         <div class="task-card-actions task-card-actions-stacked">
           <div class="task-status-group">
             <span class="task-meta-label">Статус</span>
@@ -754,33 +649,44 @@ function renderTaskCard(week, day, item) {
               <option value="__delete__">Удалить</option>
             </select>
           </div>
-          ${typeMarkup}
-          ${mentalCostMarkup}
-          ${emotionalCostMarkup}
-          ${recoveryMarkup}
-          ${intensityMarkup}
-          ${energyCostMarkup}
+          <div class="task-meta task-meta-labeled">
+            <span class="task-meta-label">Тип задачи</span>
+            <span class="task-badge">${getTaskTypeIcon(item.task_type)} ${getTaskTypeLabel(item.task_type)}</span>
+          </div>
+          <div class="task-meta task-meta-labeled">
+            <span class="task-meta-label">Когнитивная</span>
+            <span class="task-badge">${item.cognitive_load}/5</span>
+          </div>
+          <div class="task-meta task-meta-labeled">
+            <span class="task-meta-label">Эмоциональная</span>
+            <span class="task-badge">${item.emotional_load}/5</span>
+          </div>
+          <div class="task-meta task-meta-labeled">
+            <span class="task-meta-label">Общая нагрузка</span>
+            <span class="task-badge">${intensity.label}</span>
+          </div>
         </div>
       </div>
     </div>
   `;
 }
 
+function statusClass(status) {
+  if (status === "Сделано") return "is-done";
+  if (status === "В работе") return "is-progress";
+  return "is-todo";
+}
+
 function saveEditor(editorKey) {
   const editor = backlogBoard.querySelector(`[data-editor="${editorKey}"]`);
-  if (!editor) {
-    return;
-  }
+  if (!editor) return;
 
   const textInput = editor.querySelector("[data-editor-text]");
   const timeSelect = editor.querySelector("[data-editor-time]");
   const statusSelect = editor.querySelector("[data-editor-status]");
   const taskTypeSelect = editor.querySelector("[data-editor-task-type]");
-  const energyCostSelect = editor.querySelector("[data-editor-energy-cost]");
-  const mentalCostSelect = editor.querySelector("[data-editor-mental-cost]");
-  const emotionalCostSelect = editor.querySelector("[data-editor-emotional-cost]");
-  const recoveryMinutesInput = editor.querySelector("[data-editor-recovery-minutes]");
-  const taskIntensitySelect = editor.querySelector("[data-editor-task-intensity]");
+  const cognitiveLoadSelect = editor.querySelector("[data-editor-cognitive-load]");
+  const emotionalLoadSelect = editor.querySelector("[data-editor-emotional-load]");
   const text = textInput.value.trim();
 
   if (!text) {
@@ -790,17 +696,22 @@ function saveEditor(editorKey) {
 
   const { week, date, value } = parseKey(editorKey);
   const day = findDay(week, date);
-  if (!day) {
-    return;
-  }
+  if (!day) return;
 
   const selectedTime = timeSelect ? timeSelect.value : getNextAvailableTime(day);
+  const nextTask = normalizeBacklogTaskItem({
+    id: activeEditorState?.mode === "edit" ? value : `task-${Date.now()}`,
+    time: selectedTime,
+    text,
+    status: statusSelect.value,
+    task_type: taskTypeSelect.value,
+    cognitive_load: Number(cognitiveLoadSelect.value),
+    emotional_load: Number(emotionalLoadSelect.value)
+  }, day.date);
 
   if (activeEditorState?.mode === "edit") {
     const taskIndex = day.items.findIndex((entry) => entry.id === value);
-    if (taskIndex < 0) {
-      return;
-    }
+    if (taskIndex < 0) return;
 
     const hasConflict = day.items.some((entry, index) => entry.time === selectedTime && index !== taskIndex);
     if (hasConflict) {
@@ -808,39 +719,14 @@ function saveEditor(editorKey) {
       return;
     }
 
-    day.items[taskIndex] = {
-      ...day.items[taskIndex],
-      time: selectedTime,
-      text,
-      status: statusSelect.value,
-      stress: day.items[taskIndex]?.stress || "Нет",
-      taskType: taskTypeSelect.value,
-      energyCost: energyCostSelect.value,
-      mentalCost: normalizeLoadValue(mentalCostSelect?.value, mapTaskTypeToMentalCost(taskTypeSelect.value, energyCostSelect.value)),
-      emotionalCost: normalizeLoadValue(emotionalCostSelect?.value, mapStressToEmotionalCost(day.items[taskIndex]?.stress)),
-      recoveryMinutes: normalizeRecoveryMinutes(recoveryMinutesInput?.value, mapIntensityToRecoveryMinutes(taskIntensitySelect?.value, energyCostSelect.value)),
-      taskIntensity: normalizeTaskIntensity(taskIntensitySelect?.value, energyCostSelect.value)
-    };
+    day.items[taskIndex] = nextTask;
   } else {
     const hasConflict = day.items.some((entry) => entry.time === selectedTime);
     if (hasConflict) {
       timeSelect?.focus();
       return;
     }
-
-    day.items.push({
-      id: `task-${Date.now()}`,
-      time: selectedTime,
-      text,
-      status: statusSelect.value,
-      stress: "Нет",
-      taskType: taskTypeSelect.value,
-      energyCost: energyCostSelect.value,
-      mentalCost: normalizeLoadValue(mentalCostSelect?.value, mapTaskTypeToMentalCost(taskTypeSelect.value, energyCostSelect.value)),
-      emotionalCost: normalizeLoadValue(emotionalCostSelect?.value, 1),
-      recoveryMinutes: normalizeRecoveryMinutes(recoveryMinutesInput?.value, mapIntensityToRecoveryMinutes(taskIntensitySelect?.value, energyCostSelect.value)),
-      taskIntensity: normalizeTaskIntensity(taskIntensitySelect?.value, energyCostSelect.value)
-    });
+    day.items.push(nextTask);
   }
 
   sortDayItems(day);
@@ -851,10 +737,7 @@ function saveEditor(editorKey) {
 
 function deleteTask(taskKey) {
   const { day, id } = findTaskByKey(taskKey);
-  if (!day) {
-    return;
-  }
-
+  if (!day) return;
   day.items = day.items.filter((entry) => entry.id !== id);
   saveBacklogData();
   activeEditorState = null;
@@ -866,21 +749,16 @@ function moveTaskToDay(taskKey, targetDayKey) {
   const { date: targetDate } = parseKey(targetDayKey);
   const sourceDay = findDay(week, sourceDate);
   const targetDay = findDay(week, targetDate);
-
-  if (!sourceDay || !targetDay) {
-    return false;
-  }
+  if (!sourceDay || !targetDay) return false;
 
   const sourceIndex = sourceDay.items.findIndex((entry) => entry.id === id);
-  if (sourceIndex < 0) {
-    return false;
-  }
+  if (sourceIndex < 0) return false;
 
   const [task] = sourceDay.items.splice(sourceIndex, 1);
   const keepTime = !targetDay.items.some((entry) => entry.time === task.time);
   const nextTime = keepTime ? task.time : getNextAvailableTime(targetDay);
+  targetDay.items.push(normalizeBacklogTaskItem({ ...task, time: nextTime }, targetDay.date));
 
-  targetDay.items.push({ ...task, time: nextTime });
   sortDayItems(sourceDay);
   sortDayItems(targetDay);
   saveBacklogData();
@@ -889,7 +767,7 @@ function moveTaskToDay(taskKey, targetDayKey) {
 
 function renderBacklog(week) {
   const data = backlogData[week];
-  backlogSummary.innerHTML = "";
+  renderBacklogSummary(week);
   backlogBoard.innerHTML = "";
 
   const table = document.createElement("div");
@@ -951,46 +829,30 @@ function bindBoardActions() {
     button.addEventListener("click", () => {
       activeEditorState = { mode: "create", key: button.dataset.dayAdd };
       renderBacklog(weekSelect.value);
-
-      const input = backlogBoard.querySelector("[data-editor-text]");
-      if (input) {
-        input.focus();
-      }
+      backlogBoard.querySelector("[data-editor-text]")?.focus();
     });
   });
 
   function bindDropZone(element) {
     element.addEventListener("dragover", (event) => {
-      if (!draggedTaskKey) {
-        return;
-      }
-
+      if (!draggedTaskKey) return;
       event.preventDefault();
       event.dataTransfer.dropEffect = "move";
     });
 
     element.addEventListener("dragenter", (event) => {
-      if (!draggedTaskKey) {
-        return;
-      }
-
+      if (!draggedTaskKey) return;
       event.preventDefault();
       element.classList.add("is-drop-target");
     });
 
     element.addEventListener("dragleave", (event) => {
-      if (event.relatedTarget && element.contains(event.relatedTarget)) {
-        return;
-      }
-
+      if (event.relatedTarget && element.contains(event.relatedTarget)) return;
       element.classList.remove("is-drop-target");
     });
 
     element.addEventListener("drop", (event) => {
-      if (!draggedTaskKey) {
-        return;
-      }
-
+      if (!draggedTaskKey) return;
       event.preventDefault();
       const moved = moveTaskToDay(draggedTaskKey, element.dataset.dayDrop);
       draggedTaskKey = null;
@@ -1001,13 +863,7 @@ function bindBoardActions() {
     });
   }
 
-  backlogBoard.querySelectorAll(".backlog-day-column").forEach((column) => {
-    bindDropZone(column);
-  });
-
-  backlogBoard.querySelectorAll("[data-day-drop]").forEach((dayList) => {
-    bindDropZone(dayList);
-  });
+  backlogBoard.querySelectorAll(".backlog-day-column, [data-day-drop]").forEach(bindDropZone);
 
   backlogBoard.querySelectorAll("[data-editor-cancel]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -1029,7 +885,6 @@ function bindBoardActions() {
       if (select.value === "__edit__") {
         activeEditorState = { mode: "edit", key: taskKey };
         renderBacklog(weekSelect.value);
-
         const input = backlogBoard.querySelector("[data-editor-text]");
         if (input) {
           input.focus();
@@ -1044,10 +899,7 @@ function bindBoardActions() {
       }
 
       const { task } = findTaskByKey(taskKey);
-      if (!task) {
-        return;
-      }
-
+      if (!task) return;
       task.status = select.value;
       saveBacklogData();
       renderBacklog(weekSelect.value);
@@ -1063,21 +915,10 @@ weekSelect.addEventListener("change", (event) => {
   renderBacklog(event.target.value);
 });
 
-logoutButton?.addEventListener("click", () => {
-  (async () => {
-    try {
-      const [{ signOutCurrentUser }, { landingPath }] = await Promise.all([
-        import("./auth-helpers.js"),
-        import("./route-paths.js")
-      ]);
-      await signOutCurrentUser().catch(() => null);
-      window.appStorage.removeItem(AUTH_KEY);
-      window.location.replace(landingPath());
-    } catch {
-      window.appStorage.removeItem(AUTH_KEY);
-      window.location.replace("index.html");
-    }
-  })();
+logoutButton?.addEventListener("click", async () => {
+  await signOutCurrentUser().catch(() => null);
+  window.appStorage.removeItem(AUTH_KEY);
+  window.location.replace(landingPath());
 });
 
 renderDailyFocus(defaultWeek);

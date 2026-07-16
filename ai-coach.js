@@ -10,6 +10,7 @@ import {
   startOfWeekIso,
   toIsoDate
 } from "./mindpulse-ai-core.js";
+import { normalizeTask, getTaskTypeLabel, calculateTaskLoad } from "./lib/workload.js";
 
 const todayIso = toIsoDate(new Date());
 const weekStartIso = startOfWeekIso(new Date());
@@ -110,11 +111,9 @@ function renderPlanState() {
   }
 
   if (usageLabelBox) {
-    if (pro && usage) {
-      usageLabelBox.textContent = `AI-запросы: ${usage.usedRequests} / ${usage.limit} в этом месяце`;
-    } else {
-      usageLabelBox.textContent = "Базовые рекомендации на основе задач и состояния";
-    }
+    usageLabelBox.textContent = pro && usage
+      ? `AI-запросы: ${usage.usedRequests} / ${usage.limit} в этом месяце`
+      : "Базовые рекомендации на основе задач и состояния";
   }
 }
 
@@ -150,41 +149,32 @@ async function fetchWeekCheckins() {
 }
 
 async function fetchWeekTasks() {
-  let data;
-  let error;
-
-  ({
-    data,
-    error
-  } = await supabase
+  let response = await supabase
     .from("tasks")
-    .select("id, title, details, status, planned_date, task_type, cognitive_load, emotional_load, energy_required, estimated_minutes, is_focus, completed_at, archived_at, mental_cost, emotional_cost, recovery_minutes, task_intensity")
+    .select("id, title, details, status, planned_date, task_type, cognitive_load, emotional_load, is_focus, completed_at, archived_at, updated_at")
     .eq("user_id", currentUser.id)
     .gte("planned_date", weekStartIso)
     .lte("planned_date", weekEndIso)
     .is("archived_at", null)
     .order("planned_date", { ascending: true })
-    .order("updated_at", { ascending: false }));
+    .order("updated_at", { ascending: false });
 
-  if (error && shouldFallbackTasks(error)) {
-    ({
-      data,
-      error
-    } = await supabase
+  if (response.error && shouldFallbackTasks(response.error)) {
+    response = await supabase
       .from("tasks")
       .select("id, title, details, status, planned_date, completed_at")
       .eq("user_id", currentUser.id)
       .gte("planned_date", weekStartIso)
       .lte("planned_date", weekEndIso)
-      .order("updated_at", { ascending: false })
-      .limit(120));
+      .order("planned_date", { ascending: true })
+      .limit(120);
   }
 
-  if (error) {
-    throw error;
+  if (response.error) {
+    throw response.error;
   }
 
-  const supabaseTasks = normalizeSupabaseTasks(Array.isArray(data) ? data : []);
+  const supabaseTasks = normalizeSupabaseTasks(Array.isArray(response.data) ? response.data : []);
   const backlogTasks = loadBacklogTasksForRange(weekStartIso, weekEndIso);
   return mergeTasks(supabaseTasks, backlogTasks);
 }
@@ -203,12 +193,12 @@ function renderCoachHero() {
   greetingBox.textContent = name ? `AI Coach для ${name}` : "AI Coach помогает собрать реалистичный день";
   introBox.textContent = pro
     ? "Глубокий AI-анализ использует агрегированные данные недели и ищет повторяющиеся паттерны перегруза."
-    : "Free Coach работает локально: без внешнего AI, только на основе твоих задач, состояния, Readiness Score и Energy Debt.";
+    : "Free Coach работает локально: без внешнего AI, только на основе задач, состояния, Readiness Score и Energy Debt.";
 
   readinessScoreBox.textContent = String(readiness?.score ?? 0);
   readinessStatusBox.textContent = readiness?.label || "Stable";
   readinessStatusBox.dataset.state = readiness?.state || "stable";
-  readinessNoteBox.textContent = readiness?.note || "Оценка дня появится после заполнения состояния и задач.";
+  readinessNoteBox.textContent = readiness?.note || "Оценка дня появится после check-in и задач.";
 
   debtValueBox.textContent = String(debt?.value ?? 0);
   debtStatusBox.textContent = debt?.label || "Healthy";
@@ -229,16 +219,16 @@ function renderCoachContext() {
   todayTasksCountBox.textContent = `${todayTasks.length} ${pluralizeTasks(todayTasks.length)}`;
   todayModeBox.textContent = today?.readiness?.mode
     ? `Лучший режим на сегодня: ${today.readiness.mode}.`
-    : "Сначала добавьте задачи и состояние дня.";
+    : "Сначала добавьте задачи и заполните состояние дня.";
 
   heavyDaysCountBox.textContent = String(heavyDays.length);
   heavyDaysNoteBox.textContent = heavyDays.length
-    ? `На этой неделе перегруз чаще появлялся в ${heavyDays.slice(0, 2).map((day) => weekdayLabel(day.date).toLowerCase()).join(" и ")}.`
+    ? `На этой неделе самые тяжелые дни пришлись на ${heavyDays.slice(0, 2).map((day) => weekdayLabel(day.date).toLowerCase()).join(" и ")}.`
     : "Пока неделя выглядит достаточно устойчиво.";
 
   topTaskTypeBox.textContent = topTask?.title || "—";
   topTaskNoteBox.textContent = topTask
-    ? `Самая затратная задача недели: ${topTask.task_type || "Task"} • burden ${Math.round(topTask.burden || 0)}.`
+    ? `${getTaskTypeLabel(topTask.task_type)} • нагрузка ${Math.round(calculateTaskLoad(topTask))}`
     : "Появится после анализа нескольких задач.";
 }
 
@@ -289,25 +279,7 @@ function renderResponse(payload, sourceLabel = "") {
 function normalizeSupabaseTasks(tasks) {
   return tasks
     .filter((task) => task?.planned_date)
-    .map((task) => ({
-      id: task.id,
-      title: task.title || "Задача",
-      details: task.details || "",
-      status: task.status || "todo",
-      planned_date: task.planned_date,
-      task_type: task.task_type || "Admin",
-      cognitive_load: Number(task.cognitive_load || 1),
-      emotional_load: Number(task.emotional_load || 1),
-      energy_required: Number(task.energy_required || 1),
-      estimated_minutes: Number(task.estimated_minutes || 30),
-      mental_cost: Number(task.mental_cost || task.cognitive_load || 1),
-      emotional_cost: Number(task.emotional_cost || task.emotional_load || 1),
-      recovery_minutes: Number(task.recovery_minutes || 0),
-      task_intensity: task.task_intensity || "medium",
-      is_focus: Boolean(task.is_focus),
-      completed_at: task.completed_at || null,
-      archived_at: task.archived_at || null
-    }));
+    .map((task) => normalizeTask(task));
 }
 
 function loadBacklogTasksForRange(startIso, endIso) {
@@ -317,7 +289,6 @@ function loadBacklogTasksForRange(startIso, endIso) {
   }
 
   const storageKeys = [`scrum-master-backlog-data:${activeUser}`, "scrum-master-backlog-data"];
-
   for (const key of storageKeys) {
     const raw = window.appStorage?.getItem(key);
     if (!raw) {
@@ -350,28 +321,18 @@ function normalizeBacklogTasks(backlogData, startIso, endIso) {
 
       const items = Array.isArray(day?.items) ? day.items : [];
       items.forEach((item, itemIndex) => {
-        const energyCost = item?.energyCost || "M";
-        const mentalCost = Number(item?.mentalCost || mapTaskTypeToMentalCost(item?.taskType, energyCost));
-        const emotionalCost = Number(item?.emotionalCost || mapStressToEmotionalCost(item?.stress));
-
-        tasks.push({
+        tasks.push(normalizeTask({
           id: item?.id || `backlog-${plannedDate}-${dayIndex}-${itemIndex}`,
           title: item?.text || "Задача",
           details: "",
           status: mapBacklogStatus(item?.status),
           planned_date: plannedDate,
-          task_type: item?.taskType || "Light Tasks",
-          cognitive_load: mentalCost,
-          emotional_load: emotionalCost,
-          energy_required: mapTaskTypeToEnergyRequired(item?.taskType, energyCost),
-          estimated_minutes: mapEnergyCostToMinutes(energyCost),
-          mental_cost: mentalCost,
-          emotional_cost: emotionalCost,
-          recovery_minutes: Number(item?.recoveryMinutes ?? mapIntensityToRecoveryMinutes(mapEnergyCostToIntensity(energyCost), energyCost)),
-          task_intensity: item?.taskIntensity || mapEnergyCostToIntensity(energyCost),
+          task_type: item?.taskType || "routine",
+          cognitive_load: item?.cognitive_load ?? item?.mentalCost ?? mapLegacyTaskTypeToCognitiveLoad(item?.taskType),
+          emotional_load: item?.emotional_load ?? item?.emotionalCost ?? mapLegacyStressToEmotionalLoad(item?.stress),
           is_focus: false,
           completed_at: mapBacklogStatus(item?.status) === "done" ? `${plannedDate}T18:00:00.000Z` : null
-        });
+        }));
       });
     });
   });
@@ -385,12 +346,13 @@ function mergeTasks(primaryTasks, secondaryTasks) {
     const key = [task.id, task.planned_date, task.status, task.title || ""].join("::");
     merged.set(key, task);
   });
+
   return Array.from(merged.values()).sort((left, right) => String(left.planned_date || "").localeCompare(String(right.planned_date || "")));
 }
 
 function shouldFallbackTasks(error) {
   const message = String(error?.message || "");
-  return ["mental_cost", "emotional_cost", "recovery_minutes", "task_intensity", "archived_at"].some((field) => message.includes(field));
+  return ["updated_at", "archived_at", "task_type", "cognitive_load", "emotional_load"].some((field) => message.includes(field));
 }
 
 function actionLabel(action) {
@@ -432,54 +394,21 @@ function mapBacklogStatus(status) {
   return "todo";
 }
 
-function mapEnergyCostToMinutes(cost) {
-  if (cost === "L") return 90;
-  if (cost === "S") return 30;
-  return 60;
-}
-
-function mapEnergyCostToIntensity(cost) {
-  if (cost === "L") return "high";
-  if (cost === "S") return "low";
-  return "medium";
-}
-
-function mapTaskTypeToMentalCost(taskType, energyCost = "M") {
-  const level = energyCost === "L" ? 2 : energyCost === "S" ? 0 : 1;
-  if (taskType === "Deep Work") return Math.min(5, 3 + level);
-  if (taskType === "High Energy") return Math.min(5, 2 + level);
-  return Math.min(5, 1 + level);
-}
-
-function mapStressToEmotionalCost(stress) {
+function mapLegacyStressToEmotionalLoad(stress) {
   if (stress === "Высокий") return 5;
   if (stress === "Средний") return 3;
   if (stress === "Низкий") return 2;
-  return 1;
+  return 2;
 }
 
-function mapTaskTypeToEnergyRequired(taskType, energyCost = "M") {
-  const level = energyCost === "L" ? 2 : energyCost === "S" ? 0 : 1;
-  if (taskType === "High Energy") return 3 + level;
-  if (taskType === "Deep Work") return 2 + level;
-  return 1 + level;
-}
-
-function mapIntensityToRecoveryMinutes(taskIntensity = "medium", energyCost = "M") {
-  if (taskIntensity === "high" || energyCost === "L") return 30;
-  if (taskIntensity === "low" || energyCost === "S") return 5;
-  return 15;
-}
-
-function getThisWeekRange(date) {
-  return {
-    start: startOfWeekIso(date),
-    end: endOfWeekIso(date)
-  };
-}
-
-function toIso(date) {
-  return toIsoDate(date);
+function mapLegacyTaskTypeToCognitiveLoad(taskType) {
+  const normalized = String(taskType || "").toLowerCase();
+  if (normalized.includes("deep")) return 5;
+  if (normalized.includes("creative")) return 4;
+  if (normalized.includes("learn")) return 4;
+  if (normalized.includes("meeting") || normalized.includes("commun")) return 3;
+  if (normalized.includes("recover")) return 1;
+  return 3;
 }
 
 function escapeHtml(value) {
