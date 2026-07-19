@@ -43,10 +43,6 @@ export function todayPath() {
   return isFilePreview() ? `${rootPrefix()}today.html` : "/today.html";
 }
 
-export function aiCoachPath() {
-  return isFilePreview() ? `${rootPrefix()}ai-coach.html` : "/ai-coach.html";
-}
-
 export function appPath() {
   return todayPath();
 }

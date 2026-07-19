@@ -1,6 +1,6 @@
 ﻿import { requireAuth, signOutCurrentUser } from "./auth-helpers.js";
 import { getCurrentProfile, getSupabase } from "./supabase-client.js";
-import { aiCoachPath, landingPath, loginPath } from "./route-paths.js";
+import { landingPath, loginPath } from "./route-paths.js";
 import {
   calculateDailyLoadLevel,
   calculateEnergyDebtSeries,
@@ -82,7 +82,6 @@ async function bootstrap() {
   supabase = await getSupabase();
   currentProfile = await getCurrentProfile().catch(() => null);
   syncRangeOutputs();
-  injectAiCoachLink();
 
   try {
     await Promise.all([
@@ -97,19 +96,6 @@ async function bootstrap() {
   } catch (error) {
     showPageError(error?.message || "Не удалось открыть экран Сегодня.");
   }
-}
-
-function injectAiCoachLink() {
-  const nav = document.querySelector(".site-nav");
-  if (!nav || nav.querySelector('[href="ai-coach.html"], [href="/ai-coach"]')) {
-    return;
-  }
-
-  const link = document.createElement("a");
-  link.className = "nav-link";
-  link.href = aiCoachPath();
-  link.textContent = "AI Coach";
-  nav.insertBefore(link, nav.children[4] || null);
 }
 
 async function loadTodayCheckin() {
@@ -256,6 +242,52 @@ function renderTodayView() {
   renderCapacity(readiness, energyDebt);
 }
 
+function renderCapacity(readiness, energyDebt) {
+  const safeReadiness = readiness || calculateReadinessScore(buildCheckinFromForm(), [], summarizeEnergyDebt([]));
+  const safeDebt = energyDebt || summarizeEnergyDebt([]);
+  const loadLevel = safeReadiness.dailyLoadLevel || calculateDailyLoadLevel(todayTasks.filter((task) => !isDone(task)));
+
+  if (capacityPercent) {
+    capacityPercent.textContent = String(safeReadiness.score ?? 0);
+  }
+
+  if (capacityLabel) {
+    capacityLabel.textContent = safeReadiness.label || "Стабильное состояние";
+    capacityLabel.dataset.state = safeReadiness.state || "stable";
+  }
+
+  if (capacityBar) {
+    const score = Number(safeReadiness.score ?? 0);
+    capacityBar.style.width = `${Math.max(0, Math.min(100, score))}%`;
+    capacityBar.dataset.state = safeReadiness.state || "stable";
+  }
+
+  if (capacityNote) {
+    const parts = [
+      safeReadiness.note,
+      loadLevel?.note
+    ].filter(Boolean);
+    capacityNote.textContent = parts.join(" ");
+  }
+
+  if (energyDebtValue) {
+    energyDebtValue.textContent = String(safeDebt.value ?? 0);
+  }
+
+  if (energyDebtStatus) {
+    energyDebtStatus.textContent = safeDebt.label || "Устойчивый ритм";
+    energyDebtStatus.dataset.state = mapDebtStateToBadgeState(safeDebt.state);
+  }
+
+  if (energyDebtNote) {
+    energyDebtNote.textContent = safeDebt.note || "Метрика появится после нескольких дней использования.";
+  }
+
+  if (capacityMode) {
+    capacityMode.textContent = safeReadiness.mode || "Light Tasks";
+  }
+}
+
 function buildCheckinFromForm() {
   return {
     checkin_date: todayIso,
@@ -265,6 +297,14 @@ function buildCheckinFromForm() {
     sleep_quality: sleepSelect?.value || todayCheckin?.sleep_quality || "",
     mood: moodSelect?.value || todayCheckin?.mood || ""
   };
+}
+
+function mapDebtStateToBadgeState(state) {
+  if (state === "healthy") return "excellent";
+  if (state === "watch") return "stable";
+  if (state === "fatigue") return "heavy";
+  if (state === "high" || state === "overloaded") return "risk";
+  return "stable";
 }
 
 function loadBacklogTasksForRange(startIso, endIso) {

@@ -423,7 +423,7 @@ function renderToolLinks() {
 
   toolsGrid.innerHTML = `
     <a class="app-tool-card" href="${rootFile("backlog.html")}">
-      <strong>Бэклог</strong>
+      <strong>Моя неделя</strong>
       <span>Недели, задачи и energy type</span>
     </a>
     <a class="app-tool-card" href="${rootFile("calendar.html")}">

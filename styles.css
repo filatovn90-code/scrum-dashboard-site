@@ -865,6 +865,104 @@ textarea {
   min-height: 520px;
 }
 
+.day-pulse-shell {
+  display: grid;
+  gap: 8px;
+}
+
+.day-pulse-card {
+  width: 100%;
+  min-height: 66px;
+  border: 1px solid rgba(21, 66, 18, 0.12);
+  border-radius: 18px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(247, 251, 246, 0.98) 0%, rgba(255, 255, 255, 1) 100%);
+  display: grid;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.day-pulse-card:hover {
+  border-color: rgba(45, 90, 39, 0.18);
+  background: rgba(188, 240, 174, 0.14);
+}
+
+.day-pulse-card[aria-expanded="true"] {
+  border-color: rgba(45, 90, 39, 0.22);
+}
+
+.day-pulse-top,
+.day-pulse-bottom,
+.day-pulse-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.day-pulse-top strong,
+.day-pulse-bottom span,
+.day-pulse-details span {
+  min-width: 0;
+}
+
+.day-pulse-top strong {
+  font-size: 0.92rem;
+  line-height: 1.1;
+}
+
+.day-pulse-top span,
+.day-pulse-bottom span,
+.day-pulse-details span {
+  color: var(--text-soft);
+  font-size: 0.74rem;
+  line-height: 1.2;
+}
+
+.day-pulse-bar {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: #e8efe7;
+  overflow: hidden;
+}
+
+.day-pulse-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6faa76 0%, #2d5a27 100%);
+  transition: width 0.28s ease;
+}
+
+.day-pulse-bar span[data-state="stable"] {
+  background: linear-gradient(90deg, #9fc69d 0%, #4d7c49 100%);
+}
+
+.day-pulse-bar span[data-state="heavy"] {
+  background: linear-gradient(90deg, #cce85f 0%, #8f9d11 100%);
+}
+
+.day-pulse-bar span[data-state="risk"] {
+  background: linear-gradient(90deg, #ffb4ab 0%, #c03f35 100%);
+}
+
+.day-pulse-bottom {
+  font-weight: 700;
+}
+
+.day-pulse-over {
+  color: #b42318 !important;
+}
+
+.day-pulse-details {
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 2px 2px;
+}
+
 .backlog-slot-cell {
   border-radius: 20px;
   padding: 8px;

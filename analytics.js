@@ -1,6 +1,6 @@
 import { requireAuth, signOutCurrentUser } from "./auth-helpers.js";
 import { getSupabase } from "./supabase-client.js";
-import { aiCoachPath, landingPath, loginPath, todayPath } from "./route-paths.js";
+import { landingPath, loginPath, todayPath } from "./route-paths.js";
 import { getCurrentPlan, isProPlan } from "./pricing-helpers.js";
 import { requestWeeklyReview } from "./ai-service.js";
 import {
@@ -83,22 +83,7 @@ async function bootstrap() {
   await renderAnalytics();
 }
 
-function injectAiCoachLink() {
-  const nav = document.querySelector(".site-nav");
-  if (!nav || nav.querySelector('[href="ai-coach.html"], [href="/ai-coach"]')) {
-    return;
-  }
-
-  const link = document.createElement("a");
-  link.className = "nav-link";
-  link.href = aiCoachPath();
-  link.textContent = "AI Coach";
-  nav.insertBefore(link, nav.children[1] || null);
-}
-
 function applyPricingState() {
-  injectAiCoachLink();
-
   if (isProPlan(currentPlan)) {
     return;
   }
@@ -645,7 +630,7 @@ function renderStateChart(dataset) {
 
 function renderLoadChart(dataset) {
   if (!dataset.tasks.length) {
-    loadChart.innerHTML = emptyState("Пока нет задач за выбранный период.", "Перейти в Бэклог", "backlog.html");
+    loadChart.innerHTML = emptyState("Пока нет задач за выбранный период.", "Перейти в Мою неделю", "backlog.html");
     loadInsight.textContent = "Когда появятся задачи, здесь будет видно, в какие дни нагрузка выше и где лучше разгружать расписание.";
     return;
   }
@@ -754,7 +739,7 @@ function renderInsights(dataset) {
 
 function renderTaskTypes(dataset) {
   if (!dataset.tasks.length) {
-    taskTypesBox.innerHTML = emptyState("Пока нет задач за выбранный период.", "Перейти в Бэклог", "backlog.html");
+    taskTypesBox.innerHTML = emptyState("Пока нет задач за выбранный период.", "Перейти в Мою неделю", "backlog.html");
     taskTypesInsight.textContent = "";
     return;
   }

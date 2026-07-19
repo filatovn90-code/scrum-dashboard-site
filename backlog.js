@@ -1,10 +1,15 @@
-import { signOutCurrentUser } from "./auth-helpers.js";
+import { getCurrentSession, getSupabase, signOutCurrentUser } from "./auth-helpers.js";
 import { landingPath } from "./route-paths.js";
 import {
+  calculateDailyLoad,
+  calculateEnergyDebtSeries,
   calculateTaskIntensity,
+  calculateReadinessScore,
   getTaskTypeIcon,
   getTaskTypeLabel,
-  normalizeTask
+  normalizeTask,
+  summarizeEnergyDebt,
+  toIsoDate
 } from "./lib/workload.js";
 
 const AUTH_KEY = "scrum-dashboard-auth-user";
@@ -23,9 +28,12 @@ const logoutButton = document.getElementById("logoutButton");
 const BACKLOG_STORAGE_KEY = "scrum-master-backlog-data";
 const DAILY_FOCUS_STORAGE_KEY = "scrum-master-daily-focus";
 const DAILY_FOCUS_DAY_STORAGE_KEY = "scrum-master-daily-focus-day";
+const DAY_PULSE_SNAPSHOT_STORAGE_KEY = "mindpulse-day-pulse-snapshots";
 const userBacklogStorageKey = `${BACKLOG_STORAGE_KEY}:${activeUser}`;
 const userBacklogWeekStorageKey = `scrum-master-backlog-week:${activeUser}`;
+const userDayPulseSnapshotStorageKey = `${DAY_PULSE_SNAPSHOT_STORAGE_KEY}:${activeUser}`;
 const BACKLOG_YEAR = 2026;
+const DEFAULT_DAY_PULSE = 70;
 
 const timeline = [
   "09:00", "09:15", "09:30", "09:45",
@@ -99,26 +107,29 @@ const seededBacklogData = {
 
 let activeEditorState = null;
 let draggedTaskKey = null;
-
-injectAiCoachLink();
-
-function injectAiCoachLink() {
-  const nav = document.querySelector(".site-nav");
-  if (!nav || nav.querySelector('[href="ai-coach.html"]')) {
-    return;
-  }
-
-  const link = document.createElement("a");
-  link.className = "nav-link";
-  link.href = "ai-coach.html";
-  link.textContent = "AI Coach";
-  nav.insertBefore(link, nav.children[1] || null);
-}
+let supabaseClient;
+let currentSession;
+let dayPulseCheckins = new Map();
+let backlogRenderVersion = 0;
+const expandedPulseCards = new Set();
+let pulseSnapshots = loadPulseSnapshots();
 
 function formatDate(date) {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   return `${day}.${month}`;
+}
+
+function loadPulseSnapshots() {
+  try {
+    return JSON.parse(window.appStorage.getItem(userDayPulseSnapshotStorageKey) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function savePulseSnapshots() {
+  window.appStorage.setItem(userDayPulseSnapshotStorageKey, JSON.stringify(pulseSnapshots));
 }
 
 function escapeHtml(value) {
@@ -162,6 +173,20 @@ function addDays(date, amount) {
   const next = new Date(date);
   next.setDate(next.getDate() + amount);
   return next;
+}
+
+function toBacklogIsoDate(value) {
+  const [day, month] = String(value || "").split(".");
+  if (!day || !month) {
+    return "";
+  }
+
+  return `${BACKLOG_YEAR}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function isPastBacklogDate(dateIso) {
+  if (!dateIso) return false;
+  return dateIso < toIsoDate(new Date());
 }
 
 function createEmptyWeek(startDate, endLimit) {
@@ -287,6 +312,20 @@ function normalizeBacklogTaskItem(item, date = "") {
     cognitive_load: normalized.cognitive_load,
     emotional_load: normalized.emotional_load
   };
+}
+
+function buildAnalyticsTask(item, date) {
+  const normalized = normalizeBacklogTaskItem(item, date);
+  return normalizeTask({
+    id: normalized.id,
+    title: normalized.text,
+    task_type: normalized.task_type,
+    cognitive_load: normalized.cognitive_load,
+    emotional_load: normalized.emotional_load,
+    planned_date: toBacklogIsoDate(date),
+    completed_at: normalized.status === "РЎРґРµР»Р°РЅРѕ" ? `${toBacklogIsoDate(date)}T18:00:00.000Z` : null,
+    status: normalized.status === "РЎРґРµР»Р°РЅРѕ" ? "done" : normalized.status === "Р’ СЂР°Р±РѕС‚Рµ" ? "in_progress" : "todo"
+  });
 }
 
 function normalizeStoredData(template, stored) {
@@ -551,6 +590,177 @@ function renderBacklogSummary(week) {
   `;
 }
 
+function makeDayPulseKey(week, date) {
+  return `${week}::${date}::__pulse__`;
+}
+
+function getWeekIsoRange(week) {
+  const days = backlogData[week]?.days || [];
+  if (!days.length) return null;
+
+  return {
+    start: toBacklogIsoDate(days[0].date),
+    end: toBacklogIsoDate(days[days.length - 1].date)
+  };
+}
+
+async function ensurePulseContext() {
+  if (typeof currentSession !== "undefined" && typeof supabaseClient !== "undefined") {
+    return;
+  }
+
+  currentSession = await getCurrentSession().catch(() => null);
+  supabaseClient = await getSupabase().catch(() => null);
+}
+
+async function loadDayPulseData(week) {
+  dayPulseCheckins = new Map();
+  await ensurePulseContext();
+
+  if (!supabaseClient || !currentSession?.user?.id) {
+    return;
+  }
+
+  const range = getWeekIsoRange(week);
+  if (!range) {
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("daily_checkins")
+    .select("checkin_date, energy_level, stress_level, focus_level, sleep_quality, mood")
+    .eq("user_id", currentSession.user.id)
+    .gte("checkin_date", range.start)
+    .lte("checkin_date", range.end);
+
+  if (error) {
+    console.error("Failed to load backlog day pulse", error);
+    return;
+  }
+
+  (data || []).forEach((item) => {
+    dayPulseCheckins.set(toIsoDate(item.checkin_date), item);
+  });
+}
+
+function getPulseCardState(percent) {
+  if (percent > 100) return "risk";
+  if (percent >= 86) return "heavy";
+  if (percent >= 61) return "stable";
+  return "excellent";
+}
+
+function resolveStoredPulse(dateIso, computedPulse) {
+  if (!Number.isFinite(computedPulse)) {
+    return null;
+  }
+
+  const rounded = Math.max(0, Math.min(100, Math.round(computedPulse)));
+  if (!isPastBacklogDate(dateIso)) {
+    return rounded;
+  }
+
+  const saved = Number(pulseSnapshots[dateIso]);
+  if (Number.isFinite(saved)) {
+    return Math.max(0, Math.min(100, Math.round(saved)));
+  }
+
+  pulseSnapshots[dateIso] = rounded;
+  savePulseSnapshots();
+  return rounded;
+}
+
+function buildDayPulseMetricsMap(week, days) {
+  const analyticsTasks = days.flatMap((day) => day.items.map((item) => buildAnalyticsTask(item, day.date)));
+  const checkins = Array.from(dayPulseCheckins.values()).sort((left, right) => {
+    return toIsoDate(left.checkin_date || left.date).localeCompare(toIsoDate(right.checkin_date || right.date));
+  });
+  const debtSeries = calculateEnergyDebtSeries(checkins, analyticsTasks);
+  const debtByDate = new Map();
+
+  debtSeries.forEach((entry, index) => {
+    debtByDate.set(entry.date, summarizeEnergyDebt(debtSeries.slice(0, index + 1)));
+  });
+
+  return new Map(days.map((day) => {
+    const dateIso = toBacklogIsoDate(day.date);
+    const tasks = day.items.map((item) => buildAnalyticsTask(item, day.date));
+    const loadMetrics = calculateDailyLoad(tasks);
+    const checkin = dayPulseCheckins.get(dateIso);
+    const computedPulse = checkin
+      ? resolveStoredPulse(dateIso, calculateReadinessScore(checkin, tasks, debtByDate.get(dateIso)).score)
+      : null;
+    const capacity = computedPulse ?? DEFAULT_DAY_PULSE;
+    const totalLoad = Math.max(0, Math.round(loadMetrics.total));
+    const cognitiveLoad = day.items.reduce((sum, item) => sum + Number(normalizeBacklogTaskItem(item, day.date).cognitive_load || 0), 0);
+    const emotionalLoad = day.items.reduce((sum, item) => sum + Number(normalizeBacklogTaskItem(item, day.date).emotional_load || 0), 0);
+    const heavyTasks = day.items.filter((item) => {
+      const normalized = normalizeBacklogTaskItem(item, day.date);
+      return Number(normalized.cognitive_load) >= 4 || Number(normalized.emotional_load) >= 4;
+    }).length;
+    const percent = capacity > 0 ? Math.round((totalLoad / capacity) * 100) : 0;
+    const overBy = Math.max(0, totalLoad - capacity);
+    const remaining = Math.max(0, capacity - totalLoad);
+
+    return [day.date, {
+      dateIso,
+      hasPulse: Number.isFinite(computedPulse),
+      pulse: computedPulse,
+      capacity,
+      totalLoad,
+      cognitiveLoad,
+      emotionalLoad,
+      heavyTasks,
+      percent,
+      overBy,
+      remaining,
+      state: getPulseCardState(percent),
+      tooltip: Number.isFinite(computedPulse)
+        ? `Пульс дня\nДоступная нагрузка: ${capacity}\nЗапланировано: ${totalLoad}\n${overBy ? `Превышение: ${overBy}` : `Осталось: ${remaining}`}`
+        : `Пульс дня\nПульс не оценён\nЗапланировано: ${totalLoad}\nБазовая ёмкость: ${capacity}`
+    }];
+  }));
+}
+
+function renderDayPulseCard(week, day, metrics) {
+  const pulseKey = makeDayPulseKey(week, day.date);
+  const expanded = expandedPulseCards.has(pulseKey);
+  const topLabel = metrics.hasPulse ? `Пульс ${metrics.pulse}` : "Пульс не оценён";
+  const summaryLabel = metrics.hasPulse
+    ? `${metrics.totalLoad} / ${metrics.capacity}`
+    : `${metrics.totalLoad} / обычных ${metrics.capacity}`;
+
+  return `
+    <div class="day-pulse-shell" title="${escapeHtml(metrics.tooltip)}">
+      <button
+        type="button"
+        class="day-pulse-card"
+        data-day-pulse-toggle="${pulseKey}"
+        aria-expanded="${expanded ? "true" : "false"}"
+      >
+        <div class="day-pulse-top">
+          <strong>${topLabel}</strong>
+          <span>${metrics.hasPulse ? "День оценён" : "План"}</span>
+        </div>
+        <div class="day-pulse-bar">
+          <span data-state="${metrics.state}" style="width:${Math.min(metrics.percent, 100)}%"></span>
+        </div>
+        <div class="day-pulse-bottom">
+          <span>${summaryLabel}</span>
+          ${metrics.overBy ? `<span class="day-pulse-over">+${metrics.overBy}</span>` : ""}
+        </div>
+      </button>
+      ${expanded ? `
+        <div class="day-pulse-details">
+          <span>Когнитивная нагрузка: ${metrics.cognitiveLoad}</span>
+          <span>Эмоциональная нагрузка: ${metrics.emotionalLoad}</span>
+          <span>Тяжёлых задач: ${metrics.heavyTasks}</span>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
 function renderTaskEditor(editorKey, day, defaults) {
   return `
     <div class="backlog-slot-cell is-editor">
@@ -732,7 +942,7 @@ function saveEditor(editorKey) {
   sortDayItems(day);
   saveBacklogData();
   activeEditorState = null;
-  renderBacklog(weekSelect.value);
+  void renderBacklog(weekSelect.value);
 }
 
 function deleteTask(taskKey) {
@@ -741,7 +951,7 @@ function deleteTask(taskKey) {
   day.items = day.items.filter((entry) => entry.id !== id);
   saveBacklogData();
   activeEditorState = null;
-  renderBacklog(weekSelect.value);
+  void renderBacklog(weekSelect.value);
 }
 
 function moveTaskToDay(taskKey, targetDayKey) {
@@ -765,8 +975,15 @@ function moveTaskToDay(taskKey, targetDayKey) {
   return true;
 }
 
-function renderBacklog(week) {
+async function renderBacklog(week) {
+  const renderVersion = ++backlogRenderVersion;
   const data = backlogData[week];
+  await loadDayPulseData(week);
+  if (renderVersion !== backlogRenderVersion) {
+    return;
+  }
+
+  const pulseMetricsByDay = buildDayPulseMetricsMap(week, data.days);
   renderBacklogSummary(week);
   backlogBoard.innerHTML = "";
 
@@ -787,6 +1004,7 @@ function renderBacklog(week) {
         </div>
       </div>
       <div class="backlog-day-list" data-day-drop="${makeCreateKey(week, day.date)}">
+        ${renderDayPulseCard(week, day, pulseMetricsByDay.get(day.date))}
         ${renderDayCreateArea(week, day)}
         ${day.items.map((item) => renderTaskCard(week, day, item)).join("")}
       </div>
@@ -796,6 +1014,12 @@ function renderBacklog(week) {
 
   backlogBoard.appendChild(table);
   bindBoardActions();
+
+  const activeInput = backlogBoard.querySelector("[data-editor-text]");
+  if (activeInput) {
+    activeInput.focus();
+    activeInput.setSelectionRange(activeInput.value.length, activeInput.value.length);
+  }
 }
 
 function bindBoardActions() {
@@ -828,7 +1052,7 @@ function bindBoardActions() {
   backlogBoard.querySelectorAll("[data-day-add]").forEach((button) => {
     button.addEventListener("click", () => {
       activeEditorState = { mode: "create", key: button.dataset.dayAdd };
-      renderBacklog(weekSelect.value);
+      void renderBacklog(weekSelect.value);
       backlogBoard.querySelector("[data-editor-text]")?.focus();
     });
   });
@@ -858,7 +1082,7 @@ function bindBoardActions() {
       draggedTaskKey = null;
       activeEditorState = null;
       if (moved) {
-        renderBacklog(weekSelect.value);
+        void renderBacklog(weekSelect.value);
       }
     });
   }
@@ -868,7 +1092,7 @@ function bindBoardActions() {
   backlogBoard.querySelectorAll("[data-editor-cancel]").forEach((button) => {
     button.addEventListener("click", () => {
       activeEditorState = null;
-      renderBacklog(weekSelect.value);
+      void renderBacklog(weekSelect.value);
     });
   });
 
@@ -884,7 +1108,7 @@ function bindBoardActions() {
 
       if (select.value === "__edit__") {
         activeEditorState = { mode: "edit", key: taskKey };
-        renderBacklog(weekSelect.value);
+        void renderBacklog(weekSelect.value);
         const input = backlogBoard.querySelector("[data-editor-text]");
         if (input) {
           input.focus();
@@ -902,7 +1126,19 @@ function bindBoardActions() {
       if (!task) return;
       task.status = select.value;
       saveBacklogData();
-      renderBacklog(weekSelect.value);
+      void renderBacklog(weekSelect.value);
+    });
+  });
+
+  backlogBoard.querySelectorAll("[data-day-pulse-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const key = button.dataset.dayPulseToggle;
+      if (expandedPulseCards.has(key)) {
+        expandedPulseCards.delete(key);
+      } else {
+        expandedPulseCards.add(key);
+      }
+      void renderBacklog(weekSelect.value);
     });
   });
 }
@@ -912,7 +1148,7 @@ weekSelect.addEventListener("change", (event) => {
   draggedTaskKey = null;
   window.appStorage.setItem(userBacklogWeekStorageKey, event.target.value);
   renderDailyFocus(event.target.value);
-  renderBacklog(event.target.value);
+  void renderBacklog(event.target.value);
 });
 
 logoutButton?.addEventListener("click", async () => {
@@ -922,4 +1158,4 @@ logoutButton?.addEventListener("click", async () => {
 });
 
 renderDailyFocus(defaultWeek);
-renderBacklog(defaultWeek);
+void renderBacklog(defaultWeek);
