@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 const items = [
   { label: "Сегодня", icon: LayoutGrid, active: true },
   { label: "Календарь", icon: CalendarDays },
-  { label: "Бэклог", icon: ListTodo },
+  { label: "Моя неделя", icon: ListTodo },
   { label: "Аналитика", icon: BarChart3 },
   { label: "Состояние", icon: Gauge }
 ];
