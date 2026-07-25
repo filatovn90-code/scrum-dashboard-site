@@ -76,7 +76,7 @@ async function bootstrap() {
   currentPlan = await getCurrentPlan().catch(() => "free");
   applyPricingState();
   if (aiAssistantToggle) {
-    aiAssistantToggle.textContent = "AI Coach";
+    aiAssistantToggle.textContent = "AI разбор";
     aiAssistantToggle.dataset.locked = "false";
     delete aiAssistantToggle.dataset.lockHref;
   }
@@ -102,6 +102,8 @@ function applyPricingState() {
 
   if (aiAssistantToggle) {
     aiAssistantToggle.textContent = "AI Coach — Pro";
+    aiAssistantToggle.textContent = "AI разбор — Pro";
+    aiAssistantToggle.textContent = "AI review - Pro";
     aiAssistantToggle.dataset.locked = "true";
     delete aiAssistantToggle.dataset.lockHref;
   }

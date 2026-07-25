@@ -1,122 +1,15 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url=today.html">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Coach — MindPulse</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Переход — MindPulse</title>
+  <script>
+    window.location.replace("today.html");
+  </script>
 </head>
 <body>
-  <div class="page-shell page-shell-wide ai-coach-page">
-    <header class="site-header">
-      <div class="site-brand">
-        <p class="section-kicker">MindPulse</p>
-        <h1>AI Coach</h1>
-      </div>
-
-      <div class="site-header-actions">
-        <nav class="site-nav" aria-label="Основная навигация">
-          <a class="nav-link" href="today.html">Пульс дня</a>
-          <a class="nav-link is-active" href="ai-coach.html">AI Coach</a>
-          <a class="nav-link" href="backlog.html">Моя неделя</a>
-          <a class="nav-link" href="analytics.html">Аналитика</a>
-          <a class="nav-link" href="pricing.html">Pricing</a>
-        </nav>
-        <button class="login-button" id="aiCoachLogoutButton" type="button">Выход</button>
-      </div>
-    </header>
-
-    <main class="ai-coach-main">
-      <section class="section ai-coach-hero">
-        <div class="ai-coach-hero-copy">
-          <p class="section-kicker">Primary assistant</p>
-          <div class="today-summary-badges ai-coach-plan-row">
-            <span class="today-capacity-badge" id="aiCoachPlanBadge" data-state="stable">Free Coach</span>
-            <span class="today-summary-label" id="aiCoachUsageLabel">Rule-based mode</span>
-          </div>
-          <h2 class="dashboard-section-title" id="aiCoachGreeting">AI Coach помогает собрать реалистичный день</h2>
-          <p class="today-section-copy" id="aiCoachIntro">
-            Здесь собраны рекомендации по состоянию, задачам недели, Readiness Score и Energy Debt.
-          </p>
-        </div>
-
-        <div class="ai-coach-hero-side">
-          <article class="ai-coach-score-card">
-            <span class="today-summary-label">Readiness Score</span>
-            <strong id="aiCoachReadinessScore">0</strong>
-            <span class="today-capacity-badge" id="aiCoachReadinessStatus" data-state="stable">Stable</span>
-            <p id="aiCoachReadinessNote">Загрузка состояния дня...</p>
-          </article>
-
-          <article class="ai-coach-score-card">
-            <span class="today-summary-label">Energy Debt</span>
-            <strong id="aiCoachEnergyDebtValue">0</strong>
-            <span class="today-capacity-badge" id="aiCoachEnergyDebtStatus" data-state="excellent">Healthy</span>
-            <p id="aiCoachEnergyDebtNote">Метрика появится после расчета недели.</p>
-          </article>
-        </div>
-      </section>
-
-      <div class="auth-status-box today-status-box" id="aiCoachPageStatus" hidden></div>
-
-      <section class="ai-coach-grid">
-        <article class="section ai-coach-actions-card">
-          <div class="section-heading">
-            <div>
-              <p class="section-kicker">Quick actions</p>
-              <h2 class="dashboard-section-title">Быстрые действия</h2>
-              <p class="today-section-copy">Выберите вопрос, и AI Coach соберет ответ на основе ваших реальных данных.</p>
-            </div>
-          </div>
-
-          <div class="ai-coach-actions" id="aiCoachActions">
-            <button class="ghost-button ai-coach-action-button is-active" type="button" data-action="plan-day">Составь план дня</button>
-            <button class="ghost-button ai-coach-action-button" type="button" data-action="move">Что лучше перенести?</button>
-            <button class="ghost-button ai-coach-action-button" type="button" data-action="why-tired">Почему я устал?</button>
-            <button class="ghost-button ai-coach-action-button" type="button" data-action="reduce-load">Как снизить нагрузку сегодня?</button>
-            <button class="ghost-button ai-coach-action-button" type="button" data-action="weekly-review">Сделай weekly review</button>
-          </div>
-
-          <div class="ai-coach-context-grid">
-            <article class="ai-coach-context-card">
-              <span class="today-summary-label">На сегодня</span>
-              <strong id="aiCoachTodayTasksCount">0 задач</strong>
-              <p id="aiCoachTodayMode">Режим дня появится после расчета.</p>
-            </article>
-
-            <article class="ai-coach-context-card">
-              <span class="today-summary-label">Тяжелые дни недели</span>
-              <strong id="aiCoachHeavyDaysCount">0</strong>
-              <p id="aiCoachHeavyDaysNote">Пока нет перегруженных дней.</p>
-            </article>
-
-            <article class="ai-coach-context-card">
-              <span class="today-summary-label">Самые энергозатратные задачи</span>
-              <strong id="aiCoachTopTaskType">—</strong>
-              <p id="aiCoachTopTaskNote">Появится после анализа недели.</p>
-            </article>
-          </div>
-        </article>
-
-        <article class="section ai-coach-response-card">
-          <div class="section-heading">
-            <div>
-              <p class="section-kicker">Coach response</p>
-              <h2 class="dashboard-section-title" id="aiCoachResponseTitle">План дня</h2>
-              <p class="today-section-copy">Ответ выглядит как личное письмо-подсказка, а не как сухой отчет.</p>
-            </div>
-          </div>
-
-          <div class="ai-coach-letter" id="aiCoachResponse">
-            <p>Загрузка рекомендаций...</p>
-          </div>
-        </article>
-      </section>
-    </main>
-  </div>
-
-  <script src="shared-storage.js"></script>
-  <script type="module" src="ai-coach.js"></script>
+  <p>Переход на <a href="today.html">Пульс дня</a>...</p>
 </body>
 </html>
-

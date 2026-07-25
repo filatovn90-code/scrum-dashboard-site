@@ -650,6 +650,37 @@ function getPulseCardState(percent) {
   return "excellent";
 }
 
+function getPulseCardLabel(state) {
+  if (state === "risk") return "Риск перегруза";
+  if (state === "heavy") return "Плотный день";
+  if (state === "stable") return "Комфортная нагрузка";
+  return "Сбалансировано";
+}
+
+function getPulseCardHint(metrics) {
+  if (metrics.overBy > 0) {
+    return "Если добавлять ещё, лучше только лёгкие задачи.";
+  }
+
+  if (metrics.remaining <= 0) {
+    return "Лимит дня уже заполнен.";
+  }
+
+  if (metrics.remaining <= 15) {
+    return "Осталось место только для одной лёгкой задачи.";
+  }
+
+  if (metrics.state === "heavy") {
+    return "День плотный, но пока управляемый.";
+  }
+
+  if (metrics.state === "stable") {
+    return "День выглядит комфортным для обычного ритма.";
+  }
+
+  return "Есть хороший запас для ещё одной задачи.";
+}
+
 function resolveStoredPulse(dateIso, computedPulse) {
   if (!Number.isFinite(computedPulse)) {
     return null;
@@ -749,6 +780,7 @@ function renderDayPulseCard(week, day, metrics) {
           <span>${summaryLabel}</span>
           ${metrics.overBy ? `<span class="day-pulse-over">+${metrics.overBy}</span>` : ""}
         </div>
+        <div class="day-pulse-note">${metrics.overBy > 0 ? "Лучше не добавлять ещё одну тяжёлую задачу." : metrics.remaining <= 15 ? "Осталось место только для лёгкой задачи." : "День выглядит управляемым."}</div>
       </button>
       ${expanded ? `
         <div class="day-pulse-details">

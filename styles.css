@@ -921,6 +921,12 @@ textarea {
   line-height: 1.2;
 }
 
+.day-pulse-note {
+  color: var(--text-soft);
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
 .day-pulse-bar {
   position: relative;
   height: 8px;
