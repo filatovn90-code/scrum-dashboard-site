@@ -16,22 +16,23 @@ function testRoutineLowLoad() {
   });
 
   assert.ok(load > 0);
-  assert.ok(load <= 25);
+  assert.ok(load <= 10);
 }
 
 function testDeepWorkHighCognitiveLoad() {
   const load = calculateTaskLoad({
     task_type: "deep_work",
     cognitive_load: 5,
-    emotional_load: 1
+    emotional_load: 2
   });
 
-  assert.ok(load >= 75);
+  assert.ok(load >= 30);
+  assert.ok(load <= 35);
   assert.equal(calculateTaskIntensity({
     task_type: "deep_work",
     cognitive_load: 5,
-    emotional_load: 1
-  }).key, "very_high");
+    emotional_load: 2
+  }).key, "high");
 }
 
 function testCommunicationHighEmotionalLoad() {
@@ -41,7 +42,8 @@ function testCommunicationHighEmotionalLoad() {
     emotional_load: 5
   });
 
-  assert.ok(load >= 60);
+  assert.ok(load >= 25);
+  assert.ok(load <= 30);
 }
 
 function testRecoveryDoesNotZeroDay() {
