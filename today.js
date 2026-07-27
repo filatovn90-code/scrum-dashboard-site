@@ -1,5 +1,6 @@
-﻿import { requireAuth, signOutCurrentUser } from "./auth-helpers.js";
+import { requireAuth, signOutCurrentUser } from "./auth-helpers.js";
 import { getCurrentProfile, getSupabase } from "./supabase-client.js";
+import { applyTranslations, onLocaleChange, t } from "./i18n.js";
 import { landingPath, loginPath } from "./route-paths.js";
 import {
   calculateDailyLoadLevel,
@@ -13,7 +14,6 @@ import {
 
 const today = new Date();
 const todayIso = toIsoDate(today);
-const todayShort = `${String(today.getDate()).padStart(2, "0")}.${String(today.getMonth() + 1).padStart(2, "0")}`;
 const recentStartIso = shiftIsoDate(todayIso, -6);
 const currentYear = today.getFullYear();
 
@@ -51,6 +51,12 @@ let recentTasks = [];
 bootstrap();
 bindEvents();
 
+onLocaleChange(() => {
+  applyTranslations(document);
+  syncSelectLabels();
+  renderTodayView();
+});
+
 function bindEvents() {
   logoutButton?.addEventListener("click", async () => {
     await signOutCurrentUser().catch(() => null);
@@ -82,6 +88,7 @@ async function bootstrap() {
   supabase = await getSupabase();
   currentProfile = await getCurrentProfile().catch(() => null);
   syncRangeOutputs();
+  syncSelectLabels();
 
   try {
     await Promise.all([
@@ -94,12 +101,12 @@ async function bootstrap() {
     renderTodayView();
     setPageStatus("");
   } catch (error) {
-    showPageError(error?.message || "Не удалось открыть экран Сегодня.");
+    showPageError(error?.message || t("pulse.loadError"));
   }
 }
 
 async function loadTodayCheckin() {
-  setPageStatus("Загружаю экран Сегодня...");
+  setPageStatus(t("pulse.loadingStatus"));
 
   const { data, error } = await supabase
     .from("daily_checkins")
@@ -190,12 +197,9 @@ function fillCheckinForm() {
   focusInput.value = String(todayCheckin?.focus_level || 6);
   sleepSelect.value = todayCheckin?.sleep_quality || "";
   moodSelect.value = todayCheckin?.mood || "";
+  syncSelectLabels();
   syncRangeOutputs();
-  setCheckinStatus(
-    todayCheckin
-      ? "Данные за сегодня загружены."
-      : "Заполни состояние дня, чтобы рекомендации стали точнее."
-  );
+  setCheckinStatus(todayCheckin ? t("pulse.loadedStatus") : t("pulse.emptyStatus"));
 }
 
 function syncRangeOutputs() {
@@ -205,7 +209,7 @@ function syncRangeOutputs() {
 }
 
 async function saveTodayCheckin() {
-  setCheckinStatus("Сохраняю состояние...");
+  setCheckinStatus(t("pulse.savingStatus"));
 
   const payload = {
     user_id: currentUser.id,
@@ -229,7 +233,7 @@ async function saveTodayCheckin() {
 
   todayCheckin = { ...(todayCheckin || {}), ...payload };
   recentCheckins = upsertRecentCheckin(recentCheckins, todayCheckin);
-  setCheckinStatus("Состояние сохранено.");
+  setCheckinStatus(t("pulse.savedStatus"));
   renderTodayView();
 }
 
@@ -246,13 +250,15 @@ function renderCapacity(readiness, energyDebt) {
   const safeReadiness = readiness || calculateReadinessScore(buildCheckinFromForm(), [], summarizeEnergyDebt([]));
   const safeDebt = energyDebt || summarizeEnergyDebt([]);
   const loadLevel = safeReadiness.dailyLoadLevel || calculateDailyLoadLevel(todayTasks.filter((task) => !isDone(task)));
+  const readinessCopy = getCleanReadinessCopy(safeReadiness);
+  const debtCopy = getCleanDebtCopy(safeDebt);
 
   if (capacityPercent) {
     capacityPercent.textContent = String(safeReadiness.score ?? 0);
   }
 
   if (capacityLabel) {
-    capacityLabel.textContent = safeReadiness.label || "Стабильное состояние";
+    capacityLabel.textContent = readinessCopy.label;
     capacityLabel.dataset.state = safeReadiness.state || "stable";
   }
 
@@ -263,10 +269,7 @@ function renderCapacity(readiness, energyDebt) {
   }
 
   if (capacityNote) {
-    const parts = [
-      safeReadiness.note,
-      loadLevel?.note
-    ].filter(Boolean);
+    const parts = [readinessCopy.note, loadLevel?.note].filter(Boolean);
     capacityNote.textContent = parts.join(" ");
   }
 
@@ -275,17 +278,63 @@ function renderCapacity(readiness, energyDebt) {
   }
 
   if (energyDebtStatus) {
-    energyDebtStatus.textContent = safeDebt.label || "Устойчивый ритм";
+    energyDebtStatus.textContent = debtCopy.label;
     energyDebtStatus.dataset.state = mapDebtStateToBadgeState(safeDebt.state);
   }
 
   if (energyDebtNote) {
-    energyDebtNote.textContent = safeDebt.note || "Метрика появится после нескольких дней использования.";
+    energyDebtNote.textContent = debtCopy.note;
   }
 
   if (capacityMode) {
-    capacityMode.textContent = safeReadiness.mode || "Light Tasks";
+    capacityMode.textContent = safeReadiness.mode || t("workload.modeLightTasks");
   }
+}
+
+function looksCorruptedText(value) {
+  const text = String(value || "");
+  return /[ÐÑ�]/.test(text) || text.includes("РЎ") || text.includes("Ñ") || text.includes("Ð");
+}
+
+function getCleanReadinessCopy(readiness) {
+  const state = readiness?.state || "stable";
+  let label = t("workload.readinessStable");
+
+  if (state === "excellent") {
+    label = t("workload.readinessHigh");
+  } else if (state === "heavy") {
+    label = t("workload.readinessHeavy");
+  } else if (state === "risk") {
+    label = t("workload.readinessRisk");
+  }
+
+  const note = looksCorruptedText(readiness?.note)
+    ? t("workload.readinessFallback")
+    : (readiness?.note || t("workload.readinessFallback"));
+
+  return { label, note };
+}
+
+function getCleanDebtCopy(energyDebt) {
+  const state = energyDebt?.state || "healthy";
+  let label = t("workload.debtHealthy");
+  let note = t("workload.debtHealthyNote");
+
+  if (state === "watch") {
+    label = t("workload.debtWatch");
+    note = t("workload.debtWatchNote");
+  } else if (state === "fatigue") {
+    label = t("workload.debtFatigue");
+    note = t("workload.debtFatigueNote");
+  } else if (state === "high" || state === "overloaded") {
+    label = t("workload.debtOverloaded");
+    note = t("workload.debtOverloadedNote");
+  }
+
+  return {
+    label: looksCorruptedText(energyDebt?.label) ? label : (energyDebt?.label || label),
+    note: looksCorruptedText(energyDebt?.note) ? note : (energyDebt?.note || note)
+  };
 }
 
 function buildCheckinFromForm() {
@@ -320,9 +369,7 @@ function loadBacklogTasksForRange(startIso, endIso) {
 
   for (const key of storageKeys) {
     const raw = window.appStorage?.getItem(key);
-    if (!raw) {
-      continue;
-    }
+    if (!raw) continue;
 
     try {
       const parsed = JSON.parse(raw);
@@ -354,7 +401,7 @@ function backlogToRangeTasks(backlogData, startIso, endIso) {
       items.forEach((item, index) => {
         tasks.push(normalizeTask({
           id: item?.id || `backlog-${plannedDate}-${index}`,
-          title: item?.text || "Без названия",
+          title: item?.text || t("workload.untitledTask"),
           details: "",
           status: mapBacklogStatus(item?.status),
           planned_date: plannedDate,
@@ -447,14 +494,14 @@ function withMigrationHint(error, tableName) {
   const message = String(error?.message || "");
 
   if (message.includes("Could not find the table 'public.daily_checkins'")) {
-    return new Error(`В Supabase пока нет таблицы ${tableName}. Сначала выполни SQL-миграции из папки supabase.`);
+    return new Error(t("pulse.migrationDailyCheckins", { table: tableName }));
   }
 
   if (message.includes("sleep_quality") || message.includes("mood")) {
-    return new Error(`Для экрана Сегодня нужно обновить структуру таблицы ${tableName} в Supabase.`);
+    return new Error(t("pulse.migrationColumns", { table: tableName }));
   }
 
-  return error instanceof Error ? error : new Error(message || "Неизвестная ошибка.");
+  return error instanceof Error ? error : new Error(message || t("pulse.loadError"));
 }
 
 function showPageError(message) {
@@ -462,6 +509,10 @@ function showPageError(message) {
 }
 
 function setPageStatus(message, isError = false) {
+  if (!pageStatus) {
+    return;
+  }
+
   if (!message) {
     pageStatus.hidden = true;
     pageStatus.textContent = "";
@@ -475,7 +526,37 @@ function setPageStatus(message, isError = false) {
 }
 
 function setCheckinStatus(message, isError = false) {
+  if (!checkinStatus) {
+    return;
+  }
+
   checkinStatus.textContent = message;
   checkinStatus.classList.toggle("is-error", isError);
 }
 
+function syncSelectLabels() {
+  if (sleepSelect) {
+    const currentValue = sleepSelect.value;
+    sleepSelect.innerHTML = `
+      <option value="">${t("common.choose")}</option>
+      <option value="Плохо">${t("pulse.sleepBad")}</option>
+      <option value="Нормально">${t("pulse.sleepNormal")}</option>
+      <option value="Хорошо">${t("pulse.sleepGood")}</option>
+    `;
+    sleepSelect.value = currentValue || "";
+  }
+
+  if (moodSelect) {
+    const currentValue = moodSelect.value;
+    moodSelect.innerHTML = `
+      <option value="">${t("common.choose")}</option>
+      <option value="Спокойное">${t("pulse.moodCalm")}</option>
+      <option value="Нейтральное">${t("pulse.moodNeutral")}</option>
+      <option value="Тревожное">${t("pulse.moodAnxious")}</option>
+      <option value="Раздраженное">${t("pulse.moodIrritated")}</option>
+      <option value="Воодушевленное">${t("pulse.moodInspired")}</option>
+      <option value="Уставшее">${t("pulse.moodTired")}</option>
+    `;
+    moodSelect.value = currentValue || "";
+  }
+}

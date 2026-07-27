@@ -10,6 +10,7 @@ const LOCAL_AUTH_ACCOUNTS_KEY = "focusflow-local-auth-accounts";
 const LOCAL_AUTH_SESSION_KEY = "focusflow-local-auth-session";
 const REMOTE_AUTH_SESSION_KEY = "focusflow-remote-auth-session";
 const LOCAL_DB_KEY = "focusflow-local-db";
+const DEFAULT_LOCALE = "ru";
 
 function isFilePreview() {
   return window.location.protocol === "file:";
@@ -155,6 +156,7 @@ function ensureLocalProfileRecord(user) {
     id: user.id,
     email: user.email || null,
     full_name: db.profiles[existingIndex]?.full_name || null,
+    locale: db.profiles[existingIndex]?.locale || DEFAULT_LOCALE,
     timezone: db.profiles[existingIndex]?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
     created_at: db.profiles[existingIndex]?.created_at || timestamp,
     updated_at: timestamp
@@ -744,6 +746,7 @@ export async function ensureProfile() {
   const payload = {
     id: user.id,
     email: user.email || null,
+    locale: DEFAULT_LOCALE,
     updated_at: nowIso()
   };
 
@@ -798,7 +801,7 @@ export async function getCurrentProfile() {
   const supabase = await getRemoteSupabase();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, email, full_name, timezone, created_at, updated_at")
+    .select("id, email, full_name, locale, timezone, created_at, updated_at")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -823,8 +826,9 @@ export async function saveCurrentProfile(updates) {
       ...(existingIndex >= 0 ? db.profiles[existingIndex] : ensureLocalProfileRecord(user)),
       id: user.id,
       email: user.email || null,
-      full_name: updates.full_name || null,
-      timezone: updates.timezone || null,
+      full_name: updates.full_name ?? (existingIndex >= 0 ? db.profiles[existingIndex]?.full_name : null),
+      locale: updates.locale ?? (existingIndex >= 0 ? db.profiles[existingIndex]?.locale : DEFAULT_LOCALE),
+      timezone: updates.timezone ?? (existingIndex >= 0 ? db.profiles[existingIndex]?.timezone : null),
       updated_at: nowIso()
     };
 
@@ -842,20 +846,55 @@ export async function saveCurrentProfile(updates) {
   const payload = {
     id: user.id,
     email: user.email || null,
-    full_name: updates.full_name || null,
-    timezone: updates.timezone || null,
+    full_name: updates.full_name ?? null,
+    locale: updates.locale ?? DEFAULT_LOCALE,
+    timezone: updates.timezone ?? null,
     updated_at: nowIso()
   };
 
-  const { data, error } = await supabase
+  let data;
+  let error;
+
+  ({
+    data,
+    error
+  } = await supabase
     .from("profiles")
     .upsert(payload, { onConflict: "id" })
-    .select("id, email, full_name, timezone, created_at, updated_at")
-    .single();
+    .select("id, email, full_name, locale, timezone, created_at, updated_at")
+    .single());
+
+  if (error && String(error.message || "").toLowerCase().includes("locale")) {
+    const fallbackPayload = {
+      id: user.id,
+      email: user.email || null,
+      full_name: updates.full_name ?? null,
+      timezone: updates.timezone ?? null,
+      updated_at: nowIso()
+    };
+
+    ({
+      data,
+      error
+    } = await supabase
+      .from("profiles")
+      .upsert(fallbackPayload, { onConflict: "id" })
+      .select("id, email, full_name, timezone, created_at, updated_at")
+      .single());
+
+    if (!error && data) {
+      data.locale = updates.locale ?? DEFAULT_LOCALE;
+    }
+  }
 
   if (error) {
     throw error;
   }
 
   return data;
+}
+
+export async function saveProfileLocale(locale) {
+  const normalizedLocale = String(locale || DEFAULT_LOCALE).toLowerCase() === "en" ? "en" : "ru";
+  return saveCurrentProfile({ locale: normalizedLocale });
 }

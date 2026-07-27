@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -6,201 +6,200 @@
   <title>Аналитика — MindPulse</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <div class="page-shell page-shell-wide">
-    <header class="site-header">
-      <div class="site-brand">
-        <p class="section-kicker">MindPulse</p>
-        <h1>Аналитика</h1>
+<body
+  data-app-active="analytics"
+  data-app-title="Аналитика"
+  data-app-subtitle="Связь состояния, нагрузки и темпа работы без лишней тревоги — с фокусом на понятные выводы."
+>
+  <div class="app-shell app-page-layout">
+    <aside data-app-sidebar></aside>
+
+    <div class="app-main">
+      <div class="app-content-shell">
+        <header data-app-page-header></header>
+
+        <main class="analytics-main analytics-health-main analytics-v0-main">
+          <section class="section analytics-hero-card analytics-v0-hero">
+            <div class="analytics-v0-hero-copy">
+              <p class="section-kicker" data-i18n="analytics.heroKicker">Personal energy insights</p>
+              <h2 class="dashboard-section-title" data-i18n="analytics.heroTitle">Связь состояния, нагрузки и темпа работы</h2>
+              <p class="today-section-copy" data-i18n="analytics.heroBody">
+                Здесь видно, как задачи влияют на энергию, стресс и фокус. Это помогает раньше замечать риск перегруза
+                и собирать более устойчивый ритм недели.
+              </p>
+            </div>
+
+            <aside class="analytics-period-panel analytics-v0-control-card">
+              <div class="analytics-v0-control-top">
+                <span class="analytics-v0-control-icon">AI</span>
+                <div>
+                  <p class="analytics-filter-label" data-i18n="analytics.periodAnalysis">Период анализа</p>
+                  <strong class="analytics-v0-control-title" data-i18n="analytics.periodSlice">Срез по состоянию и задачам</strong>
+                </div>
+              </div>
+
+              <label class="analytics-filter">
+                <span class="analytics-filter-label" data-i18n="analytics.period">Период</span>
+                <select id="analyticsPeriodSelect" class="analytics-period-select">
+                  <option value="this_week" data-i18n="analytics.periodThisWeek">Эта неделя</option>
+                  <option value="last_week" data-i18n="analytics.periodLastWeek">Прошлая неделя</option>
+                  <option value="last_14_days" data-i18n="analytics.periodLast14Days">Последние 14 дней</option>
+                  <option value="last_30_days" data-i18n="analytics.periodLast30Days">Последние 30 дней</option>
+                </select>
+              </label>
+
+              <div class="auth-status-box analytics-inline-status analytics-v0-status" id="analyticsStatus" data-i18n="analytics.loading">Загружаю аналитику...</div>
+            </aside>
+          </section>
+
+          <section class="section analytics-v0-panel analytics-weekly-insights-panel">
+            <div class="section-heading analytics-v0-heading">
+              <div>
+                <p class="section-kicker" data-i18n="analytics.weeklySummary">Weekly summary</p>
+                <h2 class="dashboard-section-title" data-i18n="analytics.weeklyInsightsTitle">Главные инсайты недели</h2>
+                <p class="today-section-copy" data-i18n="analytics.weeklyInsightsBody">Сначала смысловые выводы по состоянию и задачам, а ниже — графики и детализация.</p>
+              </div>
+              <span class="analytics-v0-badge" data-i18n="analytics.mainTakeaways">Main takeaways</span>
+            </div>
+            <div id="analyticsWeeklyInsights" class="analytics-weekly-insights-grid"></div>
+          </section>
+
+          <section class="section analytics-v0-panel analytics-weekly-review-panel">
+            <div class="section-heading analytics-v0-heading analytics-weekly-review-head">
+              <div>
+                <p class="section-kicker" data-i18n="analytics.weeklyReviewKicker">Weekly review</p>
+                <h2 class="dashboard-section-title" data-i18n="analytics.weeklyReviewTitle">Weekly Review</h2>
+                <p class="today-section-copy" data-i18n="analytics.weeklyReviewBody">Соберите персональный обзор недели на основе состояния, нагрузки и задач за выбранный период.</p>
+              </div>
+              <button class="form-action-button analytics-weekly-review-button" id="analyticsWeeklyReviewButton" type="button" data-i18n="analytics.generateReview">Сформировать обзор недели</button>
+            </div>
+            <div id="analyticsWeeklyReview" class="analytics-weekly-review-letter">
+              <p data-i18n="analytics.reviewPlaceholder">Обзор появится после нажатия на кнопку. Он собирается из ваших check-in и задач за выбранный период.</p>
+            </div>
+          </section>
+
+          <div class="analytics-overview-grid analytics-overview-grid-4 analytics-v0-top-grid" id="analyticsTopCards"></div>
+
+          <section class="analytics-row analytics-row-balanced analytics-v0-primary-row">
+            <article class="section analytics-chart-card analytics-v0-panel">
+              <div class="section-heading analytics-v0-heading">
+                <div>
+                  <p class="section-kicker" data-i18n="analytics.stateTrendKicker">State trend</p>
+                  <h2 class="dashboard-section-title" data-i18n="analytics.loadStateTitle">Состояние по дням</h2>
+                </div>
+                <span class="analytics-v0-badge" data-i18n="analytics.stateBadge">Energy / Stress / Focus</span>
+              </div>
+              <div id="analyticsStateChart" class="analytics-svg-chart"></div>
+              <p id="analyticsStateInsight" class="analytics-inline-note"></p>
+            </article>
+
+            <article class="section analytics-chart-card analytics-v0-panel">
+              <div class="section-heading analytics-v0-heading">
+                <div>
+                  <p class="section-kicker" data-i18n="analytics.taskLoadKicker">Task load</p>
+                  <h2 class="dashboard-section-title" data-i18n="analytics.loadTaskTitle">Нагрузка по дням</h2>
+                </div>
+                <span class="analytics-v0-badge" data-i18n="analytics.taskLoadBadge">Task load</span>
+              </div>
+              <div id="analyticsLoadChart" class="analytics-bars-chart"></div>
+              <p id="analyticsLoadInsight" class="analytics-inline-note"></p>
+            </article>
+          </section>
+
+          <section class="analytics-row analytics-row-single">
+            <article class="section analytics-v0-panel">
+              <div class="section-heading analytics-v0-heading">
+                <div>
+                  <p class="section-kicker" data-i18n="analytics.debtKicker">Energy debt</p>
+                  <h2 class="dashboard-section-title" data-i18n="analytics.debtTitle">Energy Debt за неделю</h2>
+                </div>
+                <span class="analytics-v0-badge" data-i18n="analytics.weeklyTrendBadge">Weekly trend</span>
+              </div>
+              <div id="analyticsDebtTrend" class="analytics-bars-chart"></div>
+              <p id="analyticsDebtInsight" class="analytics-inline-note"></p>
+            </article>
+          </section>
+
+          <section class="analytics-row analytics-row-balanced">
+            <article class="section analytics-v0-panel">
+              <div class="section-heading analytics-v0-heading">
+                <div>
+                  <p class="section-kicker" data-i18n="analytics.connectionsKicker">Connections</p>
+                  <h2 class="dashboard-section-title" data-i18n="analytics.connectionsTitle">Что влияло на состояние</h2>
+                </div>
+              </div>
+              <div id="analyticsInsights" class="analytics-stack-list"></div>
+            </article>
+
+            <article class="section analytics-v0-panel">
+              <div class="section-heading analytics-v0-heading">
+                <div>
+                  <p class="section-kicker" data-i18n="analytics.taskTypesKicker">Task types</p>
+                  <h2 class="dashboard-section-title" data-i18n="analytics.taskTypesTitle">Какие задачи нагружают сильнее всего</h2>
+                </div>
+              </div>
+              <div id="analyticsTaskTypes" class="analytics-type-grid"></div>
+              <p id="analyticsTaskTypesInsight" class="analytics-inline-note"></p>
+            </article>
+          </section>
+
+          <section class="analytics-row analytics-row-balanced">
+            <article class="section analytics-v0-panel">
+              <div class="section-heading analytics-v0-heading">
+                <div>
+                  <p class="section-kicker" data-i18n="analytics.overloadTrendKicker">Overload trend</p>
+                  <h2 class="dashboard-section-title" data-i18n="analytics.overloadTrendTitle">Тренд перегруза</h2>
+                </div>
+              </div>
+              <div id="analyticsOverloadTrend" class="analytics-overload-grid"></div>
+            </article>
+
+            <article class="section analytics-v0-panel">
+              <div class="section-heading analytics-v0-heading">
+                <div>
+                  <p class="section-kicker" data-i18n="analytics.nextWeekKicker">Next week</p>
+                  <h2 class="dashboard-section-title" data-i18n="analytics.recommendationsTitle">Рекомендации</h2>
+                </div>
+              </div>
+              <div id="analyticsRecommendations" class="analytics-stack-list"></div>
+            </article>
+          </section>
+        </main>
       </div>
-
-      <div class="site-header-actions">
-        <nav class="site-nav" aria-label="Основная навигация">
-          <a class="nav-link" href="today.html">Пульс дня</a>
-          <a class="nav-link" href="backlog.html">Моя неделя</a>
-          <a class="nav-link is-active" href="analytics.html">Аналитика</a>
-          <a class="nav-link" href="pricing.html">Pricing</a>
-        </nav>
-        <button class="login-button" id="logoutButton" type="button">Выход</button>
-      </div>
-    </header>
-
-    <main class="analytics-main analytics-health-main analytics-v0-main">
-      <section class="section analytics-hero-card analytics-v0-hero">
-        <div class="analytics-v0-hero-copy">
-          <p class="section-kicker">Personal energy insights</p>
-          <h2 class="dashboard-section-title">Связь энергии, нагрузки и темпа работы</h2>
-          <p class="today-section-copy">
-            Здесь видно, как задачи влияют на энергию, стресс и фокус. Это помогает раньше замечать риск перегруза и собирать более устойчивый ритм недели.
-          </p>
-        </div>
-
-        <aside class="analytics-period-panel analytics-v0-control-card">
-          <div class="analytics-v0-control-top">
-            <span class="analytics-v0-control-icon">AI</span>
-            <div>
-              <p class="analytics-filter-label">Период анализа</p>
-              <strong class="analytics-v0-control-title">Срез по состоянию и задачам</strong>
-            </div>
-          </div>
-
-          <label class="analytics-filter">
-            <span class="analytics-filter-label">Период</span>
-            <select id="analyticsPeriodSelect" class="analytics-period-select">
-              <option value="this_week">Эта неделя</option>
-              <option value="last_week">Прошлая неделя</option>
-              <option value="last_14_days">Последние 14 дней</option>
-              <option value="last_30_days">Последние 30 дней</option>
-            </select>
-          </label>
-
-          <div class="auth-status-box analytics-inline-status analytics-v0-status" id="analyticsStatus">Загружаю аналитику...</div>
-        </aside>
-      </section>
-
-      <section class="section analytics-v0-panel analytics-weekly-insights-panel">
-        <div class="section-heading analytics-v0-heading">
-          <div>
-            <p class="section-kicker">Weekly summary</p>
-            <h2 class="dashboard-section-title">Главные инсайты недели</h2>
-            <p class="today-section-copy">Сначала смысловые выводы по состоянию и задачам, а ниже — графики и детализация.</p>
-          </div>
-          <span class="analytics-v0-badge">Main takeaways</span>
-        </div>
-        <div id="analyticsWeeklyInsights" class="analytics-weekly-insights-grid"></div>
-      </section>
-
-      <section class="section analytics-v0-panel analytics-weekly-review-panel">
-        <div class="section-heading analytics-v0-heading analytics-weekly-review-head">
-          <div>
-            <p class="section-kicker">Weekly review</p>
-            <h2 class="dashboard-section-title">Weekly Review</h2>
-            <p class="today-section-copy">Сформируйте персональный обзор недели на основе состояния, нагрузки и задач за выбранный период.</p>
-          </div>
-          <button class="form-action-button analytics-weekly-review-button" id="analyticsWeeklyReviewButton" type="button">Сформировать обзор недели</button>
-        </div>
-        <div id="analyticsWeeklyReview" class="analytics-weekly-review-letter">
-          <p>Обзор появится после нажатия на кнопку. Он собирается из ваших check-in и задач за выбранный период.</p>
-        </div>
-      </section>
-
-      <div class="analytics-overview-grid analytics-overview-grid-4 analytics-v0-top-grid" id="analyticsTopCards"></div>
-
-      <section class="analytics-row analytics-row-balanced analytics-v0-primary-row">
-        <article class="section analytics-chart-card analytics-v0-panel">
-          <div class="section-heading analytics-v0-heading">
-            <div>
-              <p class="section-kicker">State trend</p>
-              <h2 class="dashboard-section-title">Состояние по дням</h2>
-            </div>
-            <span class="analytics-v0-badge">Energy / Stress / Focus</span>
-          </div>
-          <div id="analyticsStateChart" class="analytics-svg-chart"></div>
-          <p id="analyticsStateInsight" class="analytics-inline-note"></p>
-        </article>
-
-        <article class="section analytics-chart-card analytics-v0-panel">
-          <div class="section-heading analytics-v0-heading">
-            <div>
-              <p class="section-kicker">Task load</p>
-              <h2 class="dashboard-section-title">Нагрузка по дням</h2>
-            </div>
-            <span class="analytics-v0-badge">Task load</span>
-          </div>
-          <div id="analyticsLoadChart" class="analytics-bars-chart"></div>
-          <p id="analyticsLoadInsight" class="analytics-inline-note"></p>
-        </article>
-      </section>
-
-      <section class="analytics-row analytics-row-single">
-        <article class="section analytics-v0-panel">
-          <div class="section-heading analytics-v0-heading">
-            <div>
-              <p class="section-kicker">Energy debt</p>
-              <h2 class="dashboard-section-title">Energy Debt за неделю</h2>
-            </div>
-            <span class="analytics-v0-badge">Weekly trend</span>
-          </div>
-          <div id="analyticsDebtTrend" class="analytics-bars-chart"></div>
-          <p id="analyticsDebtInsight" class="analytics-inline-note"></p>
-        </article>
-      </section>
-
-      <section class="analytics-row analytics-row-balanced">
-        <article class="section analytics-v0-panel">
-          <div class="section-heading analytics-v0-heading">
-            <div>
-              <p class="section-kicker">Connections</p>
-              <h2 class="dashboard-section-title">Что влияло на состояние</h2>
-            </div>
-          </div>
-          <div id="analyticsInsights" class="analytics-stack-list"></div>
-        </article>
-
-        <article class="section analytics-v0-panel">
-          <div class="section-heading analytics-v0-heading">
-            <div>
-              <p class="section-kicker">Task types</p>
-              <h2 class="dashboard-section-title">Какие задачи нагружают сильнее всего</h2>
-            </div>
-          </div>
-          <div id="analyticsTaskTypes" class="analytics-type-grid"></div>
-          <p id="analyticsTaskTypesInsight" class="analytics-inline-note"></p>
-        </article>
-      </section>
-
-      <section class="analytics-row analytics-row-balanced">
-        <article class="section analytics-v0-panel">
-          <div class="section-heading analytics-v0-heading">
-            <div>
-              <p class="section-kicker">Overload trend</p>
-              <h2 class="dashboard-section-title">Тренд перегруза</h2>
-            </div>
-          </div>
-          <div id="analyticsOverloadTrend" class="analytics-overload-grid"></div>
-        </article>
-
-        <article class="section analytics-v0-panel">
-          <div class="section-heading analytics-v0-heading">
-            <div>
-              <p class="section-kicker">Next week</p>
-              <h2 class="dashboard-section-title">Рекомендации</h2>
-            </div>
-          </div>
-          <div id="analyticsRecommendations" class="analytics-stack-list"></div>
-        </article>
-      </section>
-    </main>
+    </div>
   </div>
 
-  <button class="ai-assistant-toggle" id="aiAssistantToggle" type="button">Спросить AI</button>
+  <button class="ai-assistant-toggle" id="aiAssistantToggle" type="button" data-i18n="analytics.askAi">Спросить AI</button>
 
   <div class="ai-assistant-modal" id="aiAssistantModal" hidden>
     <div class="ai-assistant-backdrop" id="aiAssistantBackdrop"></div>
     <div class="ai-assistant-dialog">
       <div class="ai-assistant-header">
         <div>
-          <p class="ai-assistant-kicker">AI Assistant</p>
-          <h2>Спросить AI</h2>
+          <p class="ai-assistant-kicker" data-i18n="analytics.aiKicker">AI Assistant</p>
+          <h2 data-i18n="analytics.aiTitle">Спросить AI</h2>
         </div>
         <button class="ai-assistant-close" id="aiAssistantClose" type="button">×</button>
       </div>
       <div class="ai-assistant-messages" id="aiAssistantMessages">
-        <div class="ai-message ai-message-assistant">Можно спросить, что видно по аналитике и как интерпретировать состояние, нагрузку и фокус.</div>
+        <div class="ai-message ai-message-assistant" data-i18n="analytics.aiIntro">Можно спросить, что видно по аналитике и как интерпретировать состояние, нагрузку и фокус.</div>
       </div>
       <form class="ai-assistant-form" id="aiAssistantForm">
-        <textarea id="aiAssistantInput" placeholder="Напишите вопрос..." required></textarea>
+        <textarea id="aiAssistantInput" placeholder="Напишите вопрос..." data-i18n-placeholder="analytics.aiPlaceholder" required></textarea>
         <div class="ai-assistant-form-footer">
-          <span class="ai-assistant-status" id="aiAssistantStatus">Можно задать вопрос по состоянию, энергии и задачам.</span>
-          <button class="form-action-button" id="aiAssistantSubmit" type="submit">Отправить</button>
+          <span class="ai-assistant-status" id="aiAssistantStatus" data-i18n="analytics.aiStatus">Можно задать вопрос по состоянию, энергии и задачам.</span>
+          <button class="form-action-button" id="aiAssistantSubmit" type="submit" data-i18n="analytics.aiSend">Отправить</button>
         </div>
       </form>
     </div>
   </div>
 
   <script src="shared-storage.js"></script>
+  <script type="module">
+    import { mountAppShell } from "./navigation.js";
+    mountAppShell();
+  </script>
   <script src="ai-assistant.js"></script>
   <script type="module" src="analytics.js"></script>
 </body>
 </html>
-

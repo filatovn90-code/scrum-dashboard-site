@@ -10,6 +10,7 @@ import {
   signOutCurrentUser,
   waitForSessionPersistence
 } from "./supabase-client.js";
+import { appPath } from "./route-paths.js";
 import { resolvePostAuthPath } from "./onboarding-helpers.js";
 
 export {
@@ -40,7 +41,7 @@ export async function requireAuth({ redirectTo = "login.html" } = {}) {
   return session.user;
 }
 
-export async function redirectIfAuthenticated({ redirectTo = "app.html" } = {}) {
+export async function redirectIfAuthenticated({ redirectTo = appPath() } = {}) {
   let session = await getCurrentSession();
   if (!session?.user) {
     session = await waitForSessionPersistence({ attempts: 2, delayMs: 80 });

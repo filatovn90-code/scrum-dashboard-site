@@ -1,6 +1,7 @@
 import { requireAuth, signOutCurrentUser } from "./auth-helpers.js";
 import { getSupabase } from "./supabase-client.js";
-import { landingPath, loginPath, todayPath } from "./route-paths.js";
+import { applyTranslations, onLocaleChange, t } from "./i18n.js";
+import { backlogPath, landingPath, loginPath, todayPath } from "./route-paths.js";
 import { getCurrentPlan, isProPlan } from "./pricing-helpers.js";
 import { requestWeeklyReview } from "./ai-service.js";
 import {
@@ -43,13 +44,20 @@ let currentDataset = null;
 let currentPlan = "free";
 
 const PERIOD_OPTIONS = {
-  this_week: "Эта неделя",
-  last_week: "Прошлая неделя",
-  last_14_days: "Последние 14 дней",
-  last_30_days: "Последние 30 дней"
+  this_week: "analytics.periodThisWeek",
+  last_week: "analytics.periodLastWeek",
+  last_14_days: "analytics.periodLast14Days",
+  last_30_days: "analytics.periodLast30Days"
 };
 
 bootstrap();
+
+onLocaleChange(() => {
+  applyTranslations(document);
+  renderAnalytics().catch((error) => {
+    setStatus(error.message || t("analytics.refreshError"), true);
+  });
+});
 
 logoutButton?.addEventListener("click", async () => {
   await signOutCurrentUser().catch(() => null);
@@ -58,7 +66,7 @@ logoutButton?.addEventListener("click", async () => {
 
 periodSelect?.addEventListener("change", () => {
   renderAnalytics().catch((error) => {
-    setStatus(error.message || "Не удалось обновить аналитику.", true);
+    setStatus(error.message || t("analytics.refreshError"), true);
   });
 });
 
@@ -76,7 +84,7 @@ async function bootstrap() {
   currentPlan = await getCurrentPlan().catch(() => "free");
   applyPricingState();
   if (aiAssistantToggle) {
-    aiAssistantToggle.textContent = "AI разбор";
+    aiAssistantToggle.textContent = t("analytics.askAi");
     aiAssistantToggle.dataset.locked = "false";
     delete aiAssistantToggle.dataset.lockHref;
   }
@@ -101,16 +109,14 @@ function applyPricingState() {
   }
 
   if (aiAssistantToggle) {
-    aiAssistantToggle.textContent = "AI Coach — Pro";
-    aiAssistantToggle.textContent = "AI разбор — Pro";
-    aiAssistantToggle.textContent = "AI review - Pro";
+    aiAssistantToggle.textContent = t("analytics.aiProLocked");
     aiAssistantToggle.dataset.locked = "true";
     delete aiAssistantToggle.dataset.lockHref;
   }
 }
 
 async function renderAnalytics() {
-  setStatus("Загружаю аналитику...");
+  setStatus(t("analytics.loading"));
 
   const periodKey = periodSelect?.value || "this_week";
   const range = getPeriodRange(periodKey);
@@ -133,7 +139,7 @@ async function renderAnalytics() {
   renderOverloadTrend(currentDataset);
   renderRecommendations(currentDataset);
 
-  setStatus(`${PERIOD_OPTIONS[periodKey]} • ${formatDate(range.start)} - ${formatDate(range.end)}`);
+  setStatus(`${t(PERIOD_OPTIONS[periodKey])} • ${formatDate(range.start)} - ${formatDate(range.end)}`);
 }
 
 async function fetchCheckins(range) {
@@ -423,7 +429,7 @@ function analyzeWeeklyInsights(dataset) {
 
   if (heavyDay?.tasks?.length) {
     insights.push({
-      label: "Нагрузка",
+      label: t("analytics.weekSummaryLoadLabel"),
       title: `${heavyDay.weekday} выглядит самым тяжелым днем`,
       description: `Суммарная нагрузка в этот день была ${Math.round(heavyDay.loadValue)}. Если это повторяется, лучше заранее разгружать середину недели.`,
       state: heavyDay.overloadState === "overload" ? "risk" : "high"
@@ -432,7 +438,7 @@ function analyzeWeeklyInsights(dataset) {
 
   if (emotionalSpike) {
     insights.push({
-      label: "Эмоции",
+      label: t("analytics.weekSummaryEmotionLabel"),
       title: `${emotionalSpike.label} сильнее всего нагружает эмоционально`,
       description: `Средняя эмоциональная нагрузка для этого типа задач — ${safeFixed(emotionalSpike.emotionalTotal / emotionalSpike.count)} из 5.`,
       state: "high"
@@ -441,7 +447,7 @@ function analyzeWeeklyInsights(dataset) {
 
   if (deepWorkDays.length) {
     insights.push({
-      label: "Фокус",
+      label: t("analytics.weekSummaryFocusLabel"),
       title: "Три и более Deep Work-задачи собираются в один день",
       description: "Такая связка часто делает день тяжелее и снижает реалистичность плана. Лучше распределять глубокую работу по неделе.",
       state: "risk"
@@ -450,7 +456,7 @@ function analyzeWeeklyInsights(dataset) {
 
   if (noRecoveryDays.length >= Math.max(2, Math.ceil(dataset.days.length / 2))) {
     insights.push({
-      label: "Восстановление",
+      label: t("analytics.weekSummaryRecoveryLabel"),
       title: "Recovery-задач почти не было",
       description: "Неделя выглядит плотной без пауз на восстановление. Даже короткие восстановительные блоки помогают держать ритм устойчивым.",
       state: "high"
@@ -459,9 +465,9 @@ function analyzeWeeklyInsights(dataset) {
 
   if (!insights.length) {
     insights.push({
-      label: "Наблюдение",
-      title: "Инсайты появятся после нескольких дней данных",
-      description: "Когда появятся check-in и задачи за несколько дней, здесь станут видны повторяющиеся закономерности.",
+      label: t("analytics.weekSummaryLabel"),
+      title: t("analytics.weekSummaryFallbackTitle"),
+      description: t("analytics.weekSummaryFallbackBody"),
       state: ""
     });
   }
@@ -475,11 +481,11 @@ function renderWeeklyReviewPlaceholder(dataset) {
   }
 
   if (!dataset?.checkins.length && !dataset?.tasks.length) {
-    weeklyReviewBox.innerHTML = "<p>Пока данных мало для обзора недели. Сначала добавьте задачи и заполните состояние дня хотя бы несколько раз.</p>";
+    weeklyReviewBox.innerHTML = `<p>${t("analytics.weeklyReviewEmpty")}</p>`;
     return;
   }
 
-  weeklyReviewBox.innerHTML = "<p>Нажмите «Сформировать обзор недели», и здесь появится персональный текстовый отчет по состоянию, нагрузке и задачам.</p>";
+  weeklyReviewBox.innerHTML = `<p>${t("analytics.weeklyReviewPrompt")}</p>`;
 }
 
 async function renderWeeklyReview(dataset) {
@@ -494,7 +500,7 @@ async function renderWeeklyReview(dataset) {
     return;
   }
 
-  weeklyReviewBox.innerHTML = "<p>Собираю Weekly Review...</p>";
+  weeklyReviewBox.innerHTML = `<p>${t("analytics.weeklyReviewLoading")}</p>`;
 
   const remote = await requestWeeklyReview({
     periodStart: dataset?.range?.start,
@@ -503,9 +509,9 @@ async function renderWeeklyReview(dataset) {
 
   const review = remote?.review || localReview;
   const sourceLabel = remote?.source === "openai"
-    ? "<p><strong>Pro AI</strong></p>"
+    ? `<p><strong>${t("analytics.weeklyReviewPro")}</strong></p>`
     : remote?.source === "cache"
-      ? "<p><strong>Кэшированный AI Review</strong></p>"
+      ? `<p><strong>${t("analytics.weeklyReviewCache")}</strong></p>`
       : "";
 
   weeklyReviewBox.innerHTML = `${sourceLabel}${review.paragraphs.map((paragraph) => `<p>${paragraph}</p>`).join("")}`;
@@ -515,7 +521,7 @@ function buildWeeklyReview(dataset) {
   if (!dataset || (!dataset.checkins.length && !dataset.tasks.length)) {
     return {
       paragraphs: [
-        "Пока обзор недели собрать не из чего: сначала нужны несколько check-in и задачи за выбранный период."
+        t("analytics.weeklyReviewNoData")
       ]
     };
   }
@@ -532,23 +538,32 @@ function buildWeeklyReview(dataset) {
   return {
     paragraphs: [
       dataset.checkins.length
-        ? `За период средняя энергия была ${formatMetricValue(dataset.summary.avgEnergy)}, стресс — ${formatMetricValue(dataset.summary.avgStress)}, а фокус — ${formatMetricValue(dataset.summary.avgFocus)}.`
-        : "За период пока мало check-in, поэтому обзор строится в основном по структуре задач и нагрузке.",
+        ? t("analytics.weeklyReviewStateSummary", {
+            energy: formatMetricValue(dataset.summary.avgEnergy),
+            stress: formatMetricValue(dataset.summary.avgStress),
+            focus: formatMetricValue(dataset.summary.avgFocus)
+          })
+        : t("analytics.weeklyReviewStateFew"),
       completedTasks.length
-        ? `Что получилось: завершено ${completedTasks.length} ${pluralizeTasks(completedTasks.length)}. Это хороший признак, что план хотя бы частично совпадал с реальной емкостью недели.`
-        : "Что получилось: пока закрытых задач немного, значит стоит внимательнее смотреть на объем плана и приоритеты дня.",
+        ? t("analytics.weeklyReviewCompleted", {
+            count: completedTasks.length,
+            tasksWord: pluralizeTasks(completedTasks.length)
+          })
+        : t("analytics.weeklyReviewCompletedFew"),
       heavyDays.length
-        ? `Что перегружало: самыми тяжелыми были ${formatDayList(heavyDays)}. В эти дни суммарная нагрузка выходила выше комфортного диапазона.`
-        : "Что перегружало: явных дней перегруза почти не видно, ритм недели выглядит относительно ровным.",
+        ? t("analytics.weeklyReviewHeavyDays", { days: formatDayList(heavyDays) })
+        : t("analytics.weeklyReviewHeavyDaysNone"),
       topHeavyTasks.length
-        ? `Больше всего энергии забрали задачи: ${topHeavyTasks.map((task) => task.title || "Без названия").join(", ")}.`
-        : "Пока недостаточно задач, чтобы выделить самые энергозатратные блоки недели.",
+        ? t("analytics.weeklyReviewTopTasks", {
+            tasks: topHeavyTasks.map((task) => task.title || t("workload.untitledTask")).join(", ")
+          })
+        : t("analytics.weekSummaryFallbackBody"),
       dominantType
-        ? `Что изменить дальше: тип задач «${dominantType.label}» встречался чаще всего. Полезно проверить, не сосредоточена ли основная нагрузка вокруг одного и того же формата работы.`
-        : "Что изменить дальше: продолжай вести задачи и состояние дня, чтобы рекомендации стали точнее.",
+        ? t("analytics.weeklyReviewNext", { type: dominantType.label })
+        : t("analytics.insightFewData"),
       debt.value > 20
-        ? `Energy Debt сейчас в зоне «${debt.label}». Это значит, что последние дни уже накопили усталость, и следующую неделю лучше начинать с более бережного плана.`
-        : "Energy Debt пока не выглядит критичным. Это хороший момент, чтобы удержать устойчивый ритм и не перегружать следующую неделю."
+        ? t("analytics.weeklyReviewDebt", { value: debt.value, label: debt.label })
+        : t("analytics.debtHealthy")
     ]
   };
 }
@@ -556,34 +571,34 @@ function buildWeeklyReview(dataset) {
 function renderTopCards(dataset) {
   const cards = [
     {
-      label: "Средняя энергия",
+      label: t("analytics.energyAverage"),
       value: dataset.summary.avgEnergy ? dataset.summary.avgEnergy.toFixed(1) : "—",
       note: dataset.checkins.length
-        ? "Появляется после Daily Check-in"
-        : "Появится после нескольких заполнений состояния"
+        ? t("analytics.checkinAppears")
+        : t("analytics.checkinAppearsLater")
     },
     {
-      label: "Средний стресс",
+      label: t("analytics.stressAverage"),
       value: dataset.summary.avgStress ? dataset.summary.avgStress.toFixed(1) : "—",
       note: dataset.checkins.length
-        ? "Появляется после Daily Check-in"
-        : "Появится после нескольких заполнений состояния"
+        ? t("analytics.checkinAppears")
+        : t("analytics.checkinAppearsLater")
     },
     {
-      label: "Средний фокус",
+      label: t("analytics.focusAverage"),
       value: dataset.summary.avgFocus ? dataset.summary.avgFocus.toFixed(1) : "—",
       note: dataset.checkins.length
-        ? "Появляется после Daily Check-in"
-        : "Появится после нескольких заполнений состояния"
+        ? t("analytics.checkinAppears")
+        : t("analytics.checkinAppearsLater")
     },
     {
-      label: "Риск перегруза",
+      label: t("analytics.overloadRisk"),
       value: dataset.summary.overloadRisk.label,
       note: dataset.summary.overloadRisk.note,
       state: dataset.summary.overloadRisk.state
     },
     {
-      label: "Energy Debt",
+      label: t("pulse.energyDebt"),
       value: String(dataset.summary.debt.value),
       note: dataset.summary.debt.note,
       state: dataset.summary.debt.state
@@ -601,15 +616,15 @@ function renderTopCards(dataset) {
 
 function renderStateChart(dataset) {
   if (!dataset.checkins.length) {
-    stateChart.innerHTML = emptyState("Пока нет данных о состоянии.", "Перейти в Сегодня", todayPath());
-    stateInsight.textContent = "Показатели появятся после нескольких заполнений Daily Check-in.";
+    stateChart.innerHTML = emptyState(t("analytics.noState"), t("analytics.goToPulse"), todayPath());
+    stateInsight.textContent = t("analytics.stateHint");
     return;
   }
 
   const series = [
-    { key: "energy_level", label: "Энергия", color: "#5d8f60" },
-    { key: "stress_level", label: "Стресс", color: "#d67b5c" },
-    { key: "focus_level", label: "Фокус", color: "#7a95c9" }
+    { key: "energy_level", label: t("analytics.energyLegend"), color: "#5d8f60" },
+    { key: "stress_level", label: t("analytics.stressLegend"), color: "#d67b5c" },
+    { key: "focus_level", label: t("analytics.focusLegend"), color: "#7a95c9" }
   ];
 
   stateChart.innerHTML = buildLineChart(dataset.days, series);
@@ -618,22 +633,22 @@ function renderStateChart(dataset) {
   const earlyWeekEnergy = average(dataset.days.slice(0, Math.min(3, dataset.days.length)).map((day) => Number(day.checkin?.energy_level || 0)));
 
   if (lateWeekEnergy && earlyWeekEnergy && lateWeekEnergy < earlyWeekEnergy) {
-    stateInsight.textContent = "К концу периода энергия снижалась. Полезно разгружать вторую половину недели и не складывать туда самые тяжелые задачи.";
+    stateInsight.textContent = t("analytics.stateInsightDown");
     return;
   }
 
   if (dataset.summary.avgStress >= 6) {
-    stateInsight.textContent = "Стресс в среднем повышен. Хорошо работает чередование сложных дней с более спокойными блоками.";
+    stateInsight.textContent = t("analytics.stateInsightStress");
     return;
   }
 
-  stateInsight.textContent = "Состояние выглядит относительно ровным. Чем стабильнее check-in, тем точнее будут рекомендации по нагрузке.";
+  stateInsight.textContent = t("analytics.stateInsightStable");
 }
 
 function renderLoadChart(dataset) {
   if (!dataset.tasks.length) {
-    loadChart.innerHTML = emptyState("Пока нет задач за выбранный период.", "Перейти в Мою неделю", "backlog.html");
-    loadInsight.textContent = "Когда появятся задачи, здесь будет видно, в какие дни нагрузка выше и где лучше разгружать расписание.";
+    loadChart.innerHTML = emptyState(t("analytics.noTasks"), t("analytics.goToPlan"), backlogPath());
+    loadInsight.textContent = t("analytics.loadHint");
     return;
   }
 
@@ -651,7 +666,6 @@ function renderLoadChart(dataset) {
           </div>
           <div class="analytics-load-bar-meta">
             <span>${day.label}</span>
-            <small>${day.overloadLabel}</small>
           </div>
         </article>
       `).join("")}
@@ -660,8 +674,12 @@ function renderLoadChart(dataset) {
 
   const busiestDay = dataset.days.reduce((best, day) => (day.loadValue > best.loadValue ? day : best), dataset.days[0]);
   loadInsight.textContent = busiestDay?.tasks?.length
-    ? `Самый загруженный день: ${busiestDay.weekday}, ${busiestDay.label}. Суммарная нагрузка — ${Math.round(busiestDay.loadValue)}.`
-    : "Пока недостаточно задач, чтобы выделить самый загруженный день.";
+    ? t("analytics.busiestDay", {
+        weekday: busiestDay.weekday,
+        date: busiestDay.label,
+        load: Math.round(busiestDay.loadValue)
+      })
+    : t("analytics.noBusiestDay");
 }
 
 function renderDebtTrend(dataset) {
@@ -670,8 +688,8 @@ function renderDebtTrend(dataset) {
   }
 
   if (!dataset.checkins.length && !dataset.tasks.length) {
-    debtTrend.innerHTML = emptyState("Energy Debt появится после нескольких дней использования трекера.", "Перейти в Сегодня", todayPath());
-    debtInsight.textContent = "Сначала нужны несколько check-in и задачи за несколько дней подряд.";
+    debtTrend.innerHTML = emptyState(t("analytics.weeklyReviewEmpty"), t("analytics.goToPulse"), todayPath());
+    debtInsight.textContent = t("analytics.weeklyReviewPrompt");
     return;
   }
 
@@ -689,7 +707,7 @@ function renderDebtTrend(dataset) {
           </div>
           <div class="analytics-load-bar-meta">
             <span>${day.label}</span>
-            <small>${day.debt?.label || "Устойчивый ритм"}</small>
+            <small>${cleanDebtLabel(day.debt?.label)}</small>
           </div>
         </article>
       `).join("")}
@@ -697,10 +715,17 @@ function renderDebtTrend(dataset) {
   `;
 
   debtInsight.textContent = dataset.summary.debt.value > 50
-    ? "Последние дни уже накапливают энергетический долг. Лучше снижать плотность недели и добавлять восстановительные блоки."
+    ? t("analytics.debtHigh")
     : dataset.summary.debt.value > 20
-      ? "Нагрузка уже начинает накапливаться. Стоит следить за тяжелыми днями и оставлять паузы после сложных задач."
-      : "Ритм пока выглядит устойчивым: сильного накопления энергетического долга не видно.";
+      ? t("analytics.debtWatch")
+      : t("analytics.debtHealthy");
+}
+
+function cleanDebtLabel(label) {
+  if (!label || looksCorruptedText(label)) {
+    return t("workload.debtHealthy");
+  }
+  return label;
 }
 
 function renderInsights(dataset) {
@@ -711,25 +736,25 @@ function renderInsights(dataset) {
   const highEmotionalType = dataset.taskTypes.find((type) => type.count && (type.emotionalTotal / type.count) >= 4);
 
   if (highStressHighLoad) {
-    insights.push("В дни с высокой суммарной нагрузкой стресс тоже был выше.");
+    insights.push(t("analytics.insightLoadStress"));
   }
 
   if (lowEnergyHeavyCognitive) {
-    insights.push("В дни с низкой энергией оставалось много задач с высокой когнитивной нагрузкой. Это повышает риск перегруза.");
+    insights.push(t("analytics.insightLowEnergyHeavy"));
   }
 
   if (bestFocusDay?.checkin && bestFocusDay.loadValue > 0 && bestFocusDay.loadValue <= 140) {
-    insights.push("Лучший фокус чаще проявлялся в дни с умеренной, а не перегруженной нагрузкой.");
+    insights.push(t("analytics.insightFocusModerate"));
   }
 
   if (highEmotionalType) {
-    insights.push(`Основную эмоциональную нагрузку в этот период создавали задачи типа «${highEmotionalType.label}».`);
+    insights.push(t("analytics.insightEmotionType", { type: highEmotionalType.label }));
   }
 
   if (!insights.length) {
     insights.push(dataset.checkins.length || dataset.tasks.length
-      ? "Пока данных недостаточно для уверенных выводов. Продолжай заполнять состояние и вести задачи несколько дней подряд."
-      : "Аналитика появится после нескольких дней использования трекера.");
+      ? t("analytics.insightFewData")
+      : t("analytics.insightEmpty"));
   }
 
   insightsBox.innerHTML = insights.map((item) => `
@@ -741,7 +766,7 @@ function renderInsights(dataset) {
 
 function renderTaskTypes(dataset) {
   if (!dataset.tasks.length) {
-    taskTypesBox.innerHTML = emptyState("Пока нет задач за выбранный период.", "Перейти в Мою неделю", "backlog.html");
+    taskTypesBox.innerHTML = emptyState(t("analytics.noTasks"), t("analytics.goToPlan"), backlogPath());
     taskTypesInsight.textContent = "";
     return;
   }
@@ -753,9 +778,9 @@ function renderTaskTypes(dataset) {
         <span>${type.count} ${pluralizeTasks(type.count)}</span>
       </div>
       <div class="analytics-type-metrics">
-        <span>Средняя когнитивная: ${safeFixed(type.cognitiveTotal / type.count)}</span>
-        <span>Средняя эмоциональная: ${safeFixed(type.emotionalTotal / type.count)}</span>
-        <span>Средняя нагрузка: ${Math.round(type.loadTotal / type.count)}</span>
+        <span>${t("analytics.typeAvgCognitive")}: ${safeFixed(type.cognitiveTotal / type.count)}</span>
+        <span>${t("analytics.typeAvgEmotional")}: ${safeFixed(type.emotionalTotal / type.count)}</span>
+        <span>${t("analytics.typeAvgLoad")}: ${Math.round(type.loadTotal / type.count)}</span>
       </div>
     </article>
   `).join("");
@@ -763,21 +788,21 @@ function renderTaskTypes(dataset) {
   const dominant = dataset.taskTypes[0];
   const percent = dominant ? Math.round((dominant.count / dataset.tasks.length) * 100) : 0;
   taskTypesInsight.textContent = dominant
-    ? `${dominant.label} занимает ${percent}% задач периода и формирует основную часть рабочей нагрузки.`
+    ? t("analytics.typeDominant", { type: dominant.label, percent })
     : "";
 }
 
 function renderOverloadTrend(dataset) {
   if (!dataset.checkins.length && !dataset.tasks.length) {
-    overloadTrendBox.innerHTML = emptyState("Аналитика появится после нескольких дней использования трекера.", "Перейти в Сегодня", todayPath());
+    overloadTrendBox.innerHTML = emptyState(t("analytics.insightEmpty"), t("analytics.goToPulse"), todayPath());
     return;
   }
 
   overloadTrendBox.innerHTML = `
     <article class="analytics-overload-card analytics-overload-summary">
-      <p class="analytics-card-label">Текущий статус</p>
+      <p class="analytics-card-label">${t("analytics.overloadCurrent")}</p>
       <strong class="analytics-card-value">${dataset.summary.overloadRisk.label}</strong>
-      <span class="analytics-card-note">${dataset.summary.overloadDays} дней с риском перегруза • ${dataset.summary.highDays} дней с высокой нагрузкой</span>
+      <span class="analytics-card-note">${t("analytics.overloadDays", { riskDays: dataset.summary.overloadDays, highDays: dataset.summary.highDays })}</span>
     </article>
     ${dataset.days.map((day) => `
       <article class="analytics-overload-card is-${day.overloadState}">
@@ -805,7 +830,7 @@ function renderRecommendations(dataset) {
 
   const output = recommendations.length
     ? recommendations
-    : ["Сейчас ритм выглядит устойчивым. Старайся держать умеренный объем сложных задач и не забывать про восстановление."];
+    : [t("analytics.recommendationStable")];
 
   recommendationsBox.innerHTML = output.map((item) => `
     <article class="analytics-insight-card">
@@ -938,25 +963,30 @@ function clampLoad(value) {
 function overloadRiskLabel(avgEnergy, avgStress) {
   if (avgStress >= 8 && avgEnergy <= 4) {
     return {
-      label: "Высокий",
-      note: "Неделя выглядит перегруженной.",
+      label: t("analytics.overloadRiskHigh"),
+      note: t("analytics.overloadRiskHighNote"),
       state: "risk"
     };
   }
 
   if (avgStress >= 6 || avgEnergy <= 5) {
     return {
-      label: "Средний",
-      note: "Нагрузка требует внимания.",
+      label: t("analytics.overloadRiskMedium"),
+      note: t("analytics.overloadRiskMediumNote"),
       state: "high"
     };
   }
 
   return {
-    label: "Низкий",
-    note: "Ритм пока выглядит устойчивым.",
+    label: t("analytics.overloadRiskLow"),
+    note: t("analytics.overloadRiskLowNote"),
     state: "normal"
   };
+}
+
+function looksCorruptedText(value) {
+  const text = String(value || "");
+  return /[ÐÑ�]/.test(text) || text.includes("РЎ") || text.includes("Ñ") || text.includes("Ð");
 }
 
 function formatDate(isoDate) {

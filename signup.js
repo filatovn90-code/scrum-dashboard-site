@@ -8,6 +8,7 @@ import {
   waitForSessionPersistence
 } from "./supabase-client.js";
 import { redirectIfAuthenticated } from "./auth-helpers.js";
+import { applyTranslations, onLocaleChange, t } from "./i18n.js";
 import { resolvePostAuthPath, startOnboardingForUser } from "./onboarding-helpers.js";
 import { todayPath } from "./route-paths.js";
 
@@ -20,6 +21,8 @@ const statusBox = document.getElementById("signupPageStatus");
 
 redirectIfAuthenticated({ redirectTo: todayPath() }).catch(() => null);
 
+onLocaleChange(() => applyTranslations(document));
+
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -28,21 +31,21 @@ form?.addEventListener("submit", async (event) => {
   const repeatPassword = String(repeatInput?.value || "");
 
   if (!email) {
-    setStatus("Введите email.", true);
+    setStatus(t("validation.requiredEmail"), true);
     return;
   }
 
   if (!password) {
-    setStatus("Введите пароль.", true);
+    setStatus(t("validation.requiredPassword"), true);
     return;
   }
 
   if (password !== repeatPassword) {
-    setStatus("Пароли не совпадают.", true);
+    setStatus(t("validation.passwordMismatch"), true);
     return;
   }
 
-  setStatus("Создаю аккаунт...");
+  setStatus(t("auth.creatingAccount"));
   if (submitButton) {
     submitButton.disabled = true;
   }
@@ -50,7 +53,6 @@ form?.addEventListener("submit", async (event) => {
   try {
     const supabase = await getSupabase();
     const { data, error } = await supabase.auth.signUp({ email, password });
-
     if (error) {
       throw error;
     }
@@ -64,7 +66,7 @@ form?.addEventListener("submit", async (event) => {
     }
 
     if (!data?.session && data?.user) {
-      setStatus("Аккаунт создан, но почта еще не подтверждена. Откройте письмо от Supabase и подтвердите email.", true);
+      setStatus(t("authErrors.signupEmailNotConfirmed"), true);
       return;
     }
 
@@ -72,29 +74,28 @@ form?.addEventListener("submit", async (event) => {
     const authUser = activeSession?.user || data?.user;
 
     if (!authUser) {
-      throw new Error("Не удалось сохранить сессию после регистрации.");
+      throw new Error("SESSION_PERSISTENCE_FAILED");
     }
 
     await ensureProfile().catch(() => null);
     startOnboardingForUser(authUser);
-    setStatus("Аккаунт создан. Перенаправляю в приложение...");
+    setStatus(t("auth.accountCreated"));
     window.location.replace(resolvePostAuthPath(authUser));
-    return;
   } catch (error) {
     if (canUseLocalAuthFallback() && canUseLocalFallback(error)) {
       try {
         const localResult = await createLocalAccount(email, password);
         startOnboardingForUser(localResult?.user);
-        setStatus("Аккаунт создан. Перенаправляю в приложение...");
+        setStatus(t("auth.accountCreated"));
         window.location.replace(resolvePostAuthPath(localResult?.user));
         return;
       } catch (localError) {
-        setStatus(getReadableAuthError(localError, "signup"), true);
+        setStatus(getReadableAuthError(localError), true);
         return;
       }
     }
 
-    setStatus(getReadableAuthError(error, "signup"), true);
+    setStatus(getReadableAuthError(error), true);
   } finally {
     if (submitButton) {
       submitButton.disabled = false;
@@ -119,35 +120,33 @@ function canUseLocalFallback(error) {
     || normalized.includes("email address not authorized");
 }
 
-function getReadableAuthError(error, mode) {
+function getReadableAuthError(error) {
   const rawMessage = String(error?.message || "").trim();
   const normalized = rawMessage.toLowerCase();
 
   if (normalized.includes("failed to fetch") || normalized.includes("networkerror")) {
-    return "Не удалось связаться с сервером регистрации. Проверьте, что Supabase-проект активен и сайт открыт по публичной ссылке.";
+    return t("authErrors.remoteUnavailable");
   }
 
   if (normalized.includes("user already registered")) {
-    return "Такой email уже зарегистрирован. Попробуйте войти.";
+    return t("authErrors.userAlreadyRegistered");
   }
 
   if (normalized.includes("email not confirmed")) {
-    return "Аккаунт создан, но email еще не подтвержден. Подтвердите почту по письму от Supabase.";
+    return t("authErrors.signupEmailNotConfirmed");
   }
 
   if (normalized.includes("email rate limit exceeded")) {
-    return "Слишком много попыток регистрации подряд. Подождите несколько минут или используйте другой email.";
+    return t("authErrors.emailRateLimit");
   }
 
   if (normalized.includes("password should be at least")) {
-    return "Пароль слишком короткий. Используйте более длинный пароль.";
+    return t("authErrors.weakPassword");
   }
 
-  if (normalized.includes("не удалось сохранить сессию")) {
-    return "Регистрация прошла, но сессия не сохранилась. Обычно это связано с настройками домена, Redirect URL или переменных окружения.";
+  if (normalized.includes("session_persistence_failed")) {
+    return t("authErrors.sessionPersistenceSignup");
   }
 
-  return rawMessage || (mode === "signup"
-    ? "Не удалось создать аккаунт."
-    : "Не удалось выполнить вход.");
+  return rawMessage || t("validation.signUpFailed");
 }

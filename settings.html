@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Настройки — MindPulse</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-app-active="settings" data-app-title="Настройки" data-app-subtitle="Базовые системные настройки продукта будут собраны здесь по мере развития MindPulse.">
+  <div class="app-shell app-page-layout">
+    <aside data-app-sidebar></aside>
+
+    <div class="app-main">
+      <div class="app-content-shell">
+        <header data-app-page-header></header>
+        <main class="utility-page-main">
+          <section class="section utility-page-card">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker" data-i18n="settings.title">Язык и регион</p>
+                <h2 class="dashboard-section-title" data-i18n="settings.field">Язык интерфейса</h2>
+                <p class="today-section-copy" data-i18n="settings.body">Пока основной системной настройкой является язык интерфейса. Позже сюда можно будет добавить регион, формат времени и другие параметры поведения продукта.</p>
+              </div>
+            </div>
+
+            <form id="settingsForm" class="auth-page-form profile-form">
+              <select id="settingsLocale" aria-label="Language"></select>
+              <button id="settingsSubmit" class="form-action-button" type="submit" data-i18n="settings.save">Сохранить настройки</button>
+            </form>
+
+            <div id="settingsStatus" class="auth-status-box" data-i18n="settings.loading">Загружаю настройки...</div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared-storage.js"></script>
+  <script type="module">
+    import { mountAppShell } from "./navigation.js";
+    mountAppShell();
+  </script>
+  <script type="module" src="settings.js"></script>
+</body>
+</html>

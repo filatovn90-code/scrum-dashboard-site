@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -6,157 +6,141 @@
   <title>Пульс дня — MindPulse</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <div class="page-shell page-shell-wide today-page">
-    <header class="site-header">
-      <div class="site-brand">
-        <p class="section-kicker">MindPulse</p>
-        <h1>Пульс дня</h1>
-      </div>
+<body
+  data-app-active="pulse"
+  data-app-title="Пульс дня"
+  data-app-subtitle="Ежедневный check-in, готовность к дню и устойчивый рабочий ритм без лишней перегрузки."
+>
+  <div class="app-shell app-page-layout">
+    <aside data-app-sidebar></aside>
 
-      <div class="site-header-actions">
-        <nav class="site-nav" aria-label="Основная навигация">
-          <a class="nav-link is-active" href="today.html">Пульс дня</a>
-          <a class="nav-link" href="backlog.html">Моя неделя</a>
-          <a class="nav-link" href="analytics.html">Аналитика</a>
-          <a class="nav-link" href="pricing.html">Pricing</a>
-        </nav>
-        <button class="login-button" id="todayLogoutButton" type="button">Выход</button>
-      </div>
-    </header>
+    <div class="app-main">
+      <div class="app-content-shell">
+        <header data-app-page-header></header>
 
-    <main class="today-main">
-      <div class="auth-status-box today-status-box" id="todayPageStatus" hidden></div>
+        <main class="today-main">
+          <div class="auth-status-box today-status-box" id="todayPageStatus" hidden></div>
 
-      <section class="today-grid">
-        <article class="section today-checkin-card">
-          <div class="section-heading">
-            <div>
-              <p class="section-kicker">Daily Check-in</p>
-              <h2 class="dashboard-section-title">Как ты сегодня?</h2>
-              <p class="today-section-copy">Оцени состояние перед планированием дня</p>
-            </div>
-          </div>
-
-          <form id="todayCheckinForm" class="today-checkin-form">
-            <label class="today-range-field">
-              <div class="today-range-copy">
-                <strong>Энергия</strong>
-                <span>Сколько сил сегодня?</span>
+          <section class="today-grid">
+            <article class="section today-checkin-card">
+              <div class="section-heading">
+                <div>
+                  <p class="section-kicker" data-i18n="pulse.checkinKicker">Daily Check-in</p>
+                  <h2 class="dashboard-section-title" data-i18n="pulse.checkinTitle">Как ты сегодня?</h2>
+                  <p class="today-section-copy" data-i18n="pulse.checkinCopy">Оцени состояние перед планированием дня.</p>
+                </div>
               </div>
-              <div class="today-range-control">
-                <input id="todayEnergyInput" type="range" min="1" max="10" value="6">
-                <output id="todayEnergyValue">6</output>
+
+              <form id="todayCheckinForm" class="today-checkin-form">
+                <label class="today-range-field">
+                  <div class="today-range-copy">
+                    <strong data-i18n="pulse.energyTitle">Энергия</strong>
+                    <span data-i18n="pulse.energyHint">Сколько сил сегодня?</span>
+                  </div>
+                  <div class="today-range-control">
+                    <input id="todayEnergyInput" type="range" min="1" max="10" value="6">
+                    <output id="todayEnergyValue">6</output>
+                  </div>
+                </label>
+
+                <label class="today-range-field">
+                  <div class="today-range-copy">
+                    <strong data-i18n="pulse.stressTitle">Стресс</strong>
+                    <span data-i18n="pulse.stressHint">Насколько напряженно себя чувствуешь?</span>
+                  </div>
+                  <div class="today-range-control">
+                    <input id="todayStressInput" type="range" min="1" max="10" value="4">
+                    <output id="todayStressValue">4</output>
+                  </div>
+                </label>
+
+                <label class="today-range-field">
+                  <div class="today-range-copy">
+                    <strong data-i18n="pulse.focusTitle">Фокус</strong>
+                    <span data-i18n="pulse.focusHint">Насколько легко концентрироваться?</span>
+                  </div>
+                  <div class="today-range-control">
+                    <input id="todayFocusInput" type="range" min="1" max="10" value="6">
+                    <output id="todayFocusValue">6</output>
+                  </div>
+                </label>
+
+                <div class="today-checkin-selects">
+                  <label class="auth-field">
+                    <span data-i18n="pulse.sleep">Сон</span>
+                    <select id="todaySleepSelect">
+                      <option value="" data-i18n="common.choose">Выбрать</option>
+                      <option value="Плохо" data-i18n="pulse.sleepBad">Плохо</option>
+                      <option value="Нормально" data-i18n="pulse.sleepNormal">Нормально</option>
+                      <option value="Хорошо" data-i18n="pulse.sleepGood">Хорошо</option>
+                    </select>
+                  </label>
+
+                  <label class="auth-field">
+                    <span data-i18n="pulse.mood">Настроение</span>
+                    <select id="todayMoodSelect">
+                      <option value="" data-i18n="common.choose">Выбрать</option>
+                      <option value="Спокойное" data-i18n="pulse.moodCalm">Спокойное</option>
+                      <option value="Нейтральное" data-i18n="pulse.moodNeutral">Нейтральное</option>
+                      <option value="Тревожное" data-i18n="pulse.moodAnxious">Тревожное</option>
+                      <option value="Раздраженное" data-i18n="pulse.moodIrritated">Раздраженное</option>
+                      <option value="Воодушевленное" data-i18n="pulse.moodInspired">Воодушевленное</option>
+                      <option value="Уставшее" data-i18n="pulse.moodTired">Уставшее</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="today-card-actions">
+                  <button class="form-action-button" id="todayCheckinSubmit" type="submit" data-i18n="pulse.saveState">Сохранить состояние</button>
+                </div>
+              </form>
+
+              <div class="auth-status-box" id="todayCheckinStatus" data-i18n="pulse.idleStatus">Можно сохранить состояние за сегодня.</div>
+            </article>
+
+            <article class="section today-capacity-card">
+              <div class="section-heading">
+                <div>
+                  <p class="section-kicker" data-i18n="pulse.readinessKicker">Readiness</p>
+                  <h2 class="dashboard-section-title" data-i18n="pulse.readinessTitle">Readiness Score</h2>
+                  <p class="today-section-copy" data-i18n="pulse.readinessCopy">Насколько день подходит для сложной работы с учетом состояния и текущей нагрузки.</p>
+                </div>
               </div>
-            </label>
 
-            <label class="today-range-field">
-              <div class="today-range-copy">
-                <strong>Стресс</strong>
-                <span>Насколько напряженно себя чувствуешь?</span>
+              <div class="today-capacity-head">
+                <strong id="todayCapacityPercent">0</strong>
+                <span id="todayCapacityLabel" class="today-capacity-badge">Stable</span>
               </div>
-              <div class="today-range-control">
-                <input id="todayStressInput" type="range" min="1" max="10" value="4">
-                <output id="todayStressValue">4</output>
+              <div class="today-capacity-bar">
+                <span id="todayCapacityBar"></span>
               </div>
-            </label>
+              <p id="todayCapacityNote" class="today-capacity-note"></p>
 
-            <label class="today-range-field">
-              <div class="today-range-copy">
-                <strong>Фокус</strong>
-                <span>Насколько легко концентрироваться?</span>
+              <div class="today-energy-debt-card">
+                <span class="today-summary-label" data-i18n="pulse.energyDebt">Energy Debt</span>
+                <div class="today-energy-debt-head">
+                  <strong id="todayEnergyDebtValue">0</strong>
+                  <span id="todayEnergyDebtStatus" class="today-capacity-badge">Healthy</span>
+                </div>
+                <p id="todayEnergyDebtNote" class="today-capacity-note" data-i18n="pulse.energyDebtEmpty">Метрика появится после нескольких дней использования.</p>
               </div>
-              <div class="today-range-control">
-                <input id="todayFocusInput" type="range" min="1" max="10" value="6">
-                <output id="todayFocusValue">6</output>
+
+              <div class="today-capacity-recommendation">
+                <span class="today-summary-label" data-i18n="pulse.bestForToday">Что лучше делать сегодня</span>
+                <strong id="todayCapacityMode">Light Tasks</strong>
               </div>
-            </label>
-
-            <div class="today-checkin-selects">
-              <label class="auth-field">
-                <span>Сон</span>
-                <select id="todaySleepSelect">
-                  <option value="">Выбрать</option>
-                  <option value="Плохо">Плохо</option>
-                  <option value="Нормально">Нормально</option>
-                  <option value="Хорошо">Хорошо</option>
-                </select>
-              </label>
-
-              <label class="auth-field">
-                <span>Настроение</span>
-                <select id="todayMoodSelect">
-                  <option value="">Выбрать</option>
-                  <option value="Спокойное">Спокойное</option>
-                  <option value="Нейтральное">Нейтральное</option>
-                  <option value="Тревожное">Тревожное</option>
-                  <option value="Раздраженное">Раздраженное</option>
-                  <option value="Воодушевленное">Воодушевленное</option>
-                  <option value="Уставшее">Уставшее</option>
-                </select>
-              </label>
-            </div>
-
-            <div class="today-card-actions">
-              <button class="form-action-button" id="todayCheckinSubmit" type="submit">Сохранить состояние</button>
-            </div>
-          </form>
-
-          <div class="auth-status-box" id="todayCheckinStatus">Можно сохранить состояние за сегодня.</div>
-        </article>
-
-        <article class="section today-capacity-card">
-          <div class="section-heading">
-            <div>
-              <p class="section-kicker">Readiness</p>
-              <h2 class="dashboard-section-title">Readiness Score</h2>
-              <p class="today-section-copy">Насколько день подходит для сложной работы с учётом состояния и нагрузки</p>
-            </div>
-          </div>
-
-          <div class="today-capacity-head">
-            <strong id="todayCapacityPercent">0</strong>
-            <span id="todayCapacityLabel" class="today-capacity-badge">Stable</span>
-          </div>
-          <div class="today-capacity-bar">
-            <span id="todayCapacityBar"></span>
-          </div>
-          <p id="todayCapacityNote" class="today-capacity-note"></p>
-          <div class="today-energy-debt-card">
-            <span class="today-summary-label">Energy Debt</span>
-            <div class="today-energy-debt-head">
-              <strong id="todayEnergyDebtValue">0</strong>
-              <span id="todayEnergyDebtStatus" class="today-capacity-badge">Healthy</span>
-            </div>
-            <p id="todayEnergyDebtNote" class="today-capacity-note">Метрика появится после нескольких дней использования.</p>
-          </div>
-          <div class="today-capacity-recommendation">
-            <span class="today-summary-label">Что лучше делать сегодня</span>
-            <strong id="todayCapacityMode">Light Tasks</strong>
-          </div>
-        </article>
-      </section>
-
-    </main>
-  </div>
-
-  <div class="auth-modal today-guard-modal" id="todayGuardModal" hidden>
-    <div class="auth-backdrop" id="todayGuardBackdrop"></div>
-    <div class="auth-dialog today-guard-dialog">
-      <p class="auth-kicker">Overload Guard</p>
-      <h2>Похоже, день станет перегруженным. Лучше перенести эту задачу?</h2>
-      <p class="today-summary-copy" id="todayGuardMessage">Приложение заметило несколько сигналов перегруза.</p>
-      <ul class="today-guidance-list" id="todayGuardReasons"></ul>
-      <div class="today-card-actions">
-        <button class="form-action-button" id="todayGuardConfirmButton" type="button">Добавить всё равно</button>
-        <button class="ghost-button" id="todayGuardMoveButton" type="button">Перенести</button>
-        <button class="ghost-button" id="todayGuardCancelButton" type="button">Отмена</button>
+            </article>
+          </section>
+        </main>
       </div>
     </div>
   </div>
 
   <script src="shared-storage.js"></script>
+  <script type="module">
+    import { mountAppShell } from "./navigation.js";
+    mountAppShell();
+  </script>
   <script type="module" src="today.js"></script>
 </body>
 </html>
-

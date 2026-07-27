@@ -1,5 +1,6 @@
 import { getCurrentSession, getSupabase, signOutCurrentUser } from "./auth-helpers.js";
 import { landingPath } from "./route-paths.js";
+import { applyTranslations, onLocaleChange, t } from "./i18n.js";
 import {
   calculateDailyLoad,
   calculateEnergyDebtSeries,
@@ -113,6 +114,11 @@ let dayPulseCheckins = new Map();
 let backlogRenderVersion = 0;
 const expandedPulseCards = new Set();
 let pulseSnapshots = loadPulseSnapshots();
+
+onLocaleChange(() => {
+  applyTranslations(document);
+  renderBacklog(activeWeekLabel).catch((error) => console.error("Failed to rerender backlog locale", error));
+});
 
 function formatDate(date) {
   const day = String(date.getDate()).padStart(2, "0");
@@ -506,7 +512,7 @@ function renderDailyFocus(week = weekSelect.value) {
 
   focusTodayPanel.innerHTML = `
     <div class="daily-focus-header">
-      <h3 class="daily-focus-title">Фокус на сегодня</h3>
+      <h3 class="daily-focus-title">${t("plan.todayFocus")}</h3>
     </div>
     <div class="daily-focus-list">
       ${focusItems.map((item, index) => `
@@ -515,7 +521,7 @@ function renderDailyFocus(week = weekSelect.value) {
             <input type="checkbox" ${item.done ? "checked" : ""} data-focus-done="${index}">
             <span></span>
           </label>
-          <input class="daily-focus-input" type="text" maxlength="160" value="${escapeHtml(item.text)}" placeholder="Пункт ${index + 1}" data-focus-input="${index}">
+          <input class="daily-focus-input" type="text" maxlength="160" value="${escapeHtml(item.text)}" placeholder="${t("plan.focusItemPlaceholder", { index: index + 1 })}" data-focus-input="${index}">
         </div>
       `).join("")}
     </div>
@@ -567,24 +573,24 @@ function renderBacklogSummary(week) {
   backlogSummary.innerHTML = `
     <div class="analytics-overview-grid analytics-overview-grid-4">
       <article class="analytics-card">
-        <p class="analytics-card-label">Всего задач</p>
+        <p class="analytics-card-label">${t("plan.totalTasks")}</p>
         <strong class="analytics-card-value">${tasks.length}</strong>
-        <span class="analytics-card-note">На выбранную неделю</span>
+        <span class="analytics-card-note">${t("plan.tasksForWeek")}</span>
       </article>
       <article class="analytics-card">
-        <p class="analytics-card-label">Deep Work</p>
+        <p class="analytics-card-label">${t("plan.deepWork")}</p>
         <strong class="analytics-card-value">${deepWorkCount}</strong>
-        <span class="analytics-card-note">Задачи глубокой концентрации</span>
+        <span class="analytics-card-note">${t("plan.deepWorkTasks")}</span>
       </article>
       <article class="analytics-card">
-        <p class="analytics-card-label">Когнитивно тяжелые</p>
+        <p class="analytics-card-label">${t("plan.cognitiveHeavy")}</p>
         <strong class="analytics-card-value">${heavyCognitiveCount}</strong>
-        <span class="analytics-card-note">С нагрузкой 4/5 и выше</span>
+        <span class="analytics-card-note">${t("plan.cognitiveHeavyTasks")}</span>
       </article>
       <article class="analytics-card">
-        <p class="analytics-card-label">Эмоционально тяжелые</p>
+        <p class="analytics-card-label">${t("plan.emotionalHeavy")}</p>
         <strong class="analytics-card-value">${heavyEmotionalCount}</strong>
-        <span class="analytics-card-note">С нагрузкой 4/5 и выше</span>
+        <span class="analytics-card-note">${t("plan.emotionalHeavyTasks")}</span>
       </article>
     </div>
   `;
@@ -651,34 +657,34 @@ function getPulseCardState(percent) {
 }
 
 function getPulseCardLabel(state) {
-  if (state === "risk") return "Риск перегруза";
-  if (state === "heavy") return "Плотный день";
-  if (state === "stable") return "Комфортная нагрузка";
-  return "Сбалансировано";
+  if (state === "risk") return t("workload.loadOverload");
+  if (state === "heavy") return t("workload.loadDense");
+  if (state === "stable") return t("workload.loadComfort");
+  return t("workload.loadBalanced");
 }
 
 function getPulseCardHint(metrics) {
   if (metrics.overBy > 0) {
-    return "Если добавлять ещё, лучше только лёгкие задачи.";
+    return t("plan.noteHeavy");
   }
 
   if (metrics.remaining <= 0) {
-    return "Лимит дня уже заполнен.";
+    return t("workload.dayCapacityFilled");
   }
 
   if (metrics.remaining <= 15) {
-    return "Осталось место только для одной лёгкой задачи.";
+    return t("plan.noteLightOnly");
   }
 
   if (metrics.state === "heavy") {
-    return "День плотный, но пока управляемый.";
+    return t("plan.noteDense");
   }
 
   if (metrics.state === "stable") {
-    return "День выглядит комфортным для обычного ритма.";
+    return t("workload.dayComfortable");
   }
 
-  return "Есть хороший запас для ещё одной задачи.";
+  return t("workload.dayHasCapacity");
 }
 
 function resolveStoredPulse(dateIso, computedPulse) {
@@ -747,8 +753,17 @@ function buildDayPulseMetricsMap(week, days) {
       remaining,
       state: getPulseCardState(percent),
       tooltip: Number.isFinite(computedPulse)
-        ? `Пульс дня\nДоступная нагрузка: ${capacity}\nЗапланировано: ${totalLoad}\n${overBy ? `Превышение: ${overBy}` : `Осталось: ${remaining}`}`
-        : `Пульс дня\nПульс не оценён\nЗапланировано: ${totalLoad}\nБазовая ёмкость: ${capacity}`
+        ? t("plan.pulseTooltipAssessed", {
+            capacity,
+            planned: totalLoad,
+            restLine: overBy
+              ? t("plan.pulseOverByLine", { value: overBy })
+              : t("plan.pulseRemainingLine", { value: remaining })
+          })
+        : t("plan.pulseTooltipUnassessed", {
+            planned: totalLoad,
+            capacity
+          })
     }];
   }));
 }
@@ -756,10 +771,10 @@ function buildDayPulseMetricsMap(week, days) {
 function renderDayPulseCard(week, day, metrics) {
   const pulseKey = makeDayPulseKey(week, day.date);
   const expanded = expandedPulseCards.has(pulseKey);
-  const topLabel = metrics.hasPulse ? `Пульс ${metrics.pulse}` : "Пульс не оценён";
+  const topLabel = metrics.hasPulse ? `${t("plan.pulse")} ${metrics.pulse}` : t("plan.pulseNotAssessed");
   const summaryLabel = metrics.hasPulse
     ? `${metrics.totalLoad} / ${metrics.capacity}`
-    : `${metrics.totalLoad} / обычных ${metrics.capacity}`;
+    : `${metrics.totalLoad} / ${t("workload.baseCapacityShort", { value: metrics.capacity })}`;
 
   return `
     <div class="day-pulse-shell" title="${escapeHtml(metrics.tooltip)}">
@@ -771,7 +786,7 @@ function renderDayPulseCard(week, day, metrics) {
       >
         <div class="day-pulse-top">
           <strong>${topLabel}</strong>
-          <span>${metrics.hasPulse ? "День оценён" : "План"}</span>
+          <span>${metrics.hasPulse ? t("plan.dayAssessed") : t("plan.plan")}</span>
         </div>
         <div class="day-pulse-bar">
           <span data-state="${metrics.state}" style="width:${Math.min(metrics.percent, 100)}%"></span>
@@ -780,13 +795,13 @@ function renderDayPulseCard(week, day, metrics) {
           <span>${summaryLabel}</span>
           ${metrics.overBy ? `<span class="day-pulse-over">+${metrics.overBy}</span>` : ""}
         </div>
-        <div class="day-pulse-note">${metrics.overBy > 0 ? "Лучше не добавлять ещё одну тяжёлую задачу." : metrics.remaining <= 15 ? "Осталось место только для лёгкой задачи." : "День выглядит управляемым."}</div>
+        <div class="day-pulse-note">${getPulseCardHint(metrics)}</div>
       </button>
       ${expanded ? `
         <div class="day-pulse-details">
-          <span>Когнитивная нагрузка: ${metrics.cognitiveLoad}</span>
-          <span>Эмоциональная нагрузка: ${metrics.emotionalLoad}</span>
-          <span>Тяжёлых задач: ${metrics.heavyTasks}</span>
+          <span>${t("plan.cognitive")}: ${metrics.cognitiveLoad}</span>
+          <span>${t("plan.emotional")}: ${metrics.emotionalLoad}</span>
+          <span>${t("workload.heavyTasksCount")}: ${metrics.heavyTasks}</span>
         </div>
       ` : ""}
     </div>
@@ -797,7 +812,7 @@ function renderTaskEditor(editorKey, day, defaults) {
   return `
     <div class="backlog-slot-cell is-editor">
       <div class="inline-task-editor" data-editor="${editorKey}">
-        <input class="inline-task-input" type="text" placeholder="Задача" value="${escapeHtml(defaults.text)}" data-editor-text>
+        <input class="inline-task-input" type="text" placeholder="${t("plan.addTaskPlaceholder")}" value="${escapeHtml(defaults.text)}" data-editor-text>
         <div class="inline-task-row ${defaults.hideTime ? "is-single" : ""}">
           ${defaults.hideTime ? "" : `
             <select data-editor-time>
@@ -805,32 +820,32 @@ function renderTaskEditor(editorKey, day, defaults) {
             </select>
           `}
           <select data-editor-status>
-            <option value="Запланировано" ${defaults.status === "Запланировано" ? "selected" : ""}>Запланировано</option>
-            <option value="В работе" ${defaults.status === "В работе" ? "selected" : ""}>В работе</option>
-            <option value="Сделано" ${defaults.status === "Сделано" ? "selected" : ""}>Сделано</option>
+            <option value="Запланировано" ${defaults.status === "Запланировано" ? "selected" : ""}>${t("plan.taskPlanned")}</option>
+            <option value="В работе" ${defaults.status === "В работе" ? "selected" : ""}>${t("plan.taskInProgress")}</option>
+            <option value="Сделано" ${defaults.status === "Сделано" ? "selected" : ""}>${t("plan.taskDone")}</option>
           </select>
         </div>
         <div class="inline-task-row">
           <select data-editor-task-type>
-            <option value="routine" ${defaults.task_type === "routine" ? "selected" : ""}>Рутина</option>
-            <option value="deep_work" ${defaults.task_type === "deep_work" ? "selected" : ""}>Deep Work</option>
-            <option value="communication" ${defaults.task_type === "communication" ? "selected" : ""}>Коммуникация</option>
-            <option value="creative" ${defaults.task_type === "creative" ? "selected" : ""}>Творческая</option>
-            <option value="learning" ${defaults.task_type === "learning" ? "selected" : ""}>Обучение</option>
-            <option value="recovery" ${defaults.task_type === "recovery" ? "selected" : ""}>Восстановление</option>
+            <option value="routine" ${defaults.task_type === "routine" ? "selected" : ""}>${t("taskTypes.routine")}</option>
+            <option value="deep_work" ${defaults.task_type === "deep_work" ? "selected" : ""}>${t("taskTypes.deep_work")}</option>
+            <option value="communication" ${defaults.task_type === "communication" ? "selected" : ""}>${t("taskTypes.communication")}</option>
+            <option value="creative" ${defaults.task_type === "creative" ? "selected" : ""}>${t("taskTypes.creative")}</option>
+            <option value="learning" ${defaults.task_type === "learning" ? "selected" : ""}>${t("taskTypes.learning")}</option>
+            <option value="recovery" ${defaults.task_type === "recovery" ? "selected" : ""}>${t("taskTypes.recovery")}</option>
           </select>
           <select data-editor-cognitive-load>
-            ${[1, 2, 3, 4, 5].map((value) => `<option value="${value}" ${defaults.cognitive_load === value ? "selected" : ""}>Когнитивная ${value}/5</option>`).join("")}
+            ${[1, 2, 3, 4, 5].map((value) => `<option value="${value}" ${defaults.cognitive_load === value ? "selected" : ""}>${t("plan.cognitive")} ${value}/5</option>`).join("")}
           </select>
         </div>
         <div class="inline-task-row">
           <select data-editor-emotional-load>
-            ${[1, 2, 3, 4, 5].map((value) => `<option value="${value}" ${defaults.emotional_load === value ? "selected" : ""}>Эмоциональная ${value}/5</option>`).join("")}
+            ${[1, 2, 3, 4, 5].map((value) => `<option value="${value}" ${defaults.emotional_load === value ? "selected" : ""}>${t("plan.emotional")} ${value}/5</option>`).join("")}
           </select>
         </div>
         <div class="inline-task-actions">
-          <button type="button" class="inline-action-button is-primary" data-editor-save="${editorKey}">Сохранить</button>
-          <button type="button" class="inline-action-button" data-editor-cancel="${editorKey}">Отмена</button>
+          <button type="button" class="inline-action-button is-primary" data-editor-save="${editorKey}">${t("plan.saveTask")}</button>
+          <button type="button" class="inline-action-button" data-editor-cancel="${editorKey}">${t("common.cancel")}</button>
         </div>
       </div>
     </div>
@@ -852,7 +867,7 @@ function renderDayCreateArea(week, day) {
     });
   }
 
-  return `<button type="button" class="backlog-day-add-button" data-day-add="${createKey}">Добавить</button>`;
+  return `<button type="button" class="backlog-day-add-button" data-day-add="${createKey}">${t("plan.addTask")}</button>`;
 }
 
 function renderTaskCard(week, day, rawItem) {
@@ -882,29 +897,29 @@ function renderTaskCard(week, day, rawItem) {
         <p>${escapeHtml(item.text)}</p>
         <div class="task-card-actions task-card-actions-stacked">
           <div class="task-status-group">
-            <span class="task-meta-label">Статус</span>
+            <span class="task-meta-label">${t("plan.status")}</span>
             <select class="task-status-select ${statusClass(item.status)}" data-task-status="${taskKey}">
-              <option value="Запланировано" ${item.status === "Запланировано" ? "selected" : ""}>Запланировано</option>
-              <option value="В работе" ${item.status === "В работе" ? "selected" : ""}>В работе</option>
-              <option value="Сделано" ${item.status === "Сделано" ? "selected" : ""}>Сделано</option>
-              <option value="__edit__">Редактировать</option>
-              <option value="__delete__">Удалить</option>
+              <option value="Запланировано" ${item.status === "Запланировано" ? "selected" : ""}>${t("plan.taskPlanned")}</option>
+              <option value="В работе" ${item.status === "В работе" ? "selected" : ""}>${t("plan.taskInProgress")}</option>
+              <option value="Сделано" ${item.status === "Сделано" ? "selected" : ""}>${t("plan.taskDone")}</option>
+              <option value="__edit__">${t("plan.editTask")}</option>
+              <option value="__delete__">${t("plan.deleteTask")}</option>
             </select>
           </div>
           <div class="task-meta task-meta-labeled">
-            <span class="task-meta-label">Тип задачи</span>
+            <span class="task-meta-label">${t("plan.taskType")}</span>
             <span class="task-badge">${getTaskTypeIcon(item.task_type)} ${getTaskTypeLabel(item.task_type)}</span>
           </div>
           <div class="task-meta task-meta-labeled">
-            <span class="task-meta-label">Когнитивная</span>
+            <span class="task-meta-label">${t("plan.cognitive")}</span>
             <span class="task-badge">${item.cognitive_load}/5</span>
           </div>
           <div class="task-meta task-meta-labeled">
-            <span class="task-meta-label">Эмоциональная</span>
+            <span class="task-meta-label">${t("plan.emotional")}</span>
             <span class="task-badge">${item.emotional_load}/5</span>
           </div>
           <div class="task-meta task-meta-labeled">
-            <span class="task-meta-label">Общая нагрузка</span>
+            <span class="task-meta-label">${t("plan.overallLoad")}</span>
             <span class="task-badge">${intensity.label}</span>
           </div>
         </div>

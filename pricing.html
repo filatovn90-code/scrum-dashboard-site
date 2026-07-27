@@ -6,39 +6,25 @@
   <title>Тарифы — MindPulse</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <div class="page-shell page-shell-wide pricing-page">
-    <header class="site-header landing-header">
-      <div class="site-brand">
-        <p class="section-kicker">MindPulse</p>
-        <h1>Тарифы</h1>
-      </div>
-
-      <div class="site-header-actions">
-        <nav class="site-nav" aria-label="Навигация">
-          <a class="nav-link" href="index.html">Главная</a>
-          <a class="nav-link is-active" href="pricing.html">Pricing</a>
-          <a class="nav-link" href="login.html">Войти</a>
-          <a class="nav-link" href="signup.html">Начать бесплатно</a>
-        </nav>
-      </div>
-    </header>
+<body data-public-active="pricing">
+  <div class="page-shell page-shell-wide pricing-page public-page">
+    <header data-public-header></header>
 
     <main class="pricing-main">
       <section class="section pricing-hero">
         <div class="pricing-hero-copy">
-          <p class="section-kicker">Monetization ready</p>
-          <h2 class="landing-title">Freemium-модель для AI Energy OS</h2>
-          <p class="landing-description">
-            Free даёт ценность без внешнего AI: задачи, Пульс дня, Daily Check-in, Readiness Score,
+          <p class="section-kicker" data-i18n="pricing.heroKicker">Monetization ready</p>
+          <h2 class="landing-title" data-i18n="pricing.heroTitle">Freemium-модель для AI Energy OS</h2>
+          <p class="landing-description" data-i18n="pricing.heroBody">
+            Free дает ценность без внешнего AI: задачи, Пульс дня, Daily Check-in, Readiness Score,
             Energy Debt, базовую аналитику, rule-based рекомендации и базовый Weekly Review.
             Pro добавляет глубокий AI-разбор, AI Weekly Review, персональные паттерны,
             расширенные рекомендации и полную историю аналитики.
           </p>
         </div>
         <div class="pricing-hero-side">
-          <div class="pricing-plan-chip" id="pricingCurrentPlanChip">Текущий план: Free</div>
-          <p class="today-section-copy">
+          <div class="pricing-plan-chip" id="pricingCurrentPlanChip" data-i18n="pricing.currentPlan">Текущий план: Free</div>
+          <p class="today-section-copy" data-i18n="pricing.heroSide">
             Оплата пока не подключена. Эта страница подготавливает продукт к монетизации
             и показывает границы между Free и Pro.
           </p>
@@ -49,45 +35,45 @@
         <article class="section pricing-card">
           <div class="pricing-card-head">
             <div>
-              <p class="section-kicker">Free</p>
-              <h3>Для ежедневного ритма без лишней сложности</h3>
+              <p class="section-kicker" data-i18n="pricing.free">Free</p>
+              <h3 data-i18n="pricing.freeTitle">Для ежедневного ритма без лишней сложности</h3>
             </div>
-            <span class="pricing-card-badge">Доступно сейчас</span>
+            <span class="pricing-card-badge" data-i18n="pricing.availableNow">Доступно сейчас</span>
           </div>
           <ul class="pricing-feature-list">
-            <li>Task planning</li>
-            <li>Пульс дня</li>
-            <li>Daily Check-in</li>
-            <li>Readiness Score</li>
-            <li>Energy Debt</li>
-            <li>Rule-based рекомендации</li>
-            <li>Basic Weekly Review</li>
-            <li>Basic analytics</li>
+            <li data-i18n="pricingFeature.taskPlanning">Планирование задач</li>
+            <li data-i18n="pricingFeature.dailyPulse">Пульс дня</li>
+            <li data-i18n="pricingFeature.dailyCheckin">Daily Check-in</li>
+            <li data-i18n="pricingFeature.readinessScore">Readiness Score</li>
+            <li data-i18n="pricingFeature.energyDebt">Energy Debt</li>
+            <li data-i18n="pricingFeature.ruleBasedCoach">Rule-based рекомендации</li>
+            <li data-i18n="pricingFeature.basicWeeklyReview">Базовый Weekly Review</li>
+            <li data-i18n="pricingFeature.basicAnalytics">Базовая аналитика</li>
           </ul>
           <div class="pricing-card-footer">
-            <a class="form-action-button" href="signup.html">Начать бесплатно</a>
+            <a class="form-action-button" href="signup.html" data-i18n="pricing.startFree">Начать бесплатно</a>
           </div>
         </article>
 
         <article class="section pricing-card pricing-card-pro">
           <div class="pricing-card-head">
             <div>
-              <p class="section-kicker">Pro</p>
-              <h3>Для глубокого AI-разбора и долгого роста</h3>
+              <p class="section-kicker" data-i18n="pricing.pro">Pro</p>
+              <h3 data-i18n="pricing.proTitle">Для глубокого AI-разбора и долгого роста</h3>
             </div>
-            <span class="pricing-card-badge pricing-card-badge-accent">Coming soon</span>
+            <span class="pricing-card-badge pricing-card-badge-accent" data-i18n="pricing.comingSoon">Coming soon</span>
           </div>
           <ul class="pricing-feature-list">
-            <li>Глубокий AI-разбор</li>
-            <li>AI Weekly Review</li>
-            <li>Personal patterns</li>
-            <li>Overload prediction</li>
-            <li>Advanced recommendations</li>
-            <li>100 AI requests / month</li>
-            <li>Full history</li>
+            <li data-i18n="pricingFeature.deepAiCoach">Глубокий AI-разбор</li>
+            <li data-i18n="pricingFeature.aiWeeklyReview">AI Weekly Review</li>
+            <li data-i18n="pricingFeature.personalPatterns">Personal patterns</li>
+            <li data-i18n="pricingFeature.overloadPrediction">Overload prediction</li>
+            <li data-i18n="pricingFeature.advancedRecommendations">Advanced recommendations</li>
+            <li data-i18n="pricingFeature.aiRequests">100 AI requests / month</li>
+            <li data-i18n="pricingFeature.fullHistory">Full history</li>
           </ul>
           <div class="pricing-card-footer">
-            <button class="ghost-button" type="button" disabled>Оплата скоро</button>
+            <button class="ghost-button" type="button" disabled data-i18n="pricing.paymentSoon">Оплата скоро</button>
           </div>
         </article>
       </section>
@@ -95,93 +81,41 @@
       <section class="section pricing-compare-section">
         <div class="section-heading">
           <div>
-            <p class="section-kicker">Comparison</p>
-            <h2 class="dashboard-section-title">Что входит в каждый тариф</h2>
+            <p class="section-kicker" data-i18n="pricing.compareKicker">Comparison</p>
+            <h2 class="dashboard-section-title" data-i18n="pricing.compareTitle">Что входит в каждый тариф</h2>
           </div>
         </div>
 
         <div class="pricing-compare-grid">
           <div class="pricing-compare-row pricing-compare-head">
-            <span>Функция</span>
-            <strong>Free</strong>
-            <strong>Pro</strong>
+            <span data-i18n="pricing.feature">Функция</span>
+            <strong data-i18n="pricing.free">Free</strong>
+            <strong data-i18n="pricing.pro">Pro</strong>
           </div>
-          <div class="pricing-compare-row">
-            <span>Task planning</span>
-            <strong>Да</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>Пульс дня</span>
-            <strong>Да</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>Daily Check-in</span>
-            <strong>Да</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>Readiness Score</span>
-            <strong>Да</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>Energy Debt</span>
-            <strong>Да</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>Rule-based рекомендации</span>
-            <strong>Да</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>Basic Weekly Review</span>
-            <strong>Да</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>Глубокий AI-разбор</span>
-            <strong>—</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>AI Weekly Review</span>
-            <strong>—</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>Personal patterns</span>
-            <strong>—</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>Overload prediction</span>
-            <strong>—</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>Advanced recommendations</span>
-            <strong>—</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>100 AI requests / month</span>
-            <strong>—</strong>
-            <strong>Да</strong>
-          </div>
-          <div class="pricing-compare-row">
-            <span>Full history</span>
-            <strong>—</strong>
-            <strong>Да</strong>
-          </div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.taskPlanning">Планирование задач</span><strong data-i18n="pricing.yes">Да</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.dailyPulse">Пульс дня</span><strong data-i18n="pricing.yes">Да</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.dailyCheckin">Daily Check-in</span><strong data-i18n="pricing.yes">Да</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.readinessScore">Readiness Score</span><strong data-i18n="pricing.yes">Да</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.energyDebt">Energy Debt</span><strong data-i18n="pricing.yes">Да</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.ruleBasedCoach">Rule-based рекомендации</span><strong data-i18n="pricing.yes">Да</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.basicWeeklyReview">Basic Weekly Review</span><strong data-i18n="pricing.yes">Да</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.deepAiCoach">Глубокий AI-разбор</span><strong data-i18n="pricing.no">—</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.aiWeeklyReview">AI Weekly Review</span><strong data-i18n="pricing.no">—</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.personalPatterns">Personal patterns</span><strong data-i18n="pricing.no">—</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.overloadPrediction">Overload prediction</span><strong data-i18n="pricing.no">—</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.advancedRecommendations">Advanced recommendations</span><strong data-i18n="pricing.no">—</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.aiRequests">100 AI requests / month</span><strong data-i18n="pricing.no">—</strong><strong data-i18n="pricing.yes">Да</strong></div>
+          <div class="pricing-compare-row"><span data-i18n="pricingFeature.fullHistory">Full history</span><strong data-i18n="pricing.no">—</strong><strong data-i18n="pricing.yes">Да</strong></div>
         </div>
       </section>
     </main>
   </div>
 
   <script src="shared-storage.js"></script>
+  <script type="module">
+    import { mountPublicHeader } from "./navigation.js";
+    mountPublicHeader();
+  </script>
   <script type="module" src="pricing.js"></script>
 </body>
 </html>

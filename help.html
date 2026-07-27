@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Помощь — MindPulse</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-app-active="help" data-app-title="Помощь" data-app-subtitle="Краткие ориентиры по продукту: как использовать Пульс дня, План и Аналитику.">
+  <div class="app-shell app-page-layout">
+    <aside data-app-sidebar></aside>
+
+    <div class="app-main">
+      <div class="app-content-shell">
+        <header data-app-page-header></header>
+        <main class="utility-page-main">
+          <section class="section utility-page-card">
+            <p>Пульс дня помогает оценить состояние и Readiness Score, План показывает неделю и загрузку по дням, а Аналитика собирает выводы по состоянию и задачам за период.</p>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared-storage.js"></script>
+  <script type="module">
+    import { mountAppShell } from "./navigation.js";
+    mountAppShell();
+  </script>
+  <script type="module" src="utility-page.js"></script>
+</body>
+</html>

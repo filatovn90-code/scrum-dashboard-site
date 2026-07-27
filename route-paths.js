@@ -43,12 +43,40 @@ export function todayPath() {
   return isFilePreview() ? `${rootPrefix()}today.html` : "/today.html";
 }
 
+export function backlogPath() {
+  return isFilePreview() ? `${rootPrefix()}backlog.html` : "/backlog.html";
+}
+
+export function analyticsPath() {
+  return isFilePreview() ? `${rootPrefix()}analytics.html` : "/analytics.html";
+}
+
 export function appPath() {
   return todayPath();
 }
 
 export function profilePath() {
   return isFilePreview() ? `${rootPrefix()}profile.html` : "/profile";
+}
+
+export function billingPath() {
+  return isFilePreview() ? `${rootPrefix()}billing.html` : "/billing.html";
+}
+
+export function settingsPath() {
+  return isFilePreview() ? `${rootPrefix()}settings.html` : "/settings.html";
+}
+
+export function helpPath() {
+  return isFilePreview() ? `${rootPrefix()}help.html` : "/help.html";
+}
+
+export function featuresPath() {
+  return `${landingPath()}#features`;
+}
+
+export function howItWorksPath() {
+  return `${landingPath()}#how-it-works`;
 }
 
 export function rootFile(fileName) {

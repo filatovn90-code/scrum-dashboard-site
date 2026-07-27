@@ -1,12 +1,13 @@
 import {
-  canUseLocalAuthFallback,
   cacheRemoteSession,
+  canUseLocalAuthFallback,
   getSupabase,
   rememberLegacyAuthUser,
   signInLocalAccount,
   waitForSessionPersistence
 } from "./supabase-client.js";
 import { redirectIfAuthenticated } from "./auth-helpers.js";
+import { applyTranslations, onLocaleChange, t } from "./i18n.js";
 import { resolvePostAuthPath } from "./onboarding-helpers.js";
 import { todayPath } from "./route-paths.js";
 
@@ -18,6 +19,8 @@ const statusBox = document.getElementById("loginPageStatus");
 
 redirectIfAuthenticated({ redirectTo: todayPath() }).catch(() => null);
 
+onLocaleChange(() => applyTranslations(document));
+
 form?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -25,11 +28,11 @@ form?.addEventListener("submit", async (event) => {
   const password = String(passwordInput?.value || "");
 
   if (!email || !password) {
-    setStatus("Введите email и пароль.", true);
+    setStatus(t("auth.loginIdle"), true);
     return;
   }
 
-  setStatus("Проверяю данные...");
+  setStatus(t("auth.checking"));
   if (submitButton) {
     submitButton.disabled = true;
   }
@@ -37,7 +40,6 @@ form?.addEventListener("submit", async (event) => {
   try {
     const supabase = await getSupabase();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
     if (error) {
       throw error;
     }
@@ -54,23 +56,22 @@ form?.addEventListener("submit", async (event) => {
     const authUser = activeSession?.user || data?.user;
 
     if (!authUser) {
-      throw new Error("Не удалось сохранить сессию после входа.");
+      throw new Error("SESSION_PERSISTENCE_FAILED");
     }
 
-    setStatus("Вход выполнен. Перенаправляю в приложение...");
+    setStatus(t("auth.signingIn"));
     window.location.replace(resolvePostAuthPath(authUser));
-    return;
   } catch (error) {
     if (canUseLocalAuthFallback()) {
       try {
         const localAuth = await signInLocalAccount(email, password);
         if (localAuth?.user) {
-          setStatus("Вход выполнен. Перенаправляю в приложение...");
+          setStatus(t("auth.signingIn"));
           window.location.replace(resolvePostAuthPath(localAuth.user));
           return;
         }
       } catch {
-        // Keep the original remote auth error below.
+        // Show normalized remote error below.
       }
     }
 
@@ -96,20 +97,20 @@ function getReadableAuthError(error) {
   const normalized = rawMessage.toLowerCase();
 
   if (normalized.includes("failed to fetch") || normalized.includes("networkerror")) {
-    return "Не удалось связаться с сервером входа. Проверьте, что Supabase-проект активен и сайт открыт по публичной ссылке.";
+    return t("authErrors.remoteUnavailable");
   }
 
   if (normalized.includes("email not confirmed")) {
-    return "Почта для этого аккаунта еще не подтверждена. Откройте письмо от Supabase и подтвердите email.";
+    return t("authErrors.emailNotConfirmed");
   }
 
   if (normalized.includes("invalid login credentials")) {
-    return "Аккаунт не найден или пароль неверный.";
+    return t("authErrors.invalidCredentials");
   }
 
-  if (normalized.includes("не удалось сохранить сессию")) {
-    return "Вход прошел, но сессия не сохранилась. Обычно это связано с настройками домена, Redirect URL или переменных окружения.";
+  if (normalized.includes("session_persistence_failed")) {
+    return t("authErrors.sessionPersistence");
   }
 
-  return rawMessage || "Не удалось выполнить вход.";
+  return rawMessage || t("validation.signInFailed");
 }

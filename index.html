@@ -6,23 +6,9 @@
   <title>MindPulse — AI Energy OS для knowledge workers</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <div class="page-shell page-shell-wide landing-page">
-    <header class="site-header landing-header">
-      <div class="site-brand">
-        <p class="section-kicker">MindPulse</p>
-        <h1>AI Energy OS для knowledge workers</h1>
-      </div>
-
-      <div class="site-header-actions">
-        <nav class="site-nav" aria-label="Публичная навигация">
-          <a class="nav-link is-active" href="index.html">Главная</a>
-          <a class="nav-link" href="pricing.html">Pricing</a>
-          <a class="nav-link" href="login.html">Войти</a>
-          <a class="nav-link" href="signup.html">Начать бесплатно</a>
-        </nav>
-      </div>
-    </header>
+<body data-public-active="home">
+  <div class="page-shell page-shell-wide landing-page public-page">
+    <header data-public-header></header>
 
     <main class="landing-main">
       <section class="section landing-hero">
@@ -31,13 +17,13 @@
           <h2 class="landing-title">Планируй задачи не только по срокам, но и по своей энергии.</h2>
           <p class="landing-description">
             MindPulse помогает управлять задачами через энергию, когнитивную нагрузку и риск перегруза.
-            Вместо обычного task tracker вы получаете систему, которая показывает, когда стоит углубляться,
+            Это не просто task tracker, а рабочая система, которая подсказывает, когда стоит углубляться,
             а когда лучше снизить темп и сохранить фокус.
           </p>
           <div class="landing-actions">
             <a class="form-action-button landing-action-link" href="signup.html">Начать бесплатно</a>
             <a class="ghost-button landing-action-link" href="login.html">Войти</a>
-            <a class="ghost-button landing-action-link" href="pricing.html">Pricing</a>
+            <a class="ghost-button landing-action-link" href="pricing.html">Тарифы</a>
           </div>
         </div>
 
@@ -45,7 +31,7 @@
           <p class="section-kicker">Что внутри</p>
           <ul class="landing-feature-list">
             <li>Планирование задач и проектов с учетом реальной емкости дня</li>
-            <li>Учет когнитивной нагрузки и energy type</li>
+            <li>Учет когнитивной и эмоциональной нагрузки</li>
             <li>Ежедневная оценка энергии, стресса и фокуса</li>
             <li>Персональная аналитика по состоянию, темпу и перегрузу</li>
             <li>Приватное хранение данных для каждого пользователя</li>
@@ -53,7 +39,7 @@
         </div>
       </section>
 
-      <section class="section">
+      <section class="section" id="features">
         <div class="section-heading">
           <div>
             <p class="section-kicker">Benefits</p>
@@ -68,7 +54,7 @@
           </article>
           <article class="landing-benefit-card">
             <h3>Когнитивная нагрузка</h3>
-            <p>Отмечайте, насколько задача умственно тяжела, и не перегружайте день лишним Deep Work.</p>
+            <p>Отмечайте, насколько задача умственно тяжела, и не перегружайте день лишними сложными блоками.</p>
           </article>
           <article class="landing-benefit-card">
             <h3>Сигналы состояния</h3>
@@ -81,7 +67,7 @@
         </div>
       </section>
 
-      <section class="section">
+      <section class="section" id="how-it-works">
         <div class="section-heading">
           <div>
             <p class="section-kicker">How it works</p>
@@ -92,22 +78,22 @@
         <div class="landing-steps">
           <article class="landing-step-card">
             <strong>1</strong>
-            <h3>Регистрируетесь</h3>
-            <p>Создаете аккаунт и попадаете в персональную систему управления энергией и задачами.</p>
+            <h3>Регистрируешься</h3>
+            <p>Создаешь аккаунт и попадаешь в персональную систему управления энергией и задачами.</p>
           </article>
           <article class="landing-step-card">
             <strong>2</strong>
-            <h3>Создаете проекты и задачи</h3>
-            <p>Формируете рабочий контур без общего списка на всех пользователей.</p>
+            <h3>Создаешь проекты и задачи</h3>
+            <p>Формируешь свой рабочий контур без общего списка на всех пользователей.</p>
           </article>
           <article class="landing-step-card">
             <strong>3</strong>
-            <h3>Оцениваете нагрузку и энергию</h3>
-            <p>Добавляете energy type, сложность и ежедневное состояние, чтобы видеть реальную цену задач.</p>
+            <h3>Оцениваешь нагрузку и энергию</h3>
+            <p>Добавляешь тип задачи, сложность и ежедневное состояние, чтобы видеть реальную цену задач.</p>
           </article>
           <article class="landing-step-card">
             <strong>4</strong>
-            <h3>Видите, как распределяется фокус</h3>
+            <h3>Видишь, как распределяется фокус</h3>
             <p>Аналитика показывает, какие задачи усиливают перегруз, а какие поддерживают устойчивый ритм.</p>
           </article>
         </div>
@@ -116,8 +102,8 @@
       <section class="section">
         <div class="section-heading">
           <div>
-            <p class="section-kicker">Pricing</p>
-            <h2 class="dashboard-section-title">Будущие тарифы</h2>
+            <p class="section-kicker">Тарифы</p>
+            <h2 class="dashboard-section-title">Тарифы</h2>
           </div>
         </div>
 
@@ -125,12 +111,12 @@
           <article class="landing-pricing-card">
             <div class="landing-pricing-head">
               <h3>Free</h3>
-              <span>Сейчас доступен</span>
+              <span>Доступен сейчас</span>
             </div>
             <ul class="landing-pricing-list">
               <li>Личный workspace</li>
               <li>Проекты и задачи</li>
-              <li>Daily energy check-in</li>
+              <li>Daily check-in</li>
               <li>Базовая аналитика состояния и нагрузки</li>
             </ul>
           </article>
@@ -153,6 +139,9 @@
   </div>
 
   <script src="shared-storage.js"></script>
-  <script type="module" src="public-home.js"></script>
+  <script type="module">
+    import { mountPublicHeader } from "./navigation.js";
+    mountPublicHeader();
+  </script>
 </body>
 </html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тариф и оплата — MindPulse</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-app-active="billing" data-app-title="Тариф и оплата" data-app-subtitle="Текущий план, будущая монетизация и управление доступом к расширенным возможностям.">
+  <div class="app-shell app-page-layout">
+    <aside data-app-sidebar></aside>
+
+    <div class="app-main">
+      <div class="app-content-shell">
+        <header data-app-page-header></header>
+        <main class="utility-page-main">
+          <section class="section utility-page-card">
+            <p>Сейчас у вас действует базовый план. Платежи ещё не подключены, поэтому этот экран пока служит точкой для будущего управления тарифом.</p>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared-storage.js"></script>
+  <script type="module">
+    import { mountAppShell } from "./navigation.js";
+    mountAppShell();
+  </script>
+  <script type="module" src="utility-page.js"></script>
+</body>
+</html>

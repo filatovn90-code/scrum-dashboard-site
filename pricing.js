@@ -1,9 +1,14 @@
 import { getCurrentSession } from "./auth-helpers.js";
+import { applyTranslations, onLocaleChange, t } from "./i18n.js";
 import { getCurrentPlan, planLabel } from "./pricing-helpers.js";
 
 const chip = document.getElementById("pricingCurrentPlanChip");
 
 bootstrap();
+onLocaleChange(() => {
+  applyTranslations(document);
+  void bootstrap();
+});
 
 async function bootstrap() {
   const [session, plan] = await Promise.all([
@@ -16,9 +21,9 @@ async function bootstrap() {
   }
 
   if (session?.user) {
-    chip.textContent = `Текущий план: ${planLabel(plan)}`;
+    chip.textContent = `${t("pricing.currentPlan").replace(/:\s*Free$/, ":")} ${planLabel(plan)}`;
     return;
   }
 
-  chip.textContent = "Стартовый план: Free";
+  chip.textContent = t("pricing.currentGuestPlan");
 }
