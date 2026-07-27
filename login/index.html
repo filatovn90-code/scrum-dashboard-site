@@ -6,33 +6,24 @@
   <title>Войти — MindPulse</title>
   <link rel="stylesheet" href="../styles.css">
 </head>
-<body>
-  <div class="page-shell page-shell-wide auth-route-page">
-    <header class="site-header">
-      <div class="site-brand">
-        <p class="section-kicker">MindPulse</p>
-        <h1>Вход в аккаунт</h1>
-      </div>
-      <div class="site-header-actions">
-        <nav class="site-nav" aria-label="Навигация">
-          <a class="nav-link" href="../index.html">Главная</a>
-          <a class="nav-link" href="../pricing/">Pricing</a>
-          <a class="nav-link is-active" href="./">Войти</a>
-          <a class="nav-link" href="../signup/">Начать бесплатно</a>
-        </nav>
-      </div>
-    </header>
+<body data-public-active="login">
+  <div class="page-shell page-shell-wide auth-route-page public-page">
+    <header data-public-header></header>
+
     <main class="auth-route-main">
       <section class="section auth-route-card">
         <p class="section-kicker">Sign in</p>
-        <h2 class="dashboard-section-title">Возвращайтесь в свой energy workspace</h2>
-        <p class="auth-route-copy">Войдите, чтобы управлять задачами через энергию, когнитивную нагрузку и риск перегруза.</p>
+        <h2 class="dashboard-section-title">Добро пожаловать обратно</h2>
+        <p class="auth-route-copy">Войдите, чтобы открыть личный трекер, проекты и check-in.</p>
+
         <form id="loginPageForm" class="auth-page-form">
           <input id="loginPageEmail" type="email" placeholder="Email" required>
           <input id="loginPagePassword" type="password" placeholder="Пароль" required>
           <button id="loginPageSubmit" class="form-action-button" type="submit">Войти</button>
         </form>
+
         <div id="loginPageStatus" class="auth-status-box">Введите email и пароль.</div>
+
         <div class="auth-page-actions">
           <a class="ghost-button auth-page-link" href="../forgot-password/">Забыли пароль?</a>
           <a class="ghost-button auth-page-link" href="../signup/">Создать аккаунт</a>
@@ -40,7 +31,12 @@
       </section>
     </main>
   </div>
+
   <script src="../shared-storage.js"></script>
+  <script type="module">
+    import { mountPublicHeader } from "../navigation.js";
+    mountPublicHeader();
+  </script>
   <script type="module" src="../login.js"></script>
 </body>
 </html>

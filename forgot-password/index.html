@@ -3,38 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Восстановление пароля — FocusFlow</title>
+  <title>Восстановление пароля — MindPulse</title>
   <link rel="stylesheet" href="../styles.css">
 </head>
-<body>
-  <div class="page-shell page-shell-wide auth-route-page">
-    <header class="site-header">
-      <div class="site-brand">
-        <p class="section-kicker">FocusFlow</p>
-        <h1>Восстановление пароля</h1>
-      </div>
-      <div class="site-header-actions">
-        <nav class="site-nav" aria-label="Навигация">
-          <a class="nav-link" href="../index.html">Главная</a>
-          <a class="nav-link" href="../login/">Войти</a>
-          <a class="nav-link" href="../signup/">Начать бесплатно</a>
-        </nav>
-      </div>
-    </header>
+<body data-public-active="login">
+  <div class="page-shell page-shell-wide auth-route-page public-page">
+    <header data-public-header></header>
+
     <main class="auth-route-main">
       <section class="section auth-route-card">
         <p class="section-kicker">Recovery</p>
         <h2 class="dashboard-section-title">Сбросить пароль</h2>
         <p class="auth-route-copy">Введите email, и Supabase отправит письмо для восстановления доступа.</p>
+
         <form id="forgotPasswordForm" class="auth-page-form">
           <input id="forgotPasswordEmail" type="email" placeholder="Email" required>
           <button id="forgotPasswordSubmit" class="form-action-button" type="submit">Отправить письмо</button>
         </form>
+
         <div id="forgotPasswordStatus" class="auth-status-box">Готово к отправке письма.</div>
       </section>
     </main>
   </div>
+
   <script src="../shared-storage.js"></script>
+  <script type="module">
+    import { mountPublicHeader } from "../navigation.js";
+    mountPublicHeader();
+  </script>
   <script type="module" src="../forgot-password.js"></script>
 </body>
 </html>

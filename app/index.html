@@ -3,90 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Приложение — FocusFlow</title>
-  <link rel="stylesheet" href="../styles.css">
+  <title>MindPulse — приложение</title>
 </head>
 <body>
-  <div class="page-shell page-shell-wide app-page">
-    <header class="site-header app-page-header">
-      <div class="site-brand">
-        <p class="section-kicker">FocusFlow</p>
-        <h1>Приложение</h1>
-      </div>
-      <div class="site-header-actions">
-        <nav class="site-nav" aria-label="Навигация приложения">
-          <a class="nav-link is-active" href="./">Приложение</a>
-          <a class="nav-link" href="../profile/">Профиль</a>
-          <button class="login-button" id="appLogoutButton" type="button">Выйти</button>
-        </nav>
-      </div>
-    </header>
-    <main class="app-dashboard-main">
-      <section class="section app-hero-card">
-        <div>
-          <p class="section-kicker">Private workspace</p>
-          <h2 class="dashboard-section-title">Личный трекер задач и состояния</h2>
-          <p class="app-hero-copy">Здесь вы управляете проектами, задачами и daily check-in. Все данные привязаны только к вашему аккаунту.</p>
-        </div>
-        <div id="appSessionBadge" class="health-import-chip">Загружаю сессию...</div>
-      </section>
-      <section class="app-dashboard-grid">
-        <article class="section">
-          <div class="section-heading">
-            <div>
-              <p class="section-kicker">Overview</p>
-              <h2 class="dashboard-section-title">Сводка</h2>
-            </div>
-          </div>
-          <div id="appOverviewGrid" class="app-overview-grid"></div>
-        </article>
-        <article class="section">
-          <div class="section-heading">
-            <div>
-              <p class="section-kicker">Daily check-in</p>
-              <h2 class="dashboard-section-title">Состояние на сегодня</h2>
-            </div>
-          </div>
-          <form id="dailyCheckinForm" class="daily-checkin-form">
-            <div class="daily-checkin-grid">
-              <label class="auth-field"><span>Энергия</span><select id="checkinEnergy" required><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></label>
-              <label class="auth-field"><span>Стресс</span><select id="checkinStress" required><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></label>
-              <label class="auth-field"><span>Фокус</span><select id="checkinFocus" required><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option></select></label>
-            </div>
-            <textarea id="checkinNote" class="app-textarea" placeholder="Короткая заметка о состоянии, нагрузке или фокусе"></textarea>
-            <div class="auth-page-actions"><button id="dailyCheckinSubmit" class="form-action-button" type="submit">Сохранить check-in</button></div>
-          </form>
-          <div id="dailyCheckinStatus" class="auth-status-box">Можно сохранить check-in за сегодня.</div>
-          <div id="recentCheckinsList" class="recent-checkins-list"></div>
-        </article>
-      </section>
-      <section class="section">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Projects</p>
-            <h2 class="dashboard-section-title">Проекты и задачи</h2>
-          </div>
-        </div>
-        <form id="projectCreateForm" class="projects-create-form">
-          <input id="projectCreateTitle" type="text" placeholder="Название проекта" required>
-          <input id="projectCreateDescription" type="text" placeholder="Описание проекта">
-          <button id="projectCreateSubmit" class="form-action-button" type="submit">Создать проект</button>
-        </form>
-        <div id="appProjectsStatus" class="auth-status-box">Загружаю проекты...</div>
-        <div id="appProjectsGrid" class="projects-grid"></div>
-      </section>
-      <section class="section">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">Workspace tools</p>
-            <h2 class="dashboard-section-title">Дополнительные инструменты</h2>
-          </div>
-        </div>
-        <div class="app-tools-grid"></div>
-      </section>
-    </main>
-  </div>
-  <script src="../shared-storage.js"></script>
-  <script type="module" src="../app.js"></script>
+  <script type="module">
+    import { todayPath } from "../route-paths.js";
+    window.location.replace(todayPath());
+  </script>
 </body>
 </html>
