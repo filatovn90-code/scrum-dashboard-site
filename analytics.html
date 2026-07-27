@@ -21,7 +21,7 @@
         <main class="analytics-main analytics-health-main analytics-v0-main">
           <section class="section analytics-hero-card analytics-v0-hero">
             <div class="analytics-v0-hero-copy">
-              <p class="section-kicker" data-i18n="analytics.heroKicker">Personal energy insights</p>
+              <p class="section-kicker" data-i18n="analytics.heroKicker">Персональная аналитика энергии</p>
               <h2 class="dashboard-section-title" data-i18n="analytics.heroTitle">Связь состояния, нагрузки и темпа работы</h2>
               <p class="today-section-copy" data-i18n="analytics.heroBody">
                 Здесь видно, как задачи влияют на энергию, стресс и фокус. Это помогает раньше замечать риск перегруза
@@ -31,7 +31,7 @@
 
             <aside class="analytics-period-panel analytics-v0-control-card">
               <div class="analytics-v0-control-top">
-                <span class="analytics-v0-control-icon">AI</span>
+                <span class="analytics-v0-control-icon">ИИ</span>
                 <div>
                   <p class="analytics-filter-label" data-i18n="analytics.periodAnalysis">Период анализа</p>
                   <strong class="analytics-v0-control-title" data-i18n="analytics.periodSlice">Срез по состоянию и задачам</strong>
@@ -55,11 +55,11 @@
           <section class="section analytics-v0-panel analytics-weekly-insights-panel">
             <div class="section-heading analytics-v0-heading">
               <div>
-                <p class="section-kicker" data-i18n="analytics.weeklySummary">Weekly summary</p>
+                <p class="section-kicker" data-i18n="analytics.weeklySummary">Сводка недели</p>
                 <h2 class="dashboard-section-title" data-i18n="analytics.weeklyInsightsTitle">Главные инсайты недели</h2>
                 <p class="today-section-copy" data-i18n="analytics.weeklyInsightsBody">Сначала смысловые выводы по состоянию и задачам, а ниже — графики и детализация.</p>
               </div>
-              <span class="analytics-v0-badge" data-i18n="analytics.mainTakeaways">Main takeaways</span>
+              <span class="analytics-v0-badge" data-i18n="analytics.mainTakeaways">Ключевые выводы</span>
             </div>
             <div id="analyticsWeeklyInsights" class="analytics-weekly-insights-grid"></div>
           </section>
@@ -67,14 +67,14 @@
           <section class="section analytics-v0-panel analytics-weekly-review-panel">
             <div class="section-heading analytics-v0-heading analytics-weekly-review-head">
               <div>
-                <p class="section-kicker" data-i18n="analytics.weeklyReviewKicker">Weekly review</p>
-                <h2 class="dashboard-section-title" data-i18n="analytics.weeklyReviewTitle">Weekly Review</h2>
+                <p class="section-kicker" data-i18n="analytics.weeklyReviewKicker">Обзор недели</p>
+                <h2 class="dashboard-section-title" data-i18n="analytics.weeklyReviewTitle">Обзор недели</h2>
                 <p class="today-section-copy" data-i18n="analytics.weeklyReviewBody">Соберите персональный обзор недели на основе состояния, нагрузки и задач за выбранный период.</p>
               </div>
               <button class="form-action-button analytics-weekly-review-button" id="analyticsWeeklyReviewButton" type="button" data-i18n="analytics.generateReview">Сформировать обзор недели</button>
             </div>
             <div id="analyticsWeeklyReview" class="analytics-weekly-review-letter">
-              <p data-i18n="analytics.reviewPlaceholder">Обзор появится после нажатия на кнопку. Он собирается из ваших check-in и задач за выбранный период.</p>
+              <p data-i18n="analytics.reviewPlaceholder">Обзор появится после нажатия на кнопку. Он собирается из ваших оценок состояния и задач за выбранный период.</p>
             </div>
           </section>
 
@@ -84,10 +84,10 @@
             <article class="section analytics-chart-card analytics-v0-panel">
               <div class="section-heading analytics-v0-heading">
                 <div>
-                  <p class="section-kicker" data-i18n="analytics.stateTrendKicker">State trend</p>
+                  <p class="section-kicker" data-i18n="analytics.stateTrendKicker">Динамика состояния</p>
                   <h2 class="dashboard-section-title" data-i18n="analytics.loadStateTitle">Состояние по дням</h2>
                 </div>
-                <span class="analytics-v0-badge" data-i18n="analytics.stateBadge">Energy / Stress / Focus</span>
+                <span class="analytics-v0-badge" data-i18n="analytics.stateBadge">Энергия / стресс / фокус</span>
               </div>
               <div id="analyticsStateChart" class="analytics-svg-chart"></div>
               <p id="analyticsStateInsight" class="analytics-inline-note"></p>
@@ -96,10 +96,10 @@
             <article class="section analytics-chart-card analytics-v0-panel">
               <div class="section-heading analytics-v0-heading">
                 <div>
-                  <p class="section-kicker" data-i18n="analytics.taskLoadKicker">Task load</p>
+                  <p class="section-kicker" data-i18n="analytics.taskLoadKicker">Нагрузка задач</p>
                   <h2 class="dashboard-section-title" data-i18n="analytics.loadTaskTitle">Нагрузка по дням</h2>
                 </div>
-                <span class="analytics-v0-badge" data-i18n="analytics.taskLoadBadge">Task load</span>
+                <span class="analytics-v0-badge" data-i18n="analytics.taskLoadBadge">Нагрузка</span>
               </div>
               <div id="analyticsLoadChart" class="analytics-bars-chart"></div>
               <p id="analyticsLoadInsight" class="analytics-inline-note"></p>
@@ -110,10 +110,10 @@
             <article class="section analytics-v0-panel">
               <div class="section-heading analytics-v0-heading">
                 <div>
-                  <p class="section-kicker" data-i18n="analytics.debtKicker">Energy debt</p>
-                  <h2 class="dashboard-section-title" data-i18n="analytics.debtTitle">Energy Debt за неделю</h2>
+                  <p class="section-kicker" data-i18n="analytics.debtKicker">Энергетический долг</p>
+                  <h2 class="dashboard-section-title" data-i18n="analytics.debtTitle">Энергетический долг за неделю</h2>
                 </div>
-                <span class="analytics-v0-badge" data-i18n="analytics.weeklyTrendBadge">Weekly trend</span>
+                <span class="analytics-v0-badge" data-i18n="analytics.weeklyTrendBadge">Динамика недели</span>
               </div>
               <div id="analyticsDebtTrend" class="analytics-bars-chart"></div>
               <p id="analyticsDebtInsight" class="analytics-inline-note"></p>
@@ -124,7 +124,7 @@
             <article class="section analytics-v0-panel">
               <div class="section-heading analytics-v0-heading">
                 <div>
-                  <p class="section-kicker" data-i18n="analytics.connectionsKicker">Connections</p>
+                  <p class="section-kicker" data-i18n="analytics.connectionsKicker">Связи</p>
                   <h2 class="dashboard-section-title" data-i18n="analytics.connectionsTitle">Что влияло на состояние</h2>
                 </div>
               </div>
@@ -134,7 +134,7 @@
             <article class="section analytics-v0-panel">
               <div class="section-heading analytics-v0-heading">
                 <div>
-                  <p class="section-kicker" data-i18n="analytics.taskTypesKicker">Task types</p>
+                  <p class="section-kicker" data-i18n="analytics.taskTypesKicker">Типы задач</p>
                   <h2 class="dashboard-section-title" data-i18n="analytics.taskTypesTitle">Какие задачи нагружают сильнее всего</h2>
                 </div>
               </div>
@@ -147,7 +147,7 @@
             <article class="section analytics-v0-panel">
               <div class="section-heading analytics-v0-heading">
                 <div>
-                  <p class="section-kicker" data-i18n="analytics.overloadTrendKicker">Overload trend</p>
+                  <p class="section-kicker" data-i18n="analytics.overloadTrendKicker">Тренд перегруза</p>
                   <h2 class="dashboard-section-title" data-i18n="analytics.overloadTrendTitle">Тренд перегруза</h2>
                 </div>
               </div>
@@ -157,7 +157,7 @@
             <article class="section analytics-v0-panel">
               <div class="section-heading analytics-v0-heading">
                 <div>
-                  <p class="section-kicker" data-i18n="analytics.nextWeekKicker">Next week</p>
+                  <p class="section-kicker" data-i18n="analytics.nextWeekKicker">Следующая неделя</p>
                   <h2 class="dashboard-section-title" data-i18n="analytics.recommendationsTitle">Рекомендации</h2>
                 </div>
               </div>
@@ -169,15 +169,15 @@
     </div>
   </div>
 
-  <button class="ai-assistant-toggle" id="aiAssistantToggle" type="button" data-i18n="analytics.askAi">Спросить AI</button>
+  <button class="ai-assistant-toggle" id="aiAssistantToggle" type="button" data-i18n="analytics.askAi">Спросить ИИ</button>
 
   <div class="ai-assistant-modal" id="aiAssistantModal" hidden>
     <div class="ai-assistant-backdrop" id="aiAssistantBackdrop"></div>
     <div class="ai-assistant-dialog">
       <div class="ai-assistant-header">
         <div>
-          <p class="ai-assistant-kicker" data-i18n="analytics.aiKicker">AI Assistant</p>
-          <h2 data-i18n="analytics.aiTitle">Спросить AI</h2>
+          <p class="ai-assistant-kicker" data-i18n="analytics.aiKicker">ИИ-помощник</p>
+          <h2 data-i18n="analytics.aiTitle">Спросить ИИ</h2>
         </div>
         <button class="ai-assistant-close" id="aiAssistantClose" type="button">×</button>
       </div>

@@ -64,6 +64,7 @@ let selectedGoal = "";
 let todayCheckin = null;
 let todayTasks = [];
 let selectedFocusIds = new Set();
+let defaultProjectId = null;
 
 bindEvents();
 bootstrap();
@@ -384,9 +385,12 @@ async function saveFirstTask() {
 }
 
 async function insertTask(draft) {
+  const projectId = await ensureDefaultProjectId();
+
   let response = await supabase
     .from("tasks")
     .insert({
+      project_id: projectId,
       user_id: currentUser.id,
       title: draft.title,
       details: draft.details,
@@ -404,6 +408,7 @@ async function insertTask(draft) {
     response = await supabase
       .from("tasks")
       .insert({
+        project_id: projectId,
         user_id: currentUser.id,
         title: draft.title,
         details: draft.details,
@@ -423,6 +428,46 @@ async function insertTask(draft) {
   }
 
   return normalizeTask(response.data);
+}
+
+async function ensureDefaultProjectId() {
+  if (defaultProjectId) {
+    return defaultProjectId;
+  }
+
+  const existing = await supabase
+    .from("projects")
+    .select("id, title, created_at")
+    .eq("user_id", currentUser.id)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (existing.error) {
+    throw existing.error instanceof Error ? existing.error : new Error(String(existing.error?.message || "Не удалось загрузить проекты."));
+  }
+
+  if (existing.data?.id) {
+    defaultProjectId = existing.data.id;
+    return defaultProjectId;
+  }
+
+  const created = await supabase
+    .from("projects")
+    .insert({
+      user_id: currentUser.id,
+      title: "Личный проект",
+      description: "Создан автоматически во время первого онбординга."
+    })
+    .select("id")
+    .single();
+
+  if (created.error || !created.data?.id) {
+    throw created.error instanceof Error ? created.error : new Error(String(created.error?.message || "Не удалось создать проект по умолчанию."));
+  }
+
+  defaultProjectId = created.data.id;
+  return defaultProjectId;
 }
 
 function renderFocusList() {

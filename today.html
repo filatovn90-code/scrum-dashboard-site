@@ -9,7 +9,7 @@
 <body
   data-app-active="pulse"
   data-app-title="Пульс дня"
-  data-app-subtitle="Ежедневный check-in, готовность к дню и устойчивый рабочий ритм без лишней перегрузки."
+  data-app-subtitle="Ежедневная оценка состояния, готовность к дню и устойчивый рабочий ритм без лишней перегрузки."
 >
   <div class="app-shell app-page-layout">
     <aside data-app-sidebar></aside>
@@ -25,7 +25,7 @@
             <article class="section today-checkin-card">
               <div class="section-heading">
                 <div>
-                  <p class="section-kicker" data-i18n="pulse.checkinKicker">Daily Check-in</p>
+                  <p class="section-kicker" data-i18n="pulse.checkinKicker">Оценка дня</p>
                   <h2 class="dashboard-section-title" data-i18n="pulse.checkinTitle">Как ты сегодня?</h2>
                   <p class="today-section-copy" data-i18n="pulse.checkinCopy">Оцени состояние перед планированием дня.</p>
                 </div>
@@ -101,15 +101,15 @@
             <article class="section today-capacity-card">
               <div class="section-heading">
                 <div>
-                  <p class="section-kicker" data-i18n="pulse.readinessKicker">Readiness</p>
-                  <h2 class="dashboard-section-title" data-i18n="pulse.readinessTitle">Readiness Score</h2>
+                  <p class="section-kicker" data-i18n="pulse.readinessKicker">Готовность</p>
+                  <h2 class="dashboard-section-title" data-i18n="pulse.readinessTitle">Готовность дня</h2>
                   <p class="today-section-copy" data-i18n="pulse.readinessCopy">Насколько день подходит для сложной работы с учетом состояния и текущей нагрузки.</p>
                 </div>
               </div>
 
               <div class="today-capacity-head">
                 <strong id="todayCapacityPercent">0</strong>
-                <span id="todayCapacityLabel" class="today-capacity-badge">Stable</span>
+                <span id="todayCapacityLabel" class="today-capacity-badge">Стабильное состояние</span>
               </div>
               <div class="today-capacity-bar">
                 <span id="todayCapacityBar"></span>
@@ -117,17 +117,17 @@
               <p id="todayCapacityNote" class="today-capacity-note"></p>
 
               <div class="today-energy-debt-card">
-                <span class="today-summary-label" data-i18n="pulse.energyDebt">Energy Debt</span>
+                <span class="today-summary-label" data-i18n="pulse.energyDebt">Энергетический долг</span>
                 <div class="today-energy-debt-head">
                   <strong id="todayEnergyDebtValue">0</strong>
-                  <span id="todayEnergyDebtStatus" class="today-capacity-badge">Healthy</span>
+                  <span id="todayEnergyDebtStatus" class="today-capacity-badge">Устойчивый ритм</span>
                 </div>
                 <p id="todayEnergyDebtNote" class="today-capacity-note" data-i18n="pulse.energyDebtEmpty">Метрика появится после нескольких дней использования.</p>
               </div>
 
               <div class="today-capacity-recommendation">
                 <span class="today-summary-label" data-i18n="pulse.bestForToday">Что лучше делать сегодня</span>
-                <strong id="todayCapacityMode">Light Tasks</strong>
+                <strong id="todayCapacityMode">Лёгкие задачи</strong>
               </div>
             </article>
           </section>

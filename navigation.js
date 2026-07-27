@@ -59,7 +59,7 @@ export async function mountPublicHeader() {
 
   mount.className = "site-header public-header";
   mount.innerHTML = `
-    <a class="public-brand-link" href="${landingPath()}" aria-label="${t("navigation.openApp")} MindPulse">
+    <a class="public-brand-link" href="${landingPath()}" aria-label="${t("navigation.openApp")} ${t("brand.name")}">
       <span class="public-brand-kicker">${t("brand.kicker")}</span>
       <strong class="public-brand-title">${t("brand.title")}</strong>
     </a>
@@ -94,7 +94,7 @@ export async function mountAppShell() {
   sidebarMount.className = "app-sidebar";
   sidebarMount.innerHTML = `
     <div class="sidebar-brand">
-      <a class="sidebar-logo-link" href="${todayPath()}" aria-label="${t("navigation.pulse")} MindPulse">
+      <a class="sidebar-logo-link" href="${todayPath()}" aria-label="${t("navigation.pulse")} ${t("brand.name")}">
         <span class="sidebar-logo">${t("brand.kicker")}</span>
         <span class="sidebar-caption">${t("brand.title")}</span>
       </a>
@@ -112,7 +112,7 @@ export async function mountAppShell() {
   headerMount.className = "app-page-header";
   headerMount.innerHTML = `
     <div class="app-page-header-copy">
-      <p class="section-kicker">MindPulse</p>
+      <p class="section-kicker">${t("brand.kicker")}</p>
       <h1>${escapeHtml(title)}</h1>
       ${subtitle ? `<p class="app-page-subtitle">${escapeHtml(subtitle)}</p>` : ""}
     </div>

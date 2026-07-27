@@ -300,7 +300,7 @@ function buildDataset(range, checkins, tasks) {
       tasks: [],
       loadValue: 0,
       loadMeta: calculateDailyLoad([]),
-      readiness: { score: 65, label: "Стабильное состояние", note: "Появится после check-in и задач.", state: "stable" },
+      readiness: { score: 65, label: "Стабильное состояние", note: "Появится после оценок состояния и задач.", state: "stable" },
       overloadState: "balanced",
       overloadLabel: "Сбалансировано"
     });
@@ -448,7 +448,7 @@ function analyzeWeeklyInsights(dataset) {
   if (deepWorkDays.length) {
     insights.push({
       label: t("analytics.weekSummaryFocusLabel"),
-      title: "Три и более Deep Work-задачи собираются в один день",
+      title: "Три и более задач глубокой работы собираются в один день",
       description: "Такая связка часто делает день тяжелее и снижает реалистичность плана. Лучше распределять глубокую работу по неделе.",
       state: "risk"
     });
@@ -457,7 +457,7 @@ function analyzeWeeklyInsights(dataset) {
   if (noRecoveryDays.length >= Math.max(2, Math.ceil(dataset.days.length / 2))) {
     insights.push({
       label: t("analytics.weekSummaryRecoveryLabel"),
-      title: "Recovery-задач почти не было",
+      title: "Задач на восстановление почти не было",
       description: "Неделя выглядит плотной без пауз на восстановление. Даже короткие восстановительные блоки помогают держать ритм устойчивым.",
       state: "high"
     });

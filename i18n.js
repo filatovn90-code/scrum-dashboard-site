@@ -12,8 +12,9 @@ const listeners = new Set();
 const messages = {
   ru: {
     brand: {
-      kicker: "MindPulse",
-      title: "AI Energy OS"
+      name: "MindPulse",
+      kicker: "МИНДПУЛЬС",
+      title: "ИИ-платформа энергии"
     },
     common: {
       language: "Язык",
@@ -55,16 +56,16 @@ const messages = {
       userMenu: "Открыть меню пользователя"
     },
     public: {
-      heroKicker: "Energy-aware productivity",
+      heroKicker: "Энергия как основа продуктивности",
       heroTitle: "Планируй задачи не только по срокам, но и по своей энергии.",
-      heroDescription: "MindPulse помогает управлять задачами через энергию, когнитивную нагрузку и риск перегруза. Это не просто task tracker, а рабочая система, которая подсказывает, когда стоит углубляться, а когда лучше снизить темп и сохранить фокус.",
+      heroDescription: "MindPulse помогает управлять задачами через энергию, когнитивную нагрузку и риск перегруза. Это не просто таск-трекер, а рабочая система, которая подсказывает, когда стоит углубляться, а когда лучше снизить темп и сохранить фокус.",
       inside: "Что внутри",
       inside1: "Планирование задач и проектов с учетом реальной емкости дня",
       inside2: "Учет когнитивной и эмоциональной нагрузки",
       inside3: "Ежедневная оценка энергии, стресса и фокуса",
       inside4: "Персональная аналитика по состоянию, темпу и перегрузу",
       inside5: "Приватное хранение данных для каждого пользователя",
-      benefitsKicker: "Benefits",
+      benefitsKicker: "Преимущества",
       benefitsTitle: "Почему это полезно",
       benefit1Title: "Планирование по энергии",
       benefit1Body: "Собирайте день так, чтобы сложные задачи попадали в подходящие окна энергии, а не просто в свободные слоты.",
@@ -74,7 +75,7 @@ const messages = {
       benefit3Body: "Фиксируйте энергию, стресс и фокус, чтобы видеть, как рабочая нагрузка влияет на ваше состояние.",
       benefit4Title: "Риск перегруза",
       benefit4Body: "MindPulse помогает замечать перегруз заранее и принимать более реалистичные решения по задачам.",
-      howKicker: "How it works",
+      howKicker: "Как это работает",
       howTitle: "Как это работает",
       step1Title: "Регистрируешься",
       step1Body: "Создаешь аккаунт и попадаешь в персональную систему управления энергией и задачами.",
@@ -89,13 +90,13 @@ const messages = {
       comingSoon: "Скоро"
     },
     auth: {
-      signInKicker: "Sign in",
+      signInKicker: "Вход",
       signInTitle: "Добро пожаловать обратно",
-      signInBody: "Войдите, чтобы открыть личный трекер, проекты и check-in.",
-      signUpKicker: "Sign up",
+      signInBody: "Войдите, чтобы открыть личный трекер, проекты и оценку состояния.",
+      signUpKicker: "Регистрация",
       signUpTitle: "Откройте личное приложение",
       signUpBody: "После регистрации профиль будет создан автоматически, а вы сразу попадёте в защищённую зону.",
-      forgotKicker: "Recovery",
+      forgotKicker: "Восстановление",
       forgotTitle: "Сбросить пароль",
       forgotBody: "Введите email, и Supabase отправит письмо для восстановления доступа.",
       repeatPassword: "Повторите пароль",
@@ -104,7 +105,7 @@ const messages = {
       resetPassword: "Отправить письмо",
       alreadyHaveAccount: "Уже есть аккаунт?",
       loginIdle: "Введите email и пароль.",
-      signupIdle: "Используйте email, с которым будете дальше заходить в MindPulse.",
+      signupIdle: "Используйте email, с которым будете дальше входить в приложение.",
       forgotIdle: "Готово к отправке письма.",
       checking: "Проверяю данные...",
       signingIn: "Вход выполнен. Перенаправляю в приложение...",
@@ -126,8 +127,8 @@ const messages = {
     },
     pulse: {
       pageTitle: "Пульс дня",
-      pageSubtitle: "Ежедневный check-in, готовность к дню и устойчивый рабочий ритм без лишней перегрузки.",
-      checkinKicker: "Daily Check-in",
+      pageSubtitle: "Ежедневная оценка состояния, готовность к дню и устойчивый рабочий ритм без лишней перегрузки.",
+      checkinKicker: "Оценка дня",
       checkinTitle: "Как ты сегодня?",
       checkinCopy: "Оцени состояние перед планированием дня.",
       energyTitle: "Энергия",
@@ -157,21 +158,21 @@ const messages = {
       loadError: "Не удалось открыть экран Пульс дня.",
       migrationDailyCheckins: "В Supabase пока нет таблицы {table}. Сначала выполни SQL-миграции из папки supabase.",
       migrationColumns: "Для экрана Пульс дня нужно обновить структуру таблицы {table} в Supabase.",
-      readinessKicker: "Readiness",
-      readinessTitle: "Readiness Score",
+      readinessKicker: "Готовность",
+      readinessTitle: "Готовность дня",
       readinessCopy: "Насколько день подходит для сложной работы с учетом состояния и текущей нагрузки.",
-      energyDebt: "Energy Debt",
+      energyDebt: "Энергетический долг",
       energyDebtEmpty: "Метрика появится после нескольких дней использования.",
       bestForToday: "Что лучше делать сегодня"
     },
     plan: {
       pageTitle: "План недели",
       pageSubtitle: "Вся неделя целиком: задачи по дням, рабочая плотность и фокус на главном.",
-      boardKicker: "Weekly board",
+      boardKicker: "План недели",
       boardTitle: "План недели",
       week: "Неделя",
       day: "День",
-      focusKicker: "Day focus",
+      focusKicker: "Фокус дня",
       focusTitle: "Фокус на день",
       add: "Добавить",
       addTaskPlaceholder: "Задача",
@@ -191,7 +192,7 @@ const messages = {
       noteDense: "День становится плотнее, но пока выглядит управляемым.",
       noteOverloaded: "День уже выглядит перегруженным. Лучше перенести часть нагрузки.",
       totalTasks: "Всего задач",
-      deepWork: "Deep Work",
+      deepWork: "Глубокая работа",
       cognitiveHeavy: "Когнитивно тяжёлые",
       emotionalHeavy: "Эмоционально тяжёлые",
       pickWeek: "Выбрать неделю",
@@ -221,37 +222,37 @@ const messages = {
     analytics: {
       pageTitle: "Аналитика",
       pageSubtitle: "Связь состояния, нагрузки и темпа работы без лишней тревоги — с фокусом на понятные выводы.",
-      heroKicker: "Personal energy insights",
+      heroKicker: "Персональная аналитика энергии",
       heroTitle: "Связь состояния, нагрузки и темпа работы",
       heroBody: "Здесь видно, как задачи влияют на энергию, стресс и фокус. Это помогает раньше замечать риск перегруза и собирать более устойчивый ритм недели.",
       periodAnalysis: "Период анализа",
       periodSlice: "Срез по состоянию и задачам",
       period: "Период",
-      weeklySummary: "Weekly summary",
+      weeklySummary: "Сводка недели",
       weeklyInsightsTitle: "Главные инсайты недели",
       weeklyInsightsBody: "Сначала смысловые выводы по состоянию и задачам, а ниже — графики и детализация.",
-      mainTakeaways: "Main takeaways",
-      weeklyReviewKicker: "Weekly review",
-      weeklyReviewTitle: "Weekly Review",
+      mainTakeaways: "Ключевые выводы",
+      weeklyReviewKicker: "Обзор недели",
+      weeklyReviewTitle: "Обзор недели",
       weeklyReviewBody: "Соберите персональный обзор недели на основе состояния, нагрузки и задач за выбранный период.",
       generateReview: "Сформировать обзор недели",
-      reviewPlaceholder: "Обзор появится после нажатия на кнопку. Он собирается из ваших check-in и задач за выбранный период.",
-      stateTrendKicker: "State trend",
-      stateBadge: "Energy / Stress / Focus",
-      taskLoadKicker: "Task load",
-      taskLoadBadge: "Task load",
-      debtKicker: "Energy debt",
-      weeklyTrendBadge: "Weekly trend",
-      connectionsKicker: "Connections",
+      reviewPlaceholder: "Обзор появится после нажатия на кнопку. Он собирается из ваших оценок состояния и задач за выбранный период.",
+      stateTrendKicker: "Динамика состояния",
+      stateBadge: "Энергия / стресс / фокус",
+      taskLoadKicker: "Нагрузка задач",
+      taskLoadBadge: "Нагрузка",
+      debtKicker: "Энергетический долг",
+      weeklyTrendBadge: "Динамика недели",
+      connectionsKicker: "Связи",
       connectionsTitle: "Что влияло на состояние",
-      taskTypesKicker: "Task types",
+      taskTypesKicker: "Типы задач",
       taskTypesTitle: "Какие задачи нагружают сильнее всего",
-      overloadTrendKicker: "Overload trend",
+      overloadTrendKicker: "Тренд перегруза",
       overloadTrendTitle: "Тренд перегруза",
-      nextWeekKicker: "Next week",
+      nextWeekKicker: "Следующая неделя",
       loadStateTitle: "Состояние по дням",
       loadTaskTitle: "Нагрузка по дням",
-      debtTitle: "Energy Debt за неделю",
+      debtTitle: "Энергетический долг за неделю",
       recommendationsTitle: "Рекомендации",
       periodThisWeek: "Эта неделя",
       periodLastWeek: "Прошлая неделя",
@@ -259,29 +260,29 @@ const messages = {
       periodLast30Days: "Последние 30 дней",
       loading: "Загружаю аналитику...",
       refreshError: "Не удалось обновить аналитику.",
-      askAi: "Спросить AI",
-      aiProLocked: "AI Coach — Pro",
-      aiKicker: "AI Assistant",
-      aiTitle: "Спросить AI",
+      askAi: "Спросить ИИ",
+      aiProLocked: "ИИ-помощник — Pro",
+      aiKicker: "ИИ-помощник",
+      aiTitle: "Спросить ИИ",
       aiIntro: "Можно спросить, что видно по аналитике и как интерпретировать состояние, нагрузку и фокус.",
       aiPlaceholder: "Напишите вопрос...",
       aiStatus: "Можно задать вопрос по состоянию, энергии и задачам.",
       aiSend: "Отправить",
       noState: "Пока нет данных о состоянии.",
       goToPulse: "Перейти в Пульс дня",
-      stateHint: "Показатели появятся после нескольких заполнений Daily Check-in.",
+      stateHint: "Показатели появятся после нескольких заполнений оценки дня.",
       energyLegend: "Энергия",
       stressLegend: "Стресс",
       focusLegend: "Фокус",
       stateInsightDown: "К концу периода энергия снижалась. Полезно разгружать вторую половину недели и не складывать туда самые тяжелые задачи.",
       stateInsightStress: "Стресс в среднем повышен. Хорошо работает чередование сложных дней с более спокойными блоками.",
-      stateInsightStable: "Состояние выглядит относительно ровным. Чем стабильнее check-in, тем точнее будут рекомендации по нагрузке.",
+      stateInsightStable: "Состояние выглядит относительно ровным. Чем стабильнее оценка дня, тем точнее будут рекомендации по нагрузке.",
       noTasks: "Пока нет задач за выбранный период.",
       goToPlan: "Перейти в Мою неделю",
       loadHint: "Когда появятся задачи, здесь будет видно, в какие дни нагрузка выше и где лучше разгружать расписание.",
       busiestDay: "Самый загруженный день: {weekday}, {date}. Суммарная нагрузка — {load}.",
       noBusiestDay: "Пока недостаточно задач, чтобы выделить самый загруженный день.",
-      debtHint: "Сначала нужны несколько check-in и задачи за несколько дней подряд.",
+      debtHint: "Сначала нужны несколько оценок состояния и задачи за несколько дней подряд.",
       debtHigh: "Последние дни уже накапливают энергетический долг. Лучше снижать плотность недели и добавлять восстановительные блоки.",
       debtWatch: "Нагрузка уже начинает накапливаться. Стоит следить за тяжелыми днями и оставлять паузы после сложных задач.",
       debtHealthy: "Ритм пока выглядит устойчивым: сильного накопления энергетического долга не видно.",
@@ -300,23 +301,23 @@ const messages = {
       recommendationStable: "Сейчас ритм выглядит устойчивым. Старайся держать умеренный объем сложных задач и не забывать про восстановление.",
       weeklyReviewEmpty: "Пока данных мало для обзора недели. Сначала добавьте задачи и заполните состояние дня хотя бы несколько раз.",
       weeklyReviewPrompt: "Нажмите «Сформировать обзор недели», и здесь появится персональный текстовый отчет по состоянию, нагрузке и задачам.",
-      weeklyReviewLoading: "Собираю Weekly Review...",
-      weeklyReviewPro: "Pro AI",
-      weeklyReviewCache: "Кэшированный AI Review",
-      weeklyReviewNoData: "Пока обзор недели собрать не из чего: сначала нужны несколько check-in и задачи за выбранный период.",
+      weeklyReviewLoading: "Собираю обзор недели...",
+      weeklyReviewPro: "Pro ИИ",
+      weeklyReviewCache: "Сохранённый ИИ-обзор",
+      weeklyReviewNoData: "Пока обзор недели собрать не из чего: сначала нужны несколько оценок состояния и задачи за выбранный период.",
       weeklyReviewStateSummary: "За период средняя энергия была {energy}, стресс — {stress}, а фокус — {focus}.",
-      weeklyReviewStateFew: "За период пока мало check-in, поэтому обзор строится в основном по структуре задач и нагрузке.",
+      weeklyReviewStateFew: "За период пока мало оценок состояния, поэтому обзор строится в основном по структуре задач и нагрузке.",
       weeklyReviewCompleted: "Что получилось: завершено {count} {tasksWord}. Это хороший признак, что план хотя бы частично совпадал с реальной емкостью недели.",
       weeklyReviewCompletedFew: "Что получилось: пока закрытых задач немного, значит стоит внимательнее смотреть на объем плана и приоритеты дня.",
       weeklyReviewHeavyDays: "Что перегружало: самыми тяжелыми были {days}. В эти дни суммарная нагрузка выходила выше комфортного диапазона.",
       weeklyReviewHeavyDaysNone: "Что перегружало: явных дней перегруза почти не видно, ритм недели выглядит относительно ровным.",
       weeklyReviewTopTasks: "Больше всего энергии забрали задачи: {tasks}.",
-      weeklyReviewDebt: "Energy Debt на конец периода — {value}. Это значит: {label}.",
+      weeklyReviewDebt: "Энергетический долг на конец периода — {value}. Это значит: {label}.",
       weeklyReviewNext: "На следующей неделе полезно оставить меньше тяжелых задач в самые плотные дни и заранее добавить восстановительные блоки после сложной коммуникации или глубокой работы.",
       energyAverage: "Средняя энергия",
       stressAverage: "Средний стресс",
       focusAverage: "Средний фокус",
-      checkinAppears: "Появляется после Daily Check-in",
+      checkinAppears: "Появляется после оценки дня",
       checkinAppearsLater: "Появится после нескольких заполнений состояния",
       overloadRisk: "Риск перегруза",
       overloadRiskLow: "Низкий",
@@ -327,7 +328,7 @@ const messages = {
       overloadRiskHighNote: "Неделя выглядит перегруженной.",
       weekSummaryLabel: "Наблюдение",
       weekSummaryFallbackTitle: "Инсайты появятся после нескольких дней данных",
-      weekSummaryFallbackBody: "Когда появятся check-in и задачи за несколько дней, здесь станут видны повторяющиеся закономерности.",
+      weekSummaryFallbackBody: "Когда появятся оценки состояния и задачи за несколько дней, здесь станут видны повторяющиеся закономерности.",
       weekSummaryLoadLabel: "Нагрузка",
       weekSummaryEmotionLabel: "Эмоции",
       weekSummaryFocusLabel: "Фокус",
@@ -336,7 +337,7 @@ const messages = {
     profile: {
       pageTitle: "Профиль",
       pageSubtitle: "Данные аккаунта, имя, язык и таймзона для персональной настройки ритма работы.",
-      kicker: "User profile",
+      kicker: "Профиль пользователя",
       title: "Ваши данные",
       save: "Сохранить профиль",
       loading: "Загружаю профиль...",
@@ -363,41 +364,41 @@ const messages = {
     },
     pricing: {
       pageTitle: "Тарифы",
-      heroKicker: "Monetization ready",
-      heroTitle: "Freemium-модель для AI Energy OS",
-      heroBody: "Free дает ценность без внешнего AI: задачи, Пульс дня, Daily Check-in, Readiness Score, Energy Debt, базовую аналитику, rule-based рекомендации и базовый Weekly Review. Pro добавляет глубокий AI-разбор, AI Weekly Review, персональные паттерны, расширенные рекомендации и полную историю аналитики.",
-      currentPlan: "Текущий план: Free",
-      heroSide: "Оплата пока не подключена. Эта страница подготавливает продукт к монетизации и показывает границы между Free и Pro.",
+      heroKicker: "Подготовка к монетизации",
+      heroTitle: "Фримиум-модель для ИИ-платформы энергии",
+      heroBody: "Бесплатный план даёт ценность без внешнего ИИ: задачи, Пульс дня, оценку состояния, готовность дня, энергетический долг, базовую аналитику, базовые рекомендации и базовый обзор недели. Pro добавляет глубокий ИИ-разбор, ИИ-обзор недели, персональные паттерны, расширенные рекомендации и полную историю аналитики.",
+      currentPlan: "Текущий план: Бесплатный",
+      heroSide: "Оплата пока не подключена. Эта страница подготавливает продукт к монетизации и показывает границы между бесплатным и Pro-планом.",
       freeTitle: "Для ежедневного ритма без лишней сложности",
-      proTitle: "Для глубокого AI-разбора и долгого роста",
+      proTitle: "Для глубокого ИИ-разбора и долгого роста",
       availableNow: "Доступно сейчас",
-      comingSoon: "Coming soon",
+      comingSoon: "Скоро",
       startFree: "Начать бесплатно",
       paymentSoon: "Оплата скоро",
       compareTitle: "Что входит в каждый тариф",
-      compareKicker: "Comparison",
+      compareKicker: "Сравнение",
       feature: "Функция",
       yes: "Да",
       no: "—",
-      currentGuestPlan: "Стартовый план: Free",
-      free: "Free",
+      currentGuestPlan: "Стартовый план: Бесплатный",
+      free: "Бесплатный",
       pro: "Pro"
     },
     pricingFeature: {
       taskPlanning: "Планирование задач",
       dailyPulse: "Пульс дня",
-      dailyCheckin: "Daily Check-in",
-      readinessScore: "Readiness Score",
-      energyDebt: "Energy Debt",
-      ruleBasedCoach: "Rule-based рекомендации",
-      basicWeeklyReview: "Базовый Weekly Review",
+      dailyCheckin: "Оценка дня",
+      readinessScore: "Готовность дня",
+      energyDebt: "Энергетический долг",
+      ruleBasedCoach: "Базовые рекомендации",
+      basicWeeklyReview: "Базовый обзор недели",
       basicAnalytics: "Базовая аналитика",
-      deepAiCoach: "Глубокий AI-разбор",
-      aiWeeklyReview: "AI Weekly Review",
+      deepAiCoach: "Глубокий ИИ-разбор",
+      aiWeeklyReview: "ИИ-обзор недели",
       personalPatterns: "Персональные паттерны",
       overloadPrediction: "Прогноз перегруза",
       advancedRecommendations: "Расширенные рекомендации",
-      aiRequests: "100 AI запросов / месяц",
+      aiRequests: "100 ИИ-запросов / месяц",
       fullHistory: "Полная история"
     },
     validation: {
@@ -411,7 +412,7 @@ const messages = {
       networkFailed: "Не удалось связаться с сервером."
     },
     taskTypes: {
-      deep_work: "Deep Work",
+      deep_work: "Глубокая работа",
       communication: "Коммуникация",
       creative: "Творческая",
       routine: "Рутина",
@@ -437,19 +438,19 @@ const messages = {
       readinessStable: "Стабильное состояние",
       readinessHeavy: "Тяжёлый день",
       readinessRisk: "Лучше снизить нагрузку",
-      modeDeepWork: "Deep Work",
-      modeAdmin: "Admin",
-      modeLightTasks: "Light Tasks",
-      modeRecovery: "Recovery",
+      modeDeepWork: "Глубокая работа",
+      modeAdmin: "Рутина",
+      modeLightTasks: "Лёгкие задачи",
+      modeRecovery: "Восстановление",
       readinessInfluences: "Сейчас на оценку дня больше всего влияют: {items}.",
       readinessFallback: "Пока план дня выглядит достаточно реалистично.",
       recNoCheckin: "Заполни состояние дня, чтобы рекомендации стали точнее.",
       recLowEnergyStress: "Сегодня лучше снизить нагрузку и оставить только самые важные задачи.",
-      recTooMuchDeepWork: "День становится плотнее. Лучше ограничиться 1–2 задачами Deep Work.",
+      recTooMuchDeepWork: "День становится плотнее. Лучше ограничиться 1–2 задачами глубокой работы.",
       recHeavyCommunication: "Сегодня уже много эмоционально тяжёлой коммуникации. Полезно оставить между такими задачами время на переключение.",
-      recEnergyDebt: "Последние дни ты работаешь в энергетический долг. Добавь Recovery или Light Tasks.",
+      recEnergyDebt: "Последние дни ты работаешь в энергетический долг. Добавь восстановление или лёгкие задачи.",
       recTooManyOpenTasks: "План выглядит перегруженным. Попробуй сократить список задач дня или перенести часть работы.",
-      recLowEnergy: "При текущем уровне энергии лучше начать с Routine или Recovery, а Deep Work сократить.",
+      recLowEnergy: "При текущем уровне энергии лучше начать с рутины или восстановления, а глубокую работу сократить.",
       recHighStress: "Сегодня стоит снизить количество эмоционально сложных коммуникаций.",
       recBalanced: "Пока день выглядит устойчивым. Оставь 1–2 главные задачи в фокусе и не перегружай вторую половину дня.",
       debtHealthy: "Устойчивый ритм",
@@ -478,6 +479,7 @@ const messages = {
   },
   en: {
     brand: {
+      name: "MindPulse",
       kicker: "MindPulse",
       title: "AI Energy OS"
     },
@@ -1030,29 +1032,29 @@ export function applyTranslations(root = document) {
 
   const body = document.body;
   if (body?.dataset?.publicActive === "home") {
-    document.title = `${t("brand.kicker", {}, locale)} — ${locale === "ru" ? "AI Energy OS для knowledge workers" : "AI Energy OS for knowledge workers"}`;
+    document.title = `${locale === "ru" ? t("brand.name", {}, locale) : t("brand.kicker", {}, locale)} — ${locale === "ru" ? "ИИ-платформа энергии для knowledge workers" : "AI Energy OS for knowledge workers"}`;
   } else if (body?.dataset?.publicActive === "login") {
-    document.title = `${locale === "ru" ? "Войти" : "Log in"} — MindPulse`;
+    document.title = `${locale === "ru" ? "Войти" : "Log in"} — ${locale === "ru" ? t("brand.name", {}, locale) : "MindPulse"}`;
   } else if (body?.dataset?.publicActive === "signup") {
-    document.title = `${locale === "ru" ? "Регистрация" : "Sign up"} — MindPulse`;
+    document.title = `${locale === "ru" ? "Регистрация" : "Sign up"} — ${locale === "ru" ? t("brand.name", {}, locale) : "MindPulse"}`;
   } else if (body?.dataset?.appActive === "pulse") {
-    document.title = `${t("pulse.pageTitle", {}, locale)} — MindPulse`;
+    document.title = `${t("pulse.pageTitle", {}, locale)} — ${locale === "ru" ? t("brand.name", {}, locale) : "MindPulse"}`;
     body.dataset.appTitle = t("pulse.pageTitle", {}, locale);
     body.dataset.appSubtitle = t("pulse.pageSubtitle", {}, locale);
   } else if (body?.dataset?.appActive === "plan") {
-    document.title = `${t("plan.pageTitle", {}, locale)} — MindPulse`;
+    document.title = `${t("plan.pageTitle", {}, locale)} — ${locale === "ru" ? t("brand.name", {}, locale) : "MindPulse"}`;
     body.dataset.appTitle = t("plan.pageTitle", {}, locale);
     body.dataset.appSubtitle = t("plan.pageSubtitle", {}, locale);
   } else if (body?.dataset?.appActive === "analytics") {
-    document.title = `${t("analytics.pageTitle", {}, locale)} — MindPulse`;
+    document.title = `${t("analytics.pageTitle", {}, locale)} — ${locale === "ru" ? t("brand.name", {}, locale) : "MindPulse"}`;
     body.dataset.appTitle = t("analytics.pageTitle", {}, locale);
     body.dataset.appSubtitle = t("analytics.pageSubtitle", {}, locale);
   } else if (body?.dataset?.appActive === "profile") {
-    document.title = `${t("profile.pageTitle", {}, locale)} — MindPulse`;
+    document.title = `${t("profile.pageTitle", {}, locale)} — ${locale === "ru" ? t("brand.name", {}, locale) : "MindPulse"}`;
     body.dataset.appTitle = t("profile.pageTitle", {}, locale);
     body.dataset.appSubtitle = t("profile.pageSubtitle", {}, locale);
   } else if (body?.dataset?.appActive === "settings") {
-    document.title = `${t("settings.pageTitle", {}, locale)} — MindPulse`;
+    document.title = `${t("settings.pageTitle", {}, locale)} — ${locale === "ru" ? t("brand.name", {}, locale) : "MindPulse"}`;
     body.dataset.appTitle = t("settings.pageTitle", {}, locale);
     body.dataset.appSubtitle = t("settings.pageSubtitle", {}, locale);
   }
