@@ -299,18 +299,20 @@ function looksCorruptedText(value) {
 function getCleanReadinessCopy(readiness) {
   const state = readiness?.state || "stable";
   let label = t("workload.readinessStable");
+  let note = t("workload.readinessFallback");
 
   if (state === "excellent") {
     label = t("workload.readinessHigh");
+    note = t("workload.dayHasCapacity");
   } else if (state === "heavy") {
     label = t("workload.readinessHeavy");
+    note = t("workload.dayComfortable");
   } else if (state === "risk") {
     label = t("workload.readinessRisk");
+    note = t("workload.dayCapacityFilled");
+  } else {
+    note = t("workload.dayComfortable");
   }
-
-  const note = looksCorruptedText(readiness?.note)
-    ? t("workload.readinessFallback")
-    : (readiness?.note || t("workload.readinessFallback"));
 
   return { label, note };
 }
@@ -332,8 +334,8 @@ function getCleanDebtCopy(energyDebt) {
   }
 
   return {
-    label: looksCorruptedText(energyDebt?.label) ? label : (energyDebt?.label || label),
-    note: looksCorruptedText(energyDebt?.note) ? note : (energyDebt?.note || note)
+    label,
+    note
   };
 }
 

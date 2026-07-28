@@ -329,8 +329,8 @@ function buildAnalyticsTask(item, date) {
     cognitive_load: normalized.cognitive_load,
     emotional_load: normalized.emotional_load,
     planned_date: toBacklogIsoDate(date),
-    completed_at: normalized.status === "РЎРґРµР»Р°РЅРѕ" ? `${toBacklogIsoDate(date)}T18:00:00.000Z` : null,
-    status: normalized.status === "РЎРґРµР»Р°РЅРѕ" ? "done" : normalized.status === "Р’ СЂР°Р±РѕС‚Рµ" ? "in_progress" : "todo"
+    completed_at: normalized.status === "Сделано" ? `${toBacklogIsoDate(date)}T18:00:00.000Z` : null,
+    status: normalized.status === "Сделано" ? "done" : normalized.status === "В работе" ? "in_progress" : "todo"
   });
 }
 

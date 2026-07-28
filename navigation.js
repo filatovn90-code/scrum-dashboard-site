@@ -59,21 +59,33 @@ export async function mountPublicHeader() {
 
   mount.className = "site-header public-header";
   mount.innerHTML = `
-    <a class="public-brand-link" href="${landingPath()}" aria-label="${t("navigation.openApp")} ${t("brand.name")}">
-      <span class="public-brand-kicker">${t("brand.kicker")}</span>
-      <strong class="public-brand-title">${t("brand.title")}</strong>
+    <a class="public-brand-link" href="${landingPath()}" aria-label="${t("brand.name")}">
+      <strong class="public-brand-wordmark">${t("brand.name")}</strong>
     </a>
-    <div class="public-header-inner">
+    <button
+      class="public-menu-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="public-nav-panel"
+      data-public-menu-toggle
+      aria-label="${t("navigation.menu")}"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <div class="public-header-inner" id="public-nav-panel" data-public-menu-panel>
       <nav class="public-nav" aria-label="${t("navigation.publicNav")}">
         ${getPublicLinks().map((link) => renderPublicLink(link, active)).join("")}
       </nav>
       <div class="public-actions">
-        ${renderLanguageSwitcher({ compact: true, menuId: "public", profileSync: Boolean(session?.user) })}
         ${session?.user ? renderPublicAuthedActions(profile) : renderPublicGuestActions(active)}
+        ${renderLanguageSwitcher({ compact: true, menuId: "public", profileSync: Boolean(session?.user) })}
       </div>
     </div>
   `;
   bindLanguageMenus(mount, Boolean(session?.user));
+  bindPublicHeader(mount);
 }
 
 export async function mountAppShell() {
@@ -141,9 +153,7 @@ function renderPublicGuestActions(active) {
 function renderPublicAuthedActions(profile) {
   return `
     <a class="form-action-button public-action-link" href="${appPath()}">${t("navigation.openApp")}</a>
-    <a class="public-avatar-link" href="${profilePath()}" aria-label="${t("navigation.profile")}">
-      <span class="public-avatar">${getInitials(profile)}</span>
-    </a>
+    ${renderUserMenu(profile, null, { compact: true, menuId: "public-user" })}
   `;
 }
 
@@ -321,6 +331,41 @@ function bindAppShell(...mounts) {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeOthers();
+    }
+  });
+}
+
+function bindPublicHeader(root) {
+  const toggle = root.querySelector("[data-public-menu-toggle]");
+  const panel = root.querySelector("[data-public-menu-panel]");
+  if (!toggle || !panel) {
+    return;
+  }
+
+  const closeMenu = () => {
+    toggle.setAttribute("aria-expanded", "false");
+    root.classList.remove("is-open");
+  };
+
+  toggle.addEventListener("click", () => {
+    const expanded = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
+    root.classList.toggle("is-open", !expanded);
+  });
+
+  root.querySelectorAll(".public-nav-link, .public-action-link").forEach((link) => {
+    link.addEventListener("click", () => closeMenu());
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!root.contains(event.target)) {
+      closeMenu();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeMenu();
     }
   });
 }
