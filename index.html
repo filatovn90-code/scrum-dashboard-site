@@ -3,61 +3,159 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MindPulse — AI Energy OS для knowledge workers</title>
+  <title>MindPulse — планирование работы с учетом энергии и нагрузки</title>
+  <meta name="description" content="MindPulse помогает knowledge workers составлять реалистичный план с учетом энергии, фокуса, стресса, когнитивной и эмоциональной нагрузки.">
+  <meta property="og:title" content="MindPulse — планирование работы с учетом энергии и нагрузки">
+  <meta property="og:description" content="MindPulse помогает knowledge workers составлять реалистичный план с учетом энергии, фокуса, стресса, когнитивной и эмоциональной нагрузки.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body data-public-active="home">
   <div class="page-shell page-shell-wide landing-page public-page">
     <header data-public-header></header>
 
-    <main class="landing-main landing-main-v2">
-      <section class="section landing-hero-v2">
+    <main class="landing-main landing-main-v3">
+      <section class="landing-hero-v3">
         <div class="landing-hero-copy">
-          <p class="section-kicker" data-i18n="public.heroKicker">AI ENERGY OS ДЛЯ KNOWLEDGE WORKERS</p>
-          <h1 class="landing-title" data-i18n="public.heroTitle">Планируй работу с учетом энергии, а не только дедлайнов.</h1>
-          <p class="landing-description" data-i18n="public.heroDescription">
-            MindPulse помогает планировать задачи с учетом доступной емкости дня, когнитивной и эмоциональной нагрузки.
-            Система показывает, когда план реалистичен, а когда лучше снизить темп.
+          <p class="section-kicker" data-i18n="public.heroKicker">ПЛАНИРОВЩИК РАБОЧЕЙ ЕМКОСТИ ДЛЯ KNOWLEDGE WORKERS</p>
+          <h1 class="landing-title landing-title-xl" data-i18n="public.heroTitle">Планируй работу по своим силам, а не только по дедлайнам</h1>
+          <p class="landing-description landing-description-lg" data-i18n="public.heroDescription">
+            MindPulse сопоставляет состояние, когнитивную и эмоциональную нагрузку задач с доступной емкостью дня. Ты заранее видишь, когда план реалистичен, а когда стоит перенести или упростить работу.
           </p>
-          <div class="landing-actions">
-            <a class="form-action-button landing-action-link" href="signup.html" data-i18n="public.heroPrimaryCta">Начать бесплатно</a>
-            <a class="ghost-button landing-action-link" href="#how-it-works" data-i18n="public.heroSecondaryCta">Посмотреть, как работает</a>
+          <p class="landing-support-copy" data-i18n="public.heroSupport">
+            Большинство планировщиков считают свободное время. MindPulse учитывает доступный ресурс.
+          </p>
+          <div class="landing-actions landing-actions-stacked-mobile">
+            <a class="form-action-button landing-action-link is-pending" href="signup.html" data-auth-cta data-i18n="public.heroPrimaryCtaGuest">Начать бесплатно</a>
+            <a class="ghost-button landing-action-link" href="#how-it-works" data-i18n="public.heroSecondaryCta">Посмотреть продукт</a>
           </div>
         </div>
 
-        <div class="landing-shot-frame landing-shot-frame-hero">
-          <div class="landing-shot-shell">
-            <img class="locale-image locale-image-ru" src="assets/landing/daily-pulse-ru.png" alt="Пульс дня — MindPulse">
-            <img class="locale-image locale-image-en" src="assets/landing/daily-pulse-en.png" alt="Daily Pulse — MindPulse">
+        <div class="landing-hero-visual">
+          <div class="landing-shot-frame landing-shot-frame-hero">
+            <div class="landing-shot-shell">
+              <img class="locale-image locale-image-ru" src="assets/landing/weekly-plan-ru.png" alt="План недели — MindPulse">
+              <img class="locale-image locale-image-en" src="assets/landing/weekly-plan-en.png" alt="Weekly Plan — MindPulse">
+            </div>
+            <div class="landing-floating-card landing-floating-card-primary">
+              <span class="landing-floating-label" data-i18n="public.heroFloatingPulseLabel">Пульс сегодня</span>
+              <strong>78</strong>
+              <p data-i18n="public.heroFloatingPulseBody">Загрузка: 61 / 78</p>
+            </div>
+            <div class="landing-floating-card landing-floating-card-secondary">
+              <span class="landing-floating-label" data-i18n="public.heroFloatingAdviceLabel">Рекомендация</span>
+              <p data-i18n="public.heroFloatingAdviceBody">Лучше перенести одну сложную задачу на четверг</p>
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="landing-proofline" aria-label="Product positioning">
-        <p data-i18n="public.trustLine">Не еще один список задач. Система управления рабочей емкостью.</p>
-      </section>
-
-      <section class="section landing-compare-section" id="features">
-        <div class="section-heading landing-section-heading">
-          <div>
-            <p class="section-kicker" data-i18n="public.compareKicker">Почему продукт ощущается иначе</p>
-            <h2 class="dashboard-section-title" data-i18n="public.compareTitle">Почему MindPulse отличается</h2>
+      <section class="landing-strip">
+        <div class="landing-strip-inner">
+          <p data-i18n="public.trustLine">Не ещё один список задач. Система управления рабочей емкостью.</p>
+          <div class="landing-strip-flow">
+            <span data-i18n="public.trustFlow1">Состояние</span>
+            <span aria-hidden="true">→</span>
+            <span data-i18n="public.trustFlow2">Емкость</span>
+            <span aria-hidden="true">→</span>
+            <span data-i18n="public.trustFlow3">Реалистичный план</span>
           </div>
         </div>
+      </section>
 
-        <div class="landing-compare-grid">
-          <article class="landing-compare-card">
-            <h3 data-i18n="public.compareDefaultTitle">Обычный таск-трекер</h3>
+      <section class="landing-story-section landing-problem-section" id="features">
+        <div class="landing-section-intro">
+          <p class="section-kicker" data-i18n="public.problemKicker">Проблема обычного планирования</p>
+          <h2 class="dashboard-section-title" data-i18n="public.problemTitle">Свободное время ещё не означает, что у тебя есть ресурс</h2>
+          <p class="landing-description" data-i18n="public.problemBody">
+            Обычный календарь видит только окна в расписании. MindPulse помогает понять, насколько день вообще подходит для сложной нагрузки.
+          </p>
+        </div>
+
+        <div class="landing-problem-grid">
+          <article class="landing-card landing-problem-scenario">
+            <h3 data-i18n="public.problemScenarioTitle">В календаре свободно 8 часов</h3>
+            <ul class="landing-problem-list">
+              <li data-i18n="public.problemPoint1">Энергия: 4/10</li>
+              <li data-i18n="public.problemPoint2">Стресс: 8/10</li>
+              <li data-i18n="public.problemPoint3">Три сложные встречи</li>
+              <li data-i18n="public.problemPoint4">Две задачи глубокой работы</li>
+              <li data-i18n="public.problemPoint5">Плохой сон</li>
+            </ul>
+          </article>
+
+          <article class="landing-card landing-problem-compare">
+            <div class="landing-compare-mini">
+              <div class="landing-compare-mini-card">
+                <span class="landing-compare-mini-label" data-i18n="public.problemDefaultTitle">Обычный планировщик</span>
+                <p data-i18n="public.problemDefaultBody">У тебя достаточно свободного времени. Можно добавить ещё задачи.</p>
+              </div>
+              <div class="landing-compare-mini-card landing-compare-mini-card-accent">
+                <span class="landing-compare-mini-label" data-i18n="public.problemMindpulseTitle">MindPulse</span>
+                <p data-i18n="public.problemMindpulseBody">Сегодня лучше оставить одну сложную задачу и сохранить около 20% резерва.</p>
+              </div>
+            </div>
+            <div class="landing-capacity-preview" aria-hidden="true">
+              <span class="landing-capacity-track"><span class="landing-capacity-fill"></span></span>
+              <span class="landing-capacity-note" data-i18n="public.problemCapacityNote">Плотность дня выше комфортного уровня</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="landing-story-section landing-founder-section">
+        <div class="landing-founder-grid">
+          <div class="landing-founder-copy">
+            <p class="section-kicker" data-i18n="public.founderKicker">История создателя</p>
+            <h2 class="dashboard-section-title" data-i18n="public.founderTitle">Почему я создал MindPulse</h2>
+            <p class="landing-description" data-i18n="public.founderBody">
+              Работая с командами и интеллектуальной нагрузкой, я постоянно видел одну проблему: мы планируем задачи по календарю, но почти не учитываем состояние человека. MindPulse появился как попытка сделать рабочий план реалистичным, а не просто заполненным.
+            </p>
+            <div class="landing-founder-meta">
+              <strong data-i18n="public.founderName">Никита</strong>
+              <span data-i18n="public.founderRole">Создатель MindPulse</span>
+            </div>
+          </div>
+          <div class="landing-founder-video" data-founder-video-placeholder>
+            <div class="landing-founder-poster">
+              <img class="locale-image locale-image-ru" src="assets/landing/weekly-plan-ru.png" alt="Предпросмотр видео создателя MindPulse">
+              <img class="locale-image locale-image-en" src="assets/landing/weekly-plan-en.png" alt="Founder video preview for MindPulse">
+              <button class="landing-founder-play" type="button" disabled aria-label="Founder video placeholder">
+                <span aria-hidden="true">▶</span>
+              </button>
+              <span class="landing-founder-duration">1:30</span>
+            </div>
+            <p class="landing-founder-note" data-i18n="public.founderNote">Видео можно подключить позже: секция уже подготовлена под poster, субтитры и две языковые версии.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="landing-story-section landing-comparison-section">
+        <div class="landing-section-intro">
+          <p class="section-kicker" data-i18n="public.compareKicker">Сравнение</p>
+          <h2 class="dashboard-section-title" data-i18n="public.compareTitle">MindPulse добавляет к задачам то, чего не хватает обычным планировщикам</h2>
+        </div>
+
+        <div class="landing-compare-grid landing-compare-grid-rich">
+          <article class="landing-card landing-compare-card">
+            <div class="landing-compare-head">
+              <h3 data-i18n="public.compareDefaultTitle">Обычный таск-трекер</h3>
+              <p data-i18n="public.compareDefaultCaption">Помогает организовать работу</p>
+            </div>
             <ul class="landing-compare-list">
               <li data-i18n="public.compareDefault1">Задачи</li>
               <li data-i18n="public.compareDefault2">Дедлайны</li>
               <li data-i18n="public.compareDefault3">Приоритеты</li>
-              <li data-i18n="public.compareDefault4">Календарь</li>
+              <li data-i18n="public.compareDefault4">Проекты</li>
+              <li data-i18n="public.compareDefault5">Календарь</li>
             </ul>
           </article>
 
-          <article class="landing-compare-card landing-compare-card-accent">
-            <h3 data-i18n="public.compareMindpulseTitle">MindPulse</h3>
+          <article class="landing-card landing-compare-card landing-compare-card-accent">
+            <div class="landing-compare-head">
+              <span class="landing-inline-badge" data-i18n="public.compareBadge">Energy-aware</span>
+              <h3 data-i18n="public.compareMindpulseTitle">MindPulse</h3>
+              <p data-i18n="public.compareMindpulseCaption">Помогает сделать план выполнимым</p>
+            </div>
             <ul class="landing-compare-list">
               <li data-i18n="public.compareMindpulse1">Задачи</li>
               <li data-i18n="public.compareMindpulse2">Доступная емкость дня</li>
@@ -70,139 +168,211 @@
         </div>
       </section>
 
-      <section class="section">
-        <div class="section-heading landing-section-heading">
-          <div>
-            <p class="section-kicker" data-i18n="public.benefitsKicker">Что это дает</p>
-            <h2 class="dashboard-section-title" data-i18n="public.benefitsTitle">Работай устойчиво, а не на пределе</h2>
+      <section class="landing-story-section landing-how-section" id="how-it-works">
+        <div class="landing-section-intro">
+          <p class="section-kicker" data-i18n="public.howKicker">Как это работает</p>
+          <h2 class="dashboard-section-title" data-i18n="public.howTitle">От состояния к реалистичному плану за четыре шага</h2>
+        </div>
+
+        <div class="landing-how-grid">
+          <div class="landing-stepper">
+            <article class="landing-step-row is-active">
+              <strong>1</strong>
+              <div>
+                <h3 data-i18n="public.step1Title">Оцени состояние</h3>
+                <p data-i18n="public.step1Body">Отметь энергию, стресс, фокус, сон и настроение.</p>
+              </div>
+            </article>
+            <article class="landing-step-row">
+              <strong>2</strong>
+              <div>
+                <h3 data-i18n="public.step2Title">Получи Пульс дня</h3>
+                <p data-i18n="public.step2Body">MindPulse рассчитывает доступную емкость для текущего состояния.</p>
+              </div>
+            </article>
+            <article class="landing-step-row">
+              <strong>3</strong>
+              <div>
+                <h3 data-i18n="public.step3Title">Составь план</h3>
+                <p data-i18n="public.step3Body">Добавь задачи и оцени их когнитивную и эмоциональную нагрузку.</p>
+              </div>
+            </article>
+            <article class="landing-step-row">
+              <strong>4</strong>
+              <div>
+                <h3 data-i18n="public.step4Title">Скорректируй загрузку</h3>
+                <p data-i18n="public.step4Body">Система покажет резерв, риск перегруза и предложит изменения.</p>
+              </div>
+            </article>
           </div>
-        </div>
 
-        <div class="landing-benefits-grid landing-benefits-grid-v2">
-          <article class="landing-benefit-card">
-            <span class="landing-benefit-icon" aria-hidden="true">✓</span>
-            <h3 data-i18n="public.benefit1Title">Реалистичный план</h3>
-            <p data-i18n="public.benefit1Body">Планируй задачи в пределах доступной емкости дня.</p>
-          </article>
-          <article class="landing-benefit-card">
-            <span class="landing-benefit-icon" aria-hidden="true">◌</span>
-            <h3 data-i18n="public.benefit2Title">Защита от перегруза</h3>
-            <p data-i18n="public.benefit2Body">Видишь перегруз до того, как он повлияет на состояние.</p>
-          </article>
-          <article class="landing-benefit-card">
-            <span class="landing-benefit-icon" aria-hidden="true">◈</span>
-            <h3 data-i18n="public.benefit3Title">Лучшее время для сложной работы</h3>
-            <p data-i18n="public.benefit3Body">Ставь Deep Work в периоды, когда на него действительно есть ресурс.</p>
-          </article>
-          <article class="landing-benefit-card">
-            <span class="landing-benefit-icon" aria-hidden="true">◎</span>
-            <h3 data-i18n="public.benefit4Title">Персональные закономерности</h3>
-            <p data-i18n="public.benefit4Body">Понимай, какие задачи и рабочие ритмы помогают сохранять фокус.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section" id="how-it-works">
-        <div class="section-heading landing-section-heading">
-          <div>
-            <p class="section-kicker" data-i18n="public.howKicker">Как это работает</p>
-            <h2 class="dashboard-section-title" data-i18n="public.howTitle">Как это работает</h2>
-          </div>
-        </div>
-
-        <div class="landing-steps">
-          <article class="landing-step-card">
-            <strong>1</strong>
-            <h3 data-i18n="public.step1Title">Оцени состояние</h3>
-            <p data-i18n="public.step1Body">Укажи энергию, стресс и фокус.</p>
-          </article>
-          <article class="landing-step-card">
-            <strong>2</strong>
-            <h3 data-i18n="public.step2Title">Составь план</h3>
-            <p data-i18n="public.step2Body">Распредели задачи по дням.</p>
-          </article>
-          <article class="landing-step-card">
-            <strong>3</strong>
-            <h3 data-i18n="public.step3Title">Сверь нагрузку с емкостью</h3>
-            <p data-i18n="public.step3Body">MindPulse показывает, насколько план реалистичен.</p>
-          </article>
-          <article class="landing-step-card">
-            <strong>4</strong>
-            <h3 data-i18n="public.step4Title">Корректируй план</h3>
-            <p data-i18n="public.step4Body">Переноси или упрощай задачи до наступления перегруза.</p>
-          </article>
-        </div>
-
-        <div class="landing-shot-frame landing-shot-frame-inline">
-          <div class="landing-shot-shell">
-            <img class="locale-image locale-image-ru" src="assets/landing/weekly-plan-ru.png" alt="План недели — MindPulse">
-            <img class="locale-image locale-image-en" src="assets/landing/weekly-plan-en.png" alt="Weekly Plan — MindPulse">
+          <div class="landing-product-showcase">
+            <div class="landing-shot-frame landing-shot-frame-inline">
+              <div class="landing-shot-shell">
+                <img class="locale-image locale-image-ru" src="assets/landing/weekly-plan-ru.png" alt="План недели — MindPulse">
+                <img class="locale-image locale-image-en" src="assets/landing/weekly-plan-en.png" alt="Weekly Plan — MindPulse">
+              </div>
+              <span class="landing-shot-callout landing-shot-callout-top" data-i18n="public.calloutPulse">Пульс</span>
+              <span class="landing-shot-callout landing-shot-callout-center" data-i18n="public.calloutLoad">Загрузка</span>
+              <span class="landing-shot-callout landing-shot-callout-bottom" data-i18n="public.calloutOverload">Перегруз</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="section landing-product-section">
+      <section class="landing-story-section landing-product-section">
         <div class="landing-product-grid">
+          <div class="landing-product-copy">
+            <p class="section-kicker" data-i18n="public.pulseKicker">Пульс дня</p>
+            <h2 class="dashboard-section-title" data-i18n="public.pulseTitle">Сначала оцени ресурс, потом планируй нагрузку</h2>
+            <p class="landing-description" data-i18n="public.pulseBody">Пульс дня рассчитывается по энергии, стрессу, фокусу и дополнительным сигналам состояния. Это не оценка человека, а ориентир для планирования рабочего дня.</p>
+            <ul class="landing-metric-list">
+              <li data-i18n="public.pulsePoint1">Доступная емкость дня</li>
+              <li data-i18n="public.pulsePoint2">Готовность к сложной работе</li>
+              <li data-i18n="public.pulsePoint3">Текущий энергетический долг</li>
+            </ul>
+          </div>
           <div class="landing-shot-frame">
             <div class="landing-shot-shell">
               <img class="locale-image locale-image-ru" src="assets/landing/daily-pulse-ru.png" alt="Пульс дня — MindPulse">
               <img class="locale-image locale-image-en" src="assets/landing/daily-pulse-en.png" alt="Daily Pulse — MindPulse">
             </div>
           </div>
-          <div class="landing-product-copy">
-            <p class="section-kicker" data-i18n="public.pulseKicker">Пульс дня</p>
-            <h2 class="dashboard-section-title" data-i18n="public.pulseTitle">Начинай день с оценки доступной емкости</h2>
-            <p class="landing-description" data-i18n="public.pulseBody">Пульс дня учитывает энергию, стресс и фокус. Полученная емкость используется для оценки загрузки плана.</p>
-          </div>
         </div>
       </section>
 
-      <section class="section landing-product-section">
+      <section class="landing-story-section landing-product-section landing-product-section-alt">
         <div class="landing-product-grid landing-product-grid-reverse">
-          <div class="landing-product-copy">
-            <p class="section-kicker" data-i18n="public.weekKicker">План недели</p>
-            <h2 class="dashboard-section-title" data-i18n="public.weekTitle">Видишь нагрузку прямо в плане недели</h2>
-            <p class="landing-description" data-i18n="public.weekBody">Каждый день показывает Пульс, запланированную нагрузку и оставшийся резерв. При добавлении или переносе задач показатели обновляются автоматически.</p>
-          </div>
           <div class="landing-shot-frame">
             <div class="landing-shot-shell">
               <img class="locale-image locale-image-ru" src="assets/landing/weekly-plan-ru.png" alt="План недели — MindPulse">
               <img class="locale-image locale-image-en" src="assets/landing/weekly-plan-en.png" alt="Weekly Plan — MindPulse">
             </div>
           </div>
+          <div class="landing-product-copy">
+            <p class="section-kicker" data-i18n="public.weekKicker">План недели</p>
+            <h2 class="dashboard-section-title" data-i18n="public.weekTitle">Видишь не только задачи, но и реальную плотность каждого дня</h2>
+            <p class="landing-description" data-i18n="public.weekBody">Каждая колонка показывает Пульс, суммарную нагрузку и доступный резерв. При добавлении или переносе задачи показатели пересчитываются автоматически.</p>
+            <ul class="landing-metric-list">
+              <li data-i18n="public.weekPoint1">Пульс и резерв прямо в колонке дня</li>
+              <li data-i18n="public.weekPoint2">Нагрузка обновляется без перезагрузки</li>
+              <li data-i18n="public.weekPoint3">Перегруженные дни видны заранее</li>
+            </ul>
+          </div>
         </div>
       </section>
 
-      <section class="section landing-product-section">
+      <section class="landing-story-section landing-ai-section">
+        <div class="landing-ai-copy">
+          <p class="section-kicker" data-i18n="public.aiKicker">AI Coach</p>
+          <h2 class="dashboard-section-title" data-i18n="public.aiTitle">Рекомендации не после выгорания, а до перегруза</h2>
+          <p class="landing-description" data-i18n="public.aiBody">MindPulse помогает понять, что лучше оставить сегодня, что перенести и как сохранить резерв. Базовые рекомендации уже доступны, а глубокий AI-разбор развивается как следующая ступень продукта.</p>
+        </div>
+        <div class="landing-ai-grid">
+          <article class="landing-ai-card">
+            <span class="landing-inline-badge" data-i18n="public.aiAvailableNow">Доступно сейчас</span>
+            <h3 data-i18n="public.aiNowTitle">Базовые рекомендации на основе состояния и задач</h3>
+            <p data-i18n="public.aiNowBody">Если день становится плотным, система мягко подскажет, когда лучше сократить план, перенести тяжелую задачу или добавить восстановление.</p>
+          </article>
+          <article class="landing-ai-card landing-ai-card-future">
+            <span class="landing-inline-badge" data-i18n="public.aiComingSoon">Скоро</span>
+            <h3 data-i18n="public.aiFutureTitle">Глубокий AI-разбор, персональные паттерны и weekly review</h3>
+            <p data-i18n="public.aiFutureBody">Продвинутая версия будет объяснять закономерности недели, причины перегруза и помогать собирать более устойчивый рабочий ритм.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="landing-story-section landing-product-section">
         <div class="landing-product-grid">
+          <div class="landing-product-copy">
+            <p class="section-kicker" data-i18n="public.analyticsKicker">Аналитика</p>
+            <h2 class="dashboard-section-title" data-i18n="public.analyticsTitle">Понимай свои рабочие закономерности</h2>
+            <p class="landing-description" data-i18n="public.analyticsBody">Аналитика показывает связь между состоянием, типами задач и перегрузом. Со временем рекомендации становятся более персональными и помогают точнее планировать сложные дни.</p>
+            <ul class="landing-metric-list">
+              <li data-i18n="public.analyticsPoint1">Связь между состоянием и задачами</li>
+              <li data-i18n="public.analyticsPoint2">Дни с повышенной плотностью</li>
+              <li data-i18n="public.analyticsPoint3">Персональные рабочие закономерности</li>
+            </ul>
+          </div>
           <div class="landing-shot-frame">
             <div class="landing-shot-shell">
               <img class="locale-image locale-image-ru" src="assets/landing/analytics-ru.png" alt="Аналитика — MindPulse">
               <img class="locale-image locale-image-en" src="assets/landing/analytics-en.png" alt="Analytics — MindPulse">
             </div>
           </div>
-          <div class="landing-product-copy">
-            <p class="section-kicker" data-i18n="public.analyticsKicker">Аналитика</p>
-            <h2 class="dashboard-section-title" data-i18n="public.analyticsTitle">Понимай свои рабочие закономерности</h2>
-            <p class="landing-description" data-i18n="public.analyticsBody">Аналитика показывает связь между состоянием, типами задач и перегрузом. Со временем рекомендации становятся более персональными.</p>
+        </div>
+      </section>
+
+      <section class="landing-story-section landing-audience-section">
+        <div class="landing-section-intro">
+          <p class="section-kicker" data-i18n="public.audienceKicker">Для кого это</p>
+          <h2 class="dashboard-section-title" data-i18n="public.audienceTitle">MindPulse создан для людей, у которых задачи конкурируют за внимание</h2>
+        </div>
+        <div class="landing-audience-grid">
+          <article class="landing-card">
+            <h3 data-i18n="public.audience1Title">Менеджеры и лиды</h3>
+            <p data-i18n="public.audience1Body">Когда день состоит из встреч, согласований и сложных решений, важно видеть не только время, но и остаток ресурса.</p>
+          </article>
+          <article class="landing-card">
+            <h3 data-i18n="public.audience2Title">Специалисты с глубокой работой</h3>
+            <p data-i18n="public.audience2Body">Аналитика, дизайн, тексты, архитектура и исследование требуют концентрации. MindPulse помогает не размывать такие блоки.</p>
+          </article>
+          <article class="landing-card">
+            <h3 data-i18n="public.audience3Title">Люди с высокой когнитивной нагрузкой</h3>
+            <p data-i18n="public.audience3Body">Если день быстро перегружается от контекста, эмоций и коммуникации, продукт помогает сделать ритм устойчивее.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="landing-story-section landing-use-cases-section">
+        <div class="landing-section-intro">
+          <p class="section-kicker" data-i18n="public.useCasesKicker">Сценарии использования</p>
+          <h2 class="dashboard-section-title" data-i18n="public.useCasesTitle">Когда MindPulse особенно полезен</h2>
+        </div>
+        <div class="landing-use-cases-grid">
+          <article class="landing-card">
+            <h3 data-i18n="public.useCase1Title">Собрать реалистичный день</h3>
+            <p data-i18n="public.useCase1Body">Понять, какие задачи действительно стоит сделать сегодня, а какие лучше перенести без чувства вины.</p>
+          </article>
+          <article class="landing-card">
+            <h3 data-i18n="public.useCase2Title">Сбалансировать неделю</h3>
+            <p data-i18n="public.useCase2Body">Увидеть слишком плотные дни заранее и разнести сложные задачи по более устойчивому ритму.</p>
+          </article>
+          <article class="landing-card">
+            <h3 data-i18n="public.useCase3Title">Понять причины усталости</h3>
+            <p data-i18n="public.useCase3Body">Отследить, какие типы задач и сочетания нагрузки чаще всего снижают фокус и повышают стресс.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="landing-story-section landing-proof-section" id="early-access">
+        <div class="landing-proof-card">
+          <div>
+            <p class="section-kicker" data-i18n="public.proofKicker">Ранний доступ</p>
+            <h2 class="dashboard-section-title" data-i18n="public.proofTitle">Продукт развивается вместе с первыми пользователями</h2>
+            <p class="landing-description" data-i18n="public.proofBody">MindPulse уже помогает собирать более реалистичный план дня и недели. Сейчас особенно ценно живое использование и обратная связь на реальных рабочих сценариях.</p>
+          </div>
+          <div class="landing-proof-actions">
+            <a class="ghost-button landing-action-link is-pending" href="signup.html" data-auth-cta data-i18n="public.proofCtaGuest">Начать бесплатно</a>
+            <span class="landing-proof-note" data-i18n="public.proofNote">Без вымышленных отзывов и цифр: только честный ранний доступ.</span>
           </div>
         </div>
       </section>
 
-      <section class="section" id="pricing">
-        <div class="section-heading landing-section-heading">
-          <div>
-            <p class="section-kicker" data-i18n="public.pricingKicker">Тарифы</p>
-            <h2 class="dashboard-section-title" data-i18n="public.pricingTitle">Тарифы</h2>
-            <p class="today-section-copy" data-i18n="public.pricingSubtitle">Выбирай удобный темп входа: ценность доступна уже в бесплатной версии, а Pro готовит более глубокую персональную аналитику.</p>
-          </div>
+      <section class="landing-story-section" id="pricing">
+        <div class="landing-section-intro">
+          <p class="section-kicker" data-i18n="public.pricingKicker">Тарифы</p>
+          <h2 class="dashboard-section-title" data-i18n="public.pricingTitle">Начать можно уже сейчас, а глубокий AI-разбор появится в Pro</h2>
+          <p class="landing-description" data-i18n="public.pricingSubtitle">Бесплатная версия уже даёт рабочую ценность: состояние дня, план недели, базовую аналитику и мягкие рекомендации.</p>
         </div>
 
-        <div class="landing-pricing-grid landing-pricing-grid-v2">
-          <article class="landing-pricing-card">
+        <div class="landing-pricing-grid landing-pricing-grid-v3">
+          <article class="landing-card landing-pricing-card">
             <div class="landing-pricing-head">
-              <h3 data-i18n="public.freePlanTitle">Free</h3>
-              <span data-i18n="public.freeNow">Доступен сейчас</span>
+              <div>
+                <h3 data-i18n="public.freePlanTitle">Free</h3>
+                <p data-i18n="public.freeNow">Доступен сейчас</p>
+              </div>
             </div>
             <ul class="landing-pricing-list">
               <li data-i18n="public.freePlan1">Задачи и проекты</li>
@@ -211,13 +381,15 @@
               <li data-i18n="public.freePlan4">Базовая аналитика</li>
               <li data-i18n="public.freePlan5">Rule-based рекомендации</li>
             </ul>
-            <a class="form-action-button landing-action-link landing-pricing-cta" href="signup.html" data-i18n="public.heroPrimaryCta">Начать бесплатно</a>
+            <a class="form-action-button landing-action-link is-pending" href="signup.html" data-auth-cta data-i18n="public.heroPrimaryCtaGuest">Начать бесплатно</a>
           </article>
 
-          <article class="landing-pricing-card landing-pricing-card-accent">
+          <article class="landing-card landing-pricing-card landing-pricing-card-accent">
             <div class="landing-pricing-head">
-              <h3 data-i18n="public.proPlanTitle">Pro</h3>
-              <span data-i18n="public.comingSoon">Скоро</span>
+              <div>
+                <h3 data-i18n="public.proPlanTitle">Pro</h3>
+                <p data-i18n="public.comingSoon">Скоро</p>
+              </div>
             </div>
             <ul class="landing-pricing-list">
               <li data-i18n="public.proPlan1">Расширенная AI-аналитика</li>
@@ -226,53 +398,94 @@
               <li data-i18n="public.proPlan4">Глубокие рекомендации</li>
               <li data-i18n="public.proPlan5">Полная история</li>
             </ul>
-            <span class="landing-pricing-note" data-i18n="public.comingSoon">Скоро</span>
+            <a class="ghost-button landing-action-link" href="pricing.html" data-i18n="public.pricingDetailsCta">Посмотреть тарифы</a>
           </article>
         </div>
       </section>
 
-      <section class="section landing-faq-section">
-        <div class="section-heading landing-section-heading">
-          <div>
-            <p class="section-kicker" data-i18n="public.faqKicker">FAQ</p>
-            <h2 class="dashboard-section-title" data-i18n="public.faqTitle">Частые вопросы</h2>
-          </div>
+      <section class="landing-story-section landing-faq-section" id="faq">
+        <div class="landing-section-intro">
+          <p class="section-kicker" data-i18n="public.faqKicker">FAQ</p>
+          <h2 class="dashboard-section-title" data-i18n="public.faqTitle">Частые вопросы</h2>
         </div>
 
-        <div class="landing-faq-grid">
-          <article class="landing-faq-card">
-            <h3 data-i18n="public.faq1">Чем MindPulse отличается от обычного таск-трекера?</h3>
-            <p data-i18n="public.faq1Body">MindPulse показывает не только список задач, но и доступную емкость дня, рабочую плотность и риск перегруза.</p>
-          </article>
-          <article class="landing-faq-card">
-            <h3 data-i18n="public.faq2">Нужно ли каждый день заполнять Пульс?</h3>
-            <p data-i18n="public.faq2Body">Желательно, но не обязательно. Чем регулярнее оценка состояния, тем точнее готовность дня и рекомендации.</p>
-          </article>
-          <article class="landing-faq-card">
-            <h3 data-i18n="public.faq3">Как рассчитывается нагрузка задач?</h3>
-            <p data-i18n="public.faq3Body">Нагрузка собирается из типа задачи, когнитивной и эмоциональной нагрузки. Эти данные затем сопоставляются с емкостью дня.</p>
-          </article>
-          <article class="landing-faq-card">
-            <h3 data-i18n="public.faq4">Можно ли использовать MindPulse бесплатно?</h3>
-            <p data-i18n="public.faq4Body">Да. Бесплатный план уже включает задачи, Пульс дня, План недели и базовую аналитику.</p>
-          </article>
-          <article class="landing-faq-card">
-            <h3 data-i18n="public.faq5">Мои данные приватны?</h3>
-            <p data-i18n="public.faq5Body">Да. Каждая учетная запись работает со своим изолированным набором данных через Supabase.</p>
-          </article>
-          <article class="landing-faq-card">
-            <h3 data-i18n="public.faq6">Есть ли английский язык?</h3>
-            <p data-i18n="public.faq6Body">Да. Интерфейс MindPulse работает на русском и английском.</p>
-          </article>
+        <div class="landing-faq-accordion" data-faq-root>
+          <details class="landing-faq-item" open>
+            <summary class="landing-faq-summary" data-faq-trigger aria-expanded="true">
+              <span data-i18n="public.faq1">Чем MindPulse отличается от обычного таск-трекера?</span>
+            </summary>
+            <div class="landing-faq-answer">
+              <p data-i18n="public.faq1Body">MindPulse показывает не только список задач, но и доступную емкость дня, рабочую плотность и риск перегруза.</p>
+            </div>
+          </details>
+          <details class="landing-faq-item">
+            <summary class="landing-faq-summary" data-faq-trigger aria-expanded="false">
+              <span data-i18n="public.faq2">Нужно ли каждый день заполнять Пульс?</span>
+            </summary>
+            <div class="landing-faq-answer">
+              <p data-i18n="public.faq2Body">Желательно, но не обязательно. Чем регулярнее оценка состояния, тем точнее готовность дня и рекомендации.</p>
+            </div>
+          </details>
+          <details class="landing-faq-item">
+            <summary class="landing-faq-summary" data-faq-trigger aria-expanded="false">
+              <span data-i18n="public.faq3">Как рассчитывается нагрузка задач?</span>
+            </summary>
+            <div class="landing-faq-answer">
+              <p data-i18n="public.faq3Body">Нагрузка собирается из типа задачи, когнитивной и эмоциональной нагрузки. Эти данные затем сопоставляются с емкостью дня.</p>
+            </div>
+          </details>
+          <details class="landing-faq-item">
+            <summary class="landing-faq-summary" data-faq-trigger aria-expanded="false">
+              <span data-i18n="public.faq4">Можно ли использовать MindPulse бесплатно?</span>
+            </summary>
+            <div class="landing-faq-answer">
+              <p data-i18n="public.faq4Body">Да. Бесплатный план уже включает задачи, Пульс дня, План недели и базовую аналитику.</p>
+            </div>
+          </details>
+          <details class="landing-faq-item">
+            <summary class="landing-faq-summary" data-faq-trigger aria-expanded="false">
+              <span data-i18n="public.faq5">Мои данные приватны?</span>
+            </summary>
+            <div class="landing-faq-answer">
+              <p data-i18n="public.faq5Body">Данные каждого пользователя хранятся отдельно и доступны только в его учётной записи.</p>
+            </div>
+          </details>
+          <details class="landing-faq-item">
+            <summary class="landing-faq-summary" data-faq-trigger aria-expanded="false">
+              <span data-i18n="public.faq6">Есть ли английский язык?</span>
+            </summary>
+            <div class="landing-faq-answer">
+              <p data-i18n="public.faq6Body">Да. Интерфейс MindPulse работает на русском и английском.</p>
+            </div>
+          </details>
+          <details class="landing-faq-item">
+            <summary class="landing-faq-summary" data-faq-trigger aria-expanded="false">
+              <span data-i18n="public.faq7">Является ли MindPulse медицинским приложением?</span>
+            </summary>
+            <div class="landing-faq-answer">
+              <p data-i18n="public.faq7Body">Нет. MindPulse — это инструмент планирования и самонаблюдения для работы, а не медицинский сервис.</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section class="landing-final-cta">
+        <div class="landing-final-cta-inner">
+          <div>
+            <p class="section-kicker" data-i18n="public.finalCtaKicker">Готов начать</p>
+            <h2 class="dashboard-section-title" data-i18n="public.finalCtaTitle">Составь план, который учитывает не только задачи, но и тебя</h2>
+            <p class="landing-description landing-description-on-dark" data-i18n="public.finalCtaBody">Начни с Пульса дня и посмотри, насколько текущий план соответствует твоему ресурсу.</p>
+          </div>
+          <a class="form-action-button landing-action-link landing-final-cta-button is-pending" href="signup.html" data-auth-cta data-i18n="public.heroPrimaryCtaGuest">Начать бесплатно</a>
         </div>
       </section>
     </main>
 
-    <footer class="landing-footer">
+    <footer class="landing-footer landing-footer-v2">
       <div class="landing-footer-grid">
         <div class="landing-footer-brand">
           <strong>MindPulse</strong>
-          <p data-i18n="public.heroDescription">MindPulse помогает планировать задачи с учетом доступной емкости дня, когнитивной и эмоциональной нагрузки. Система показывает, когда план реалистичен, а когда лучше снизить темп.</p>
+          <p data-i18n="public.footerDescription">MindPulse помогает составлять реалистичный план дня и недели с учётом энергии, фокуса и нагрузки задач.</p>
         </div>
 
         <div class="landing-footer-column">
@@ -280,12 +493,21 @@
           <a href="#features" data-i18n="navigation.features">Возможности</a>
           <a href="#how-it-works" data-i18n="navigation.howItWorks">Как это работает</a>
           <a href="#pricing" data-i18n="navigation.pricing">Тарифы</a>
+          <a href="#early-access" data-i18n="public.footerEarlyAccess">Ранний доступ</a>
         </div>
 
         <div class="landing-footer-column">
           <h3 data-i18n="public.footerAccount">Аккаунт</h3>
           <a href="login.html" data-i18n="navigation.login">Войти</a>
           <a href="signup.html" data-i18n="navigation.startFree">Начать бесплатно</a>
+          <a href="today.html" data-i18n="navigation.openApp">В рабочее пространство</a>
+        </div>
+
+        <div class="landing-footer-column">
+          <h3 data-i18n="public.footerResources">Ресурсы</h3>
+          <a href="#faq" data-i18n="public.footerFaq">FAQ</a>
+          <a href="help.html" data-i18n="public.footerHelp">Помощь</a>
+          <a href="help.html" data-i18n="public.footerFeedback">Обратная связь</a>
         </div>
 
         <div class="landing-footer-column">
@@ -296,7 +518,7 @@
 
         <div class="landing-footer-column">
           <h3 data-i18n="public.footerLanguage">Язык</h3>
-          <span>Русский / English</span>
+          <span data-i18n="public.footerLanguageValue">Русский / English</span>
         </div>
       </div>
       <p class="landing-footer-copy" data-i18n="public.copyright">© 2026 MindPulse</p>
@@ -304,9 +526,6 @@
   </div>
 
   <script src="shared-storage.js"></script>
-  <script type="module">
-    import { mountPublicHeader } from "./navigation.js";
-    mountPublicHeader();
-  </script>
+  <script type="module" src="landing.js"></script>
 </body>
 </html>
