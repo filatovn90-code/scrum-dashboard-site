@@ -1,5 +1,6 @@
 import { getCurrentSession } from "./auth-helpers.js";
 import { applyTranslations, getLocale, onLocaleChange, t } from "./i18n.js";
+import { productImages, getLocalizedAsset } from "./landing-assets.js";
 import { appPath, signupPath } from "./route-paths.js";
 import { mountPublicHeader } from "./navigation.js";
 
@@ -17,12 +18,14 @@ const metaMap = {
 async function initLanding() {
   await mountPublicHeader();
   applyTranslations(document);
+  syncLocalizedImages();
   bindFaqAccordions();
   bindStickyHeader();
   await syncAuthCtas();
   syncMeta();
   onLocaleChange(() => {
     applyTranslations(document);
+    syncLocalizedImages();
     bindFaqAccordions();
     syncMeta();
   });
@@ -82,6 +85,38 @@ function syncMeta() {
   setMetaContent('meta[name="description"]', description);
   setMetaContent('meta[property="og:title"]', title);
   setMetaContent('meta[property="og:description"]', description);
+}
+
+function syncLocalizedImages() {
+  const locale = getLocale();
+  const nodes = document.querySelectorAll("[data-localized-image]");
+
+  nodes.forEach((node) => {
+    if (!(node instanceof HTMLImageElement)) {
+      return;
+    }
+
+    const imageKey = node.dataset.localizedImage;
+    const altKey = node.dataset.altKey;
+    const images = productImages[imageKey];
+    const nextSrc = getLocalizedAsset(images, locale);
+
+    if (!images || !nextSrc) {
+      return;
+    }
+
+    if (!images[locale]) {
+      console.warn(`[landing] Missing localized image for "${imageKey}" and locale "${locale}". Falling back to RU asset.`);
+    }
+
+    if (node.getAttribute("src") !== nextSrc) {
+      node.setAttribute("src", nextSrc);
+    }
+
+    if (altKey) {
+      node.setAttribute("alt", t(altKey, {}, locale));
+    }
+  });
 }
 
 function setMetaContent(selector, content) {

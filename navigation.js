@@ -1,4 +1,5 @@
 import { getCurrentProfile, getCurrentSession, signOutCurrentUser } from "./auth-helpers.js";
+import { ensureFeedbackUi } from "./feedback.js";
 import { saveProfileLocale } from "./supabase-client.js";
 import { applyTranslations, getLocale, initI18n, localeLabels, onLocaleChange, setLocale, t } from "./i18n.js";
 import {
@@ -48,6 +49,7 @@ function getUserMenuLinks() {
 }
 
 export async function mountPublicHeader() {
+  ensureFeedbackUi();
   const mount = document.querySelector("[data-public-header]");
   if (!mount) {
     return;
@@ -89,6 +91,7 @@ export async function mountPublicHeader() {
 }
 
 export async function mountAppShell() {
+  ensureFeedbackUi();
   const sidebarMount = document.querySelector("[data-app-sidebar]");
   const headerMount = document.querySelector("[data-app-page-header]");
   if (!sidebarMount || !headerMount) {
@@ -115,6 +118,13 @@ export async function mountAppShell() {
     <nav class="app-nav" aria-label="${t("navigation.appNav")}">
       ${getAppLinks().map((link) => renderAppLink(link, active)).join("")}
     </nav>
+
+    <div class="app-sidebar-secondary">
+      <button class="app-nav-link is-utility app-feedback-trigger" type="button" data-feedback-open data-feedback-source="app-sidebar">
+        <span class="app-nav-icon" aria-hidden="true">${icon("feedback")}</span>
+        <span>${t("navigation.feedback")}</span>
+      </button>
+    </div>
 
     <div class="app-user-box">
       ${renderUserMenu(profile, session?.user, { compact: false, menuId: "sidebar" })}
@@ -173,6 +183,15 @@ function renderUserMenuLink(link) {
       <span class="app-user-menu-icon" aria-hidden="true">${icon(link.icon)}</span>
       <span>${link.label}</span>
     </a>
+  `;
+}
+
+function renderFeedbackMenuButton(source = "user-menu") {
+  return `
+    <button class="app-user-menu-link" type="button" data-feedback-open data-feedback-source="${source}">
+      <span class="app-user-menu-icon" aria-hidden="true">${icon("feedback")}</span>
+      <span>${t("navigation.feedback")}</span>
+    </button>
   `;
 }
 
@@ -239,6 +258,7 @@ function renderUserMenu(profile, user, { compact = false, menuId = "user" } = {}
       </button>
       <div class="app-user-dropdown" id="app-user-menu-${menuId}" data-user-menu-dropdown hidden>
         ${getUserMenuLinks().map((link) => renderUserMenuLink(link)).join("")}
+        ${renderFeedbackMenuButton(`user-menu-${menuId}`)}
         <div class="app-user-divider"></div>
         <div class="app-user-language-row">
           <span class="app-user-language-label">${t("common.language")}</span>
@@ -460,6 +480,7 @@ function icon(name) {
     pulse: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-5 4 10 2-5h6"/><path d="M3 12c0-5 4-9 9-9s9 4 9 9-4 9-9 9-9-4-9-9Z" opacity=".24"/></svg>`,
     plan: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/><path d="M8 14h3M8 18h8M15 14h1"/></svg>`,
     analytics: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20v-11"/><path d="M2 20h20"/></svg>`,
+    feedback: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10h10"/><path d="M7 14h7"/><path d="M21 11.5a7.5 7.5 0 0 1-7.5 7.5H8l-5 3V11.5A7.5 7.5 0 0 1 10.5 4H13.5A7.5 7.5 0 0 1 21 11.5Z"/></svg>`,
     help: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 1 1 5.8 1c-.4.9-1.2 1.3-2 1.8-.7.4-1.4 1-1.4 2.2"/><path d="M12 17h.01"/></svg>`,
     settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3"/><path d="M12 18v3"/><path d="m4.9 4.9 2.1 2.1"/><path d="m17 17 2.1 2.1"/><path d="M3 12h3"/><path d="M18 12h3"/><path d="m4.9 19.1 2.1-2.1"/><path d="m17 7 2.1-2.1"/><circle cx="12" cy="12" r="3.5"/></svg>`,
     profile: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>`,
