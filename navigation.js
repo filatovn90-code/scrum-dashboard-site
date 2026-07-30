@@ -163,7 +163,6 @@ function renderPublicGuestActions(active) {
 function renderPublicAuthedActions(profile) {
   return `
     <a class="form-action-button public-action-link" href="${appPath()}">${t("navigation.openApp")}</a>
-    ${renderUserMenu(profile, null, { compact: true, menuId: "public-user" })}
   `;
 }
 
