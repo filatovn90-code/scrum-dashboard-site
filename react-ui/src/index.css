@@ -1,53 +1,17 @@
+@import "./design-system/foundations/theme.css";
+@import "./design-system/foundations/globals.css";
+@import "./design-system/foundations/typography.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 90 25% 97%;
-    --foreground: 140 18% 14%;
-    --card: 0 0% 100%;
-    --card-foreground: 140 18% 14%;
-    --primary: 139 28% 34%;
-    --primary-foreground: 90 25% 97%;
-    --secondary: 110 22% 92%;
-    --secondary-foreground: 140 20% 22%;
-    --muted: 120 15% 94%;
-    --muted-foreground: 142 10% 42%;
-    --accent: 122 31% 88%;
-    --accent-foreground: 139 28% 28%;
-    --border: 120 14% 88%;
-    --input: 120 14% 88%;
-    --ring: 139 28% 34%;
-  }
-
-  .dark {
-    --background: 148 18% 9%;
-    --foreground: 110 25% 94%;
-    --card: 148 16% 12%;
-    --card-foreground: 110 25% 94%;
-    --primary: 125 30% 66%;
-    --primary-foreground: 148 18% 10%;
-    --secondary: 150 14% 16%;
-    --secondary-foreground: 110 25% 92%;
-    --muted: 150 12% 14%;
-    --muted-foreground: 130 8% 68%;
-    --accent: 144 16% 20%;
-    --accent-foreground: 110 25% 92%;
-    --border: 148 10% 22%;
-    --input: 148 10% 22%;
-    --ring: 125 30% 66%;
-  }
-
   * {
     @apply border-border;
   }
 
   body {
     @apply min-h-screen bg-background text-foreground antialiased;
-    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-    background-image:
-      radial-gradient(circle at top, rgba(143, 190, 154, 0.22), transparent 30%),
-      radial-gradient(circle at right, rgba(196, 226, 197, 0.25), transparent 26%);
   }
 }
