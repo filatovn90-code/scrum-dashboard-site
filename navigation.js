@@ -12,7 +12,6 @@ import {
   howItWorksPath,
   landingPath,
   loginPath,
-  pricingPath,
   profilePath,
   settingsPath,
   signupPath,
@@ -24,10 +23,11 @@ onLocaleChange(() => {
 });
 
 function getPublicLinks() {
+  const locale = getLocale();
   return [
-    { key: "features", label: t("navigation.features"), href: featuresPath() },
-    { key: "how-it-works", label: t("navigation.howItWorks"), href: howItWorksPath() },
-    { key: "pricing", label: t("navigation.pricing"), href: pricingPath() }
+    { key: "features", label: locale === "en" ? "Features" : "Возможности", href: featuresPath() },
+    { key: "how-it-works", label: locale === "en" ? "How it works" : "Как работает", href: howItWorksPath() },
+    { key: "founder", label: locale === "en" ? "About the founder" : "Об основателе", href: `${landingPath()}#founder` }
   ];
 }
 
