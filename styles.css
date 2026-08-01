@@ -4852,6 +4852,19 @@ body {
   grid-template-columns: 1fr;
 }
 
+.analytics-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+
+.analytics-dashboard-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .analytics-chart-card,
 .analytics-insight-card,
 .analytics-type-card,
@@ -5003,6 +5016,13 @@ body {
   gap: 12px;
 }
 
+.analytics-dashboard-card .analytics-stack-list,
+.analytics-dashboard-card .analytics-type-grid,
+.analytics-dashboard-card .analytics-overload-grid {
+  flex: 1;
+  align-content: start;
+}
+
 .analytics-insight-card,
 .analytics-type-card,
 .analytics-overload-card,
@@ -5039,6 +5059,11 @@ body {
 
 .analytics-overload-summary {
   grid-column: 1 / -1;
+}
+
+.analytics-dashboard-card .analytics-inline-note {
+  margin-top: auto;
+  padding-top: 14px;
 }
 
 .analytics-overload-head {
@@ -5326,6 +5351,7 @@ body {
 
 @media (max-width: 960px) {
   .analytics-hero-card,
+  .analytics-dashboard-grid,
   .analytics-row-balanced,
   .analytics-overview-grid-4,
   .analytics-weekly-insights-grid,
@@ -7780,6 +7806,16 @@ body {
   margin: 0;
 }
 
+.landing-home-step h3 {
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1.18rem;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
 .landing-home-step p {
   margin: 0;
   color: var(--text-soft);
@@ -8050,5 +8086,907 @@ body {
     align-items: flex-start;
     flex-direction: column;
     gap: 8px;
+  }
+}
+
+/* MindPulse density system */
+:root {
+  --mp-density-page-padding: 24px;
+  --mp-density-content-width: 1320px;
+  --mp-density-section-gap: 18px;
+  --mp-density-card-padding: 20px;
+  --mp-density-card-padding-tight: 16px;
+  --mp-density-control-height: 46px;
+  --mp-density-control-padding-x: 14px;
+  --mp-density-sidebar-width: 272px;
+  --mp-density-sidebar-gap: 24px;
+  --mp-density-sidebar-padding-y: 22px;
+  --mp-density-sidebar-padding-x: 18px;
+  --mp-density-nav-item-height: 44px;
+  --mp-density-nav-font-size: 0.98rem;
+  --mp-density-column-gap: 14px;
+  --mp-density-task-gap: 10px;
+  --mp-density-column-header-height: 88px;
+  --mp-density-column-header-padding: 18px;
+  --mp-density-day-column-min-height: 520px;
+  --mp-density-day-pulse-height: 66px;
+  --mp-density-chart-height: 320px;
+  --mp-density-bar-track-height: 170px;
+  --mp-density-page-title-size: clamp(2.2rem, 3vw, 3.4rem);
+  --mp-density-page-subtitle-size: 1rem;
+}
+
+body[data-density="comfortable"] {
+  --mp-density-page-padding: 24px;
+  --mp-density-content-width: 1320px;
+  --mp-density-section-gap: 18px;
+  --mp-density-card-padding: 20px;
+  --mp-density-card-padding-tight: 16px;
+  --mp-density-control-height: 46px;
+  --mp-density-control-padding-x: 14px;
+  --mp-density-sidebar-width: 272px;
+  --mp-density-sidebar-gap: 24px;
+  --mp-density-sidebar-padding-y: 22px;
+  --mp-density-sidebar-padding-x: 18px;
+  --mp-density-nav-item-height: 44px;
+  --mp-density-nav-font-size: 0.98rem;
+  --mp-density-column-gap: 14px;
+  --mp-density-task-gap: 10px;
+  --mp-density-column-header-height: 88px;
+  --mp-density-column-header-padding: 18px;
+  --mp-density-day-column-min-height: 520px;
+  --mp-density-day-pulse-height: 66px;
+  --mp-density-chart-height: 320px;
+  --mp-density-bar-track-height: 170px;
+  --mp-density-page-title-size: clamp(2.2rem, 3vw, 3.4rem);
+  --mp-density-page-subtitle-size: 1rem;
+}
+
+body[data-density="compact"] {
+  --mp-density-page-padding: 16px;
+  --mp-density-content-width: 1480px;
+  --mp-density-section-gap: 12px;
+  --mp-density-card-padding: 14px;
+  --mp-density-card-padding-tight: 12px;
+  --mp-density-control-height: 40px;
+  --mp-density-control-padding-x: 12px;
+  --mp-density-sidebar-width: 236px;
+  --mp-density-sidebar-gap: 18px;
+  --mp-density-sidebar-padding-y: 18px;
+  --mp-density-sidebar-padding-x: 14px;
+  --mp-density-nav-item-height: 38px;
+  --mp-density-nav-font-size: 0.9rem;
+  --mp-density-column-gap: 10px;
+  --mp-density-task-gap: 8px;
+  --mp-density-column-header-height: 74px;
+  --mp-density-column-header-padding: 14px;
+  --mp-density-day-column-min-height: 430px;
+  --mp-density-day-pulse-height: 58px;
+  --mp-density-chart-height: 260px;
+  --mp-density-bar-track-height: 138px;
+  --mp-density-page-title-size: clamp(1.96rem, 2.35vw, 2.7rem);
+  --mp-density-page-subtitle-size: 0.94rem;
+}
+
+body.app-has-shell .app-shell {
+  grid-template-columns: var(--mp-density-sidebar-width) 1fr;
+}
+
+body.app-has-shell .app-sidebar {
+  gap: var(--mp-density-sidebar-gap);
+  padding: var(--mp-density-sidebar-padding-y) var(--mp-density-sidebar-padding-x);
+}
+
+body.app-has-shell .sidebar-brand {
+  padding: 4px 10px 0;
+}
+
+body.app-has-shell .sidebar-logo {
+  font-size: clamp(1.38rem, 1.2rem + 0.4vw, 1.68rem);
+}
+
+body.app-has-shell .app-nav-link {
+  min-height: var(--mp-density-nav-item-height);
+  padding: 0 12px;
+  font-size: var(--mp-density-nav-font-size);
+}
+
+body.app-has-shell .app-main {
+  padding: var(--mp-density-page-padding);
+}
+
+body.app-has-shell .app-content-shell {
+  width: min(var(--mp-density-content-width), 100%);
+}
+
+body.app-has-shell .app-page-layout main,
+body.app-has-shell .app-page-layout .today-main,
+body.app-has-shell .app-page-layout .analytics-main,
+body.app-has-shell .app-page-layout .profile-main,
+body.app-has-shell .utility-page-main,
+body.app-has-shell .dashboard-main {
+  gap: var(--mp-density-section-gap);
+}
+
+body.app-has-shell .app-page-header {
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: var(--mp-density-section-gap);
+}
+
+body.app-has-shell .app-page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+body.app-has-shell .app-page-header-actions .app-user-box {
+  display: none;
+}
+
+body.app-has-shell .app-page-header-copy h1 {
+  font-size: var(--mp-density-page-title-size);
+}
+
+body.app-has-shell .app-page-subtitle {
+  margin-top: 10px;
+  font-size: var(--mp-density-page-subtitle-size);
+  line-height: 1.48;
+}
+
+body.app-has-shell .section,
+body.app-has-shell .analytics-chart-card,
+body.app-has-shell .analytics-insight-card,
+body.app-has-shell .analytics-type-card,
+body.app-has-shell .analytics-overload-card,
+body.app-has-shell .analytics-empty-card,
+body.app-has-shell .weekly-review-card,
+body.app-has-shell .utility-page-card {
+  padding: var(--mp-density-card-padding);
+}
+
+body.app-has-shell .section {
+  border-radius: 24px;
+}
+
+body.app-has-shell .section-heading {
+  margin-bottom: 10px;
+  gap: 12px;
+}
+
+body.app-has-shell .section-filters {
+  gap: 10px;
+}
+
+body.app-has-shell .login-button,
+body.app-has-shell .ghost-button,
+body.app-has-shell .form-action-button,
+body.app-has-shell .calendar-event-submit,
+body.app-has-shell .calendar-event-cancel,
+body.app-has-shell .inline-action-button,
+body.app-has-shell .analytics-filter-select,
+body.app-has-shell .analytics-period-select,
+body.app-has-shell .quarter-filter select,
+body.app-has-shell .goal-create-form input,
+body.app-has-shell .goal-create-form select,
+body.app-has-shell .metric-input,
+body.app-has-shell .today-task-create-form input,
+body.app-has-shell .today-task-create-form select,
+body.app-has-shell .today-checkin-form select,
+body.app-has-shell .inline-task-input,
+body.app-has-shell .inline-task-row select,
+body.app-has-shell .backlog-toolbar select,
+body.app-has-shell .backlog-toolbar input,
+body.app-has-shell .pricing-period-toggle,
+body.app-has-shell .pricing-cta-button {
+  min-height: var(--mp-density-control-height);
+  padding-left: var(--mp-density-control-padding-x);
+  padding-right: var(--mp-density-control-padding-x);
+}
+
+body.app-has-shell .today-grid {
+  gap: var(--mp-density-section-gap);
+}
+
+body.app-has-shell .today-range-field {
+  gap: 10px;
+  padding: var(--mp-density-card-padding-tight);
+}
+
+body.app-has-shell .today-range-copy {
+  gap: 4px;
+}
+
+body.app-has-shell .today-range-copy span {
+  font-size: 0.9rem;
+}
+
+body.app-has-shell .today-range-control {
+  gap: 10px;
+}
+
+body.app-has-shell .today-range-control output {
+  min-width: 36px;
+  min-height: 36px;
+  font-size: 0.92rem;
+}
+
+body.app-has-shell .backlog-table {
+  min-width: 1060px;
+  gap: var(--mp-density-column-gap);
+  grid-template-columns: repeat(5, minmax(196px, 1fr));
+}
+
+body.app-has-shell .backlog-day-column {
+  gap: var(--mp-density-column-gap);
+}
+
+body.app-has-shell .backlog-column-header {
+  min-height: var(--mp-density-column-header-height);
+  padding: var(--mp-density-column-header-padding);
+}
+
+body.app-has-shell .backlog-day-title strong {
+  font-size: 1.16rem;
+}
+
+body.app-has-shell .backlog-day-title span {
+  font-size: 0.7rem;
+}
+
+body.app-has-shell .backlog-day-list {
+  gap: var(--mp-density-task-gap);
+  min-height: var(--mp-density-day-column-min-height);
+}
+
+body.app-has-shell .day-pulse-shell {
+  gap: 6px;
+}
+
+body.app-has-shell .day-pulse-card {
+  min-height: var(--mp-density-day-pulse-height);
+  padding: 8px 10px;
+  gap: 6px;
+}
+
+body.app-has-shell .day-pulse-top strong {
+  font-size: 0.84rem;
+}
+
+body.app-has-shell .day-pulse-top span,
+body.app-has-shell .day-pulse-bottom span,
+body.app-has-shell .day-pulse-details span,
+body.app-has-shell .day-pulse-note {
+  font-size: 0.68rem;
+}
+
+body.app-has-shell .task-card {
+  padding: var(--mp-density-card-padding-tight);
+}
+
+body.app-has-shell .task-card,
+body.app-has-shell .inline-task-editor,
+body.app-has-shell .daily-focus-item {
+  border-radius: 18px;
+}
+
+body.app-has-shell .analytics-dashboard-grid {
+  gap: var(--mp-density-section-gap);
+}
+
+body.app-has-shell .analytics-load-bars {
+  min-height: calc(var(--mp-density-chart-height) - 30px);
+  gap: 8px;
+}
+
+body.app-has-shell .analytics-load-bar-card {
+  min-height: calc(var(--mp-density-chart-height) - 54px);
+}
+
+body.app-has-shell .analytics-svg-chart,
+body.app-has-shell .analytics-bars-chart {
+  min-height: var(--mp-density-chart-height);
+}
+
+body.app-has-shell .analytics-load-bar-track {
+  min-height: var(--mp-density-bar-track-height);
+}
+
+body.app-has-shell .analytics-load-bar-top strong {
+  font-size: 1rem;
+}
+
+.density-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(21, 66, 18, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.density-option {
+  min-height: 36px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.density-option:hover,
+.density-option:focus-visible {
+  background: rgba(21, 66, 18, 0.08);
+  color: var(--text);
+  outline: none;
+}
+
+.density-option:focus-visible {
+  box-shadow: 0 0 0 2px rgba(21, 66, 18, 0.12);
+}
+
+.density-option.is-active {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+@media (max-width: 1279px) {
+  body.app-has-shell {
+    --mp-density-page-padding: 20px;
+    --mp-density-content-width: 1320px;
+  }
+}
+
+@media (max-width: 960px) {
+  body.app-has-shell .app-page-header-actions {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  body.app-has-shell .app-page-header-actions .app-user-box {
+    display: block;
+  }
+
+  body.app-has-shell .density-switcher {
+    flex: 1;
+    justify-content: center;
+  }
+
+  body.app-has-shell .density-option {
+    flex: 1;
+  }
+}
+
+/* MindPulse internal UX audit polish */
+body.app-has-shell {
+  --mp-ui-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.985) 0%, rgba(247, 250, 246, 0.97) 100%);
+  --mp-ui-surface-soft: linear-gradient(180deg, rgba(249, 251, 247, 0.98) 0%, rgba(244, 248, 243, 0.96) 100%);
+  --mp-ui-border: rgba(21, 66, 18, 0.1);
+  --mp-ui-border-strong: rgba(21, 66, 18, 0.15);
+  --mp-ui-shadow: 0 10px 30px rgba(17, 44, 14, 0.045);
+  --mp-ui-shadow-hover: 0 16px 36px rgba(17, 44, 14, 0.07);
+  --mp-ui-card-radius: 22px;
+  --mp-ui-card-radius-tight: 18px;
+  --mp-ui-muted: rgba(32, 54, 30, 0.68);
+  --mp-ui-subtle: rgba(32, 54, 30, 0.5);
+}
+
+body.app-has-shell .app-content-shell {
+  width: min(1480px, 100%);
+}
+
+body.app-has-shell .app-main {
+  padding: 20px 24px 28px;
+}
+
+body.app-has-shell .app-sidebar {
+  gap: 18px;
+  padding: 18px 14px 16px;
+  background: linear-gradient(180deg, rgba(12, 63, 43, 0.995) 0%, rgba(10, 51, 37, 0.995) 100%);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+body.app-has-shell .sidebar-brand {
+  padding: 2px 8px 0;
+}
+
+body.app-has-shell .sidebar-logo {
+  font-size: clamp(1.24rem, 1.1rem + 0.36vw, 1.52rem);
+  letter-spacing: -0.035em;
+}
+
+body.app-has-shell .app-nav,
+body.app-has-shell .app-sidebar-secondary {
+  gap: 6px;
+}
+
+body.app-has-shell .app-nav-link {
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 13px;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 0.93rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+body.app-has-shell .app-nav-link:hover,
+body.app-has-shell .app-nav-link:focus-visible {
+  background: rgba(255, 255, 255, 0.075);
+  color: #ffffff;
+  transform: translateX(1px);
+}
+
+body.app-has-shell .app-nav-link.is-active {
+  background: rgba(188, 240, 174, 0.145);
+  box-shadow: inset 2px 0 0 var(--lime);
+}
+
+body.app-has-shell .app-page-header {
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+body.app-has-shell .app-page-header-copy {
+  display: grid;
+  gap: 8px;
+  max-width: 72ch;
+}
+
+body.app-has-shell .app-page-header-copy h1 {
+  font-size: clamp(2.3rem, 2rem + 1.2vw, 3.3rem);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+}
+
+body.app-has-shell .app-page-subtitle {
+  margin-top: 0;
+  max-width: 68ch;
+  color: var(--mp-ui-muted);
+  font-size: 1rem;
+  line-height: 1.52;
+}
+
+body.app-has-shell .section,
+body.app-has-shell .analytics-chart-card,
+body.app-has-shell .analytics-insight-card,
+body.app-has-shell .analytics-type-card,
+body.app-has-shell .analytics-overload-card,
+body.app-has-shell .analytics-empty-card,
+body.app-has-shell .weekly-review-card,
+body.app-has-shell .utility-page-card,
+body.app-has-shell .analytics-v0-panel,
+body.app-has-shell .analytics-v0-metric-card {
+  border-color: var(--mp-ui-border);
+  border-radius: var(--mp-ui-card-radius);
+  background: var(--mp-ui-surface);
+  box-shadow: var(--mp-ui-shadow);
+}
+
+body.app-has-shell .section {
+  padding: 22px;
+}
+
+body.app-has-shell .section-kicker,
+body.app-has-shell .analytics-card-label,
+body.app-has-shell .task-meta-label,
+body.app-has-shell .backlog-day-title span,
+body.app-has-shell .day-pulse-top span,
+body.app-has-shell .day-pulse-bottom span,
+body.app-has-shell .day-pulse-details span {
+  color: var(--mp-ui-subtle);
+}
+
+body.app-has-shell .section-heading {
+  margin-bottom: 12px;
+}
+
+body.app-has-shell .section-heading h2,
+body.app-has-shell .section-heading h3 {
+  letter-spacing: -0.03em;
+}
+
+body.app-has-shell .daily-focus-card {
+  margin-bottom: 14px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: var(--mp-ui-surface-soft);
+}
+
+body.app-has-shell .daily-focus-header {
+  margin-bottom: 8px;
+}
+
+body.app-has-shell .daily-focus-title {
+  font-size: 1.02rem;
+}
+
+body.app-has-shell .backlog-table {
+  min-width: 1120px;
+  grid-template-columns: repeat(5, minmax(208px, 1fr));
+  gap: 12px;
+}
+
+body.app-has-shell .backlog-day-column {
+  gap: 10px;
+}
+
+body.app-has-shell .backlog-column-header {
+  min-height: 72px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: var(--mp-ui-surface-soft);
+  border: 1px solid var(--mp-ui-border);
+}
+
+body.app-has-shell .backlog-day-title {
+  gap: 4px;
+}
+
+body.app-has-shell .backlog-day-title strong {
+  font-size: 1.22rem;
+  letter-spacing: -0.035em;
+}
+
+body.app-has-shell .backlog-day-title span {
+  font-size: 0.68rem;
+}
+
+body.app-has-shell .day-pulse-shell {
+  gap: 6px;
+}
+
+body.app-has-shell .day-pulse-card {
+  min-height: 62px;
+  padding: 9px 11px;
+  gap: 7px;
+  border-radius: 16px;
+  border-color: var(--mp-ui-border);
+  background: var(--mp-ui-surface);
+  box-shadow: none;
+}
+
+body.app-has-shell .day-pulse-card:hover {
+  border-color: var(--mp-ui-border-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(17, 44, 14, 0.05);
+}
+
+body.app-has-shell .day-pulse-top strong {
+  font-size: 0.88rem;
+  letter-spacing: -0.02em;
+}
+
+body.app-has-shell .day-pulse-top span,
+body.app-has-shell .day-pulse-bottom span,
+body.app-has-shell .day-pulse-note,
+body.app-has-shell .day-pulse-details span {
+  font-size: 0.71rem;
+}
+
+body.app-has-shell .day-pulse-bottom {
+  font-size: 0.78rem;
+}
+
+body.app-has-shell .day-pulse-bar {
+  height: 7px;
+}
+
+body.app-has-shell .backlog-day-add-button {
+  min-height: 46px;
+  border-radius: 16px;
+  background: rgba(247, 250, 244, 0.9);
+  color: rgba(32, 54, 30, 0.82);
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+body.app-has-shell .backlog-day-add-button:hover {
+  transform: translateY(-1px);
+}
+
+body.app-has-shell .backlog-day-list {
+  gap: 8px;
+  min-height: 420px;
+}
+
+body.app-has-shell .backlog-slot-cell {
+  border-radius: 16px;
+  padding: 6px;
+}
+
+body.app-has-shell .task-card {
+  min-height: 0;
+  padding: 12px 12px 11px;
+  border-radius: 16px;
+  border: 1px solid var(--mp-ui-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.995) 0%, rgba(248, 251, 246, 0.98) 100%);
+  box-shadow: 0 6px 18px rgba(17, 44, 14, 0.035);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+body.app-has-shell .task-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--mp-ui-border-strong);
+  box-shadow: 0 12px 24px rgba(17, 44, 14, 0.055);
+}
+
+body.app-has-shell .task-card p {
+  margin: 0 22px 10px 0;
+  max-width: none;
+  font-size: 0.98rem;
+  line-height: 1.36;
+  letter-spacing: -0.015em;
+}
+
+body.app-has-shell .task-done-mark {
+  top: 10px;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+body.app-has-shell .task-drag-hint {
+  top: 10px;
+  right: 36px;
+  opacity: 0.38;
+}
+
+body.app-has-shell .task-card-actions,
+body.app-has-shell .task-card-actions-stacked {
+  gap: 7px;
+}
+
+body.app-has-shell .task-status-group,
+body.app-has-shell .task-meta-labeled {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+body.app-has-shell .task-meta {
+  gap: 6px;
+}
+
+body.app-has-shell .task-status-select {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 14px;
+  font-size: 0.84rem;
+}
+
+body.app-has-shell .task-meta-label {
+  font-size: 0.63rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+body.app-has-shell .task-badge {
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.79rem;
+  font-weight: 700;
+  background: rgba(237, 242, 236, 0.88);
+  color: rgba(25, 45, 23, 0.88);
+}
+
+body.app-has-shell .analytics-v0-main {
+  gap: 18px;
+}
+
+body.app-has-shell .analytics-hero-card {
+  gap: 16px;
+  align-items: stretch;
+}
+
+body.app-has-shell .analytics-v0-hero,
+body.app-has-shell .analytics-weekly-review-panel {
+  padding: 24px;
+}
+
+body.app-has-shell .analytics-v0-top-grid,
+body.app-has-shell .analytics-overview-grid-4 {
+  gap: 14px;
+}
+
+body.app-has-shell .analytics-v0-metric-card {
+  min-height: 162px;
+  padding: 18px;
+  border-radius: 22px;
+}
+
+body.app-has-shell .analytics-v0-metric-body {
+  gap: 8px;
+}
+
+body.app-has-shell .analytics-v0-metric-value {
+  font-size: clamp(1.8rem, 2vw + 1rem, 2.45rem);
+}
+
+body.app-has-shell .analytics-v0-mini-pill,
+body.app-has-shell .analytics-v0-badge {
+  min-height: 30px;
+  padding: 0 12px;
+  font-size: 0.82rem;
+}
+
+body.app-has-shell .analytics-v0-primary-row,
+body.app-has-shell .analytics-row-balanced {
+  gap: 16px;
+}
+
+body.app-has-shell .analytics-chart-card,
+body.app-has-shell .analytics-v0-panel {
+  padding: 22px;
+  border-radius: 24px;
+}
+
+body.app-has-shell .analytics-svg-chart,
+body.app-has-shell .analytics-bars-chart {
+  min-height: 272px;
+}
+
+body.app-has-shell .analytics-load-bars {
+  min-height: 210px;
+  gap: 8px;
+}
+
+body.app-has-shell .analytics-load-bar-card {
+  min-height: 214px;
+  gap: 6px;
+}
+
+body.app-has-shell .analytics-load-bar-track {
+  min-height: 150px;
+}
+
+body.app-has-shell .analytics-dashboard-grid.analytics-dashboard-grid-lower {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+body.app-has-shell .analytics-insight-card,
+body.app-has-shell .analytics-type-card,
+body.app-has-shell .analytics-overload-card {
+  min-height: 120px;
+  padding: 18px;
+  border-radius: 20px;
+}
+
+body.app-has-shell .analytics-type-grid,
+body.app-has-shell .analytics-stack-list {
+  gap: 10px;
+}
+
+body.app-has-shell .analytics-type-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.app-has-shell .analytics-overload-grid {
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.app-has-shell .analytics-weekly-review-letter {
+  gap: 12px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  box-shadow: none;
+  background: var(--mp-ui-surface-soft);
+}
+
+body.app-has-shell .analytics-weekly-review-letter p {
+  font-size: 0.95rem;
+  line-height: 1.66;
+}
+
+body.app-has-shell .analytics-overload-score {
+  letter-spacing: -0.035em;
+}
+
+body.app-has-shell .today-grid {
+  gap: 16px;
+}
+
+body.app-has-shell .today-range-field {
+  padding: 14px 16px;
+  gap: 10px;
+  border-radius: 18px;
+}
+
+body.app-has-shell .today-range-field strong {
+  letter-spacing: -0.02em;
+}
+
+body.app-has-shell .today-checkin-form select,
+body.app-has-shell .daily-focus-select,
+body.app-has-shell .analytics-period-select {
+  border-radius: 14px;
+  background: rgba(247, 250, 244, 0.92);
+}
+
+body.app-has-shell .form-action-button,
+body.app-has-shell .ghost-button,
+body.app-has-shell .backlog-day-add-button,
+body.app-has-shell .analytics-filter-select,
+body.app-has-shell .analytics-period-select,
+body.app-has-shell .task-status-select,
+body.app-has-shell .daily-focus-select,
+body.app-has-shell .metric-input,
+body.app-has-shell .today-checkin-form select {
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+body.app-has-shell .form-action-button:hover,
+body.app-has-shell .ghost-button:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1200px) {
+  body.app-has-shell .analytics-type-grid,
+  body.app-has-shell .analytics-overload-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.app-has-shell .task-status-group,
+  body.app-has-shell .task-meta-labeled {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+}
+
+@media (max-width: 960px) {
+  body.app-has-shell .app-main {
+    padding: 16px 16px 24px;
+  }
+
+  body.app-has-shell .app-page-header {
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  body.app-has-shell .app-page-header-copy h1 {
+    font-size: clamp(2rem, 8vw, 2.7rem);
+  }
+
+  body.app-has-shell .section,
+  body.app-has-shell .analytics-chart-card,
+  body.app-has-shell .analytics-v0-panel,
+  body.app-has-shell .analytics-v0-metric-card {
+    padding: 18px;
+  }
+
+  body.app-has-shell .analytics-dashboard-grid.analytics-dashboard-grid-lower,
+  body.app-has-shell .analytics-row-balanced,
+  body.app-has-shell .analytics-v0-primary-row {
+    grid-template-columns: 1fr;
+  }
+
+  body.app-has-shell .backlog-table {
+    min-width: 960px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.app-has-shell .app-nav-link,
+  body.app-has-shell .task-card,
+  body.app-has-shell .day-pulse-card,
+  body.app-has-shell .form-action-button,
+  body.app-has-shell .ghost-button,
+  body.app-has-shell .backlog-day-add-button {
+    transition: none;
+    transform: none !important;
   }
 }

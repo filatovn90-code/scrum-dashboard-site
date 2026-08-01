@@ -1,4 +1,5 @@
 import { getCurrentProfile, getCurrentSession, signOutCurrentUser } from "./auth-helpers.js";
+import { getDensityMode, initDensityMode, onDensityModeChange, setDensityMode } from "./density.js";
 import { ensureFeedbackUi } from "./feedback.js";
 import { saveProfileLocale } from "./supabase-client.js";
 import { applyTranslations, getLocale, initI18n, localeLabels, onLocaleChange, setLocale, t } from "./i18n.js";
@@ -18,6 +19,7 @@ import {
   todayPath
 } from "./route-paths.js";
 initI18n();
+initDensityMode();
 onLocaleChange(() => {
   applyTranslations(document);
 });
@@ -138,13 +140,15 @@ export async function mountAppShell() {
       <h1>${escapeHtml(title)}</h1>
       ${subtitle ? `<p class="app-page-subtitle">${escapeHtml(subtitle)}</p>` : ""}
     </div>
-    <div class="app-page-header-actions">
-      ${renderUserMenu(profile, session?.user, { compact: true, menuId: "header" })}
-    </div>
+      <div class="app-page-header-actions">
+        ${renderDensitySwitcher()}
+        ${renderUserMenu(profile, session?.user, { compact: true, menuId: "header" })}
+      </div>
   `;
 
   ensureMobileNav(active);
   bindAppShell(sidebarMount, headerMount);
+  bindDensityControls(document);
   bindLanguageMenus(document, Boolean(session?.user));
 }
 
@@ -213,6 +217,31 @@ function renderLanguageSwitcher({ compact = false, menuId = "locale", profileSyn
       <div class="locale-dropdown" id="locale-menu-${menuId}" data-locale-dropdown hidden>
         ${supportedLocaleButtons(locale)}
       </div>
+    </div>
+  `;
+}
+
+function renderDensitySwitcher() {
+  const densityMode = getDensityMode();
+  return `
+    <div class="density-switcher" data-density-root>
+      <span class="sr-only">${t("navigation.density")}</span>
+      <button
+        class="density-option${densityMode === "comfortable" ? " is-active" : ""}"
+        type="button"
+        data-density-option="comfortable"
+        aria-pressed="${densityMode === "comfortable" ? "true" : "false"}"
+      >
+        ${t("navigation.comfortable")}
+      </button>
+      <button
+        class="density-option${densityMode === "compact" ? " is-active" : ""}"
+        type="button"
+        data-density-option="compact"
+        aria-pressed="${densityMode === "compact" ? "true" : "false"}"
+      >
+        ${t("navigation.compact")}
+      </button>
     </div>
   `;
 }
@@ -387,6 +416,32 @@ function bindPublicHeader(root) {
       closeMenu();
     }
   });
+}
+
+let densityControlsBound = false;
+
+function bindDensityControls(root = document) {
+  root.querySelectorAll("[data-density-root]").forEach((densityRoot) => {
+    densityRoot.querySelectorAll("[data-density-option]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const nextMode = button.dataset.densityOption || "comfortable";
+        setDensityMode(nextMode);
+      });
+    });
+  });
+
+  if (!densityControlsBound) {
+    onDensityModeChange((mode) => {
+      document.querySelectorAll("[data-density-root]").forEach((densityRoot) => {
+        densityRoot.querySelectorAll("[data-density-option]").forEach((button) => {
+          const isActive = button.dataset.densityOption === mode;
+          button.classList.toggle("is-active", isActive);
+          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+      });
+    });
+    densityControlsBound = true;
+  }
 }
 
 function bindLanguageMenus(root = document, shouldSyncProfile = false) {
