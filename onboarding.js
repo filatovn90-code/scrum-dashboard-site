@@ -6,7 +6,7 @@ import {
   startOnboardingForUser,
   updateOnboardingState
 } from "./onboarding-helpers.js";
-import { landingPath, loginPath, todayPath } from "./route-paths.js";
+import { appPath, landingPath, loginPath } from "./route-paths.js";
 import {
   calculateDailyLoadLevel,
   calculateEnergyDebtSeries,
@@ -17,6 +17,11 @@ import {
   summarizeEnergyDebt,
   toIsoDate
 } from "./lib/workload.js";
+
+// Deprecated route: onboarding is no longer mandatory.
+// Keep the implementation in the repository for a possible future return,
+// but redirect all direct visits into the main app immediately.
+window.location.replace(appPath());
 
 const todayIso = toIsoDate(new Date());
 

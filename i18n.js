@@ -113,7 +113,7 @@ const messages = {
       }
     },
     public: {
-      heroKicker: "ПЛАНИРОВЩИК РАБОЧЕЙ ЕМКОСТИ ДЛЯ KNOWLEDGE WORKERS",
+      heroKicker: "ИИ-ПЛАТФОРМА УПРАВЛЕНИЯ ЭНЕРГИЕЙ ДЛЯ ИНТЕЛЛЕКТУАЛЬНОЙ РАБОТЫ",
       heroTitle: "Планируй работу по своим силам, а не только по дедлайнам",
       heroDescription: "MindPulse сопоставляет состояние, когнитивную и эмоциональную нагрузку задач с доступной емкостью дня. Ты заранее видишь, когда план реалистичен, а когда стоит перенести или упростить работу.",
       heroSupport: "Большинство планировщиков считают свободное время. MindPulse учитывает доступный ресурс.",
@@ -255,7 +255,7 @@ const messages = {
       useCase6Body: "Не заполнять день до предела и заранее оставлять место для срочных запросов и переключения.",
       proofKicker: "Ранний доступ",
       proofTitle: "MindPulse находится в раннем доступе",
-      proofBody: "Мы тестируем продукт с knowledge workers и улучшаем формулу нагрузки на основе реальных рабочих сценариев, а не вымышленных кейсов.",
+      proofBody: "Мы тестируем продукт со специалистами интеллектуального труда и улучшаем формулу нагрузки на основе реальных рабочих сценариев, а не вымышленных кейсов.",
       proofCtaGuest: "Начать бесплатно",
       proofCtaAuthed: "Перейти в рабочее пространство",
       proofNote: "Без поддельных логотипов и выдуманных отзывов: только честный ранний доступ.",
@@ -1494,7 +1494,7 @@ export function applyTranslations(root = document) {
       ? "MindPulse — планирование работы с учетом энергии и нагрузки"
       : "MindPulse — Plan work around your energy and capacity";
     const description = locale === "ru"
-      ? "MindPulse помогает knowledge workers составлять реалистичный план с учетом энергии, фокуса, стресса, когнитивной и эмоциональной нагрузки."
+      ? "MindPulse помогает специалистам интеллектуального труда составлять реалистичный план с учетом энергии, фокуса, стресса, когнитивной и эмоциональной нагрузки."
       : "MindPulse helps knowledge workers create realistic plans based on energy, focus, stress, cognitive load, and emotional load.";
     document.title = title;
     syncMetaTag('meta[name="description"]', description);

@@ -9,7 +9,7 @@ import {
 import { redirectIfAuthenticated } from "./auth-helpers.js";
 import { applyTranslations, onLocaleChange, t } from "./i18n.js";
 import { resolvePostAuthPath } from "./onboarding-helpers.js";
-import { todayPath } from "./route-paths.js";
+import { appPath } from "./route-paths.js";
 
 const form = document.getElementById("loginPageForm");
 const emailInput = document.getElementById("loginPageEmail");
@@ -17,7 +17,7 @@ const passwordInput = document.getElementById("loginPagePassword");
 const submitButton = document.getElementById("loginPageSubmit");
 const statusBox = document.getElementById("loginPageStatus");
 
-redirectIfAuthenticated({ redirectTo: todayPath() }).catch(() => null);
+redirectIfAuthenticated({ redirectTo: appPath() }).catch(() => null);
 
 onLocaleChange(() => applyTranslations(document));
 

@@ -52,7 +52,7 @@ export function analyticsPath() {
 }
 
 export function appPath() {
-  return todayPath();
+  return backlogPath();
 }
 
 export function profilePath() {

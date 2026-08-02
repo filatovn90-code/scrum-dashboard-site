@@ -1,4 +1,4 @@
-import { appPath, onboardingPath } from "./route-paths.js";
+import { appPath } from "./route-paths.js";
 
 const ONBOARDING_KEY_PREFIX = "mindpulse-onboarding";
 
@@ -97,5 +97,7 @@ export function isOnboardingPendingForUser(user) {
 }
 
 export function resolvePostAuthPath(user) {
-  return isOnboardingPendingForUser(user) ? onboardingPath() : appPath();
+  // Deprecated active flow: onboarding is preserved in code, but users now
+  // always land directly in the main application after auth.
+  return appPath();
 }

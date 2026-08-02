@@ -9,8 +9,8 @@ import {
 } from "./supabase-client.js";
 import { redirectIfAuthenticated } from "./auth-helpers.js";
 import { applyTranslations, onLocaleChange, t } from "./i18n.js";
-import { resolvePostAuthPath, startOnboardingForUser } from "./onboarding-helpers.js";
-import { todayPath } from "./route-paths.js";
+import { resolvePostAuthPath } from "./onboarding-helpers.js";
+import { appPath } from "./route-paths.js";
 
 const form = document.getElementById("signupPageForm");
 const emailInput = document.getElementById("signupPageEmail");
@@ -19,7 +19,7 @@ const repeatInput = document.getElementById("signupPagePasswordRepeat");
 const submitButton = document.getElementById("signupPageSubmit");
 const statusBox = document.getElementById("signupPageStatus");
 
-redirectIfAuthenticated({ redirectTo: todayPath() }).catch(() => null);
+redirectIfAuthenticated({ redirectTo: appPath() }).catch(() => null);
 
 onLocaleChange(() => applyTranslations(document));
 
@@ -78,14 +78,12 @@ form?.addEventListener("submit", async (event) => {
     }
 
     await ensureProfile().catch(() => null);
-    startOnboardingForUser(authUser);
     setStatus(t("auth.accountCreated"));
     window.location.replace(resolvePostAuthPath(authUser));
   } catch (error) {
     if (canUseLocalAuthFallback() && canUseLocalFallback(error)) {
       try {
         const localResult = await createLocalAccount(email, password);
-        startOnboardingForUser(localResult?.user);
         setStatus(t("auth.accountCreated"));
         window.location.replace(resolvePostAuthPath(localResult?.user));
         return;
