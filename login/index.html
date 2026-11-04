@@ -12,21 +12,25 @@
 
     <main class="auth-route-main">
       <section class="section auth-route-card">
-        <p class="section-kicker">Sign in</p>
-        <h2 class="dashboard-section-title">Добро пожаловать обратно</h2>
-        <p class="auth-route-copy">Войдите, чтобы открыть личный трекер, проекты и check-in.</p>
+        <p class="section-kicker" data-i18n="auth.signInKicker">Вход</p>
+        <h2 class="dashboard-section-title" data-i18n="auth.signInTitle">Добро пожаловать обратно</h2>
+        <p class="auth-route-copy" data-i18n="auth.signInBody">Войдите, чтобы открыть личный трекер, проекты и оценку состояния.</p>
 
         <form id="loginPageForm" class="auth-page-form">
-          <input id="loginPageEmail" type="email" placeholder="Email" required>
-          <input id="loginPagePassword" type="password" placeholder="Пароль" required>
-          <button id="loginPageSubmit" class="form-action-button" type="submit">Войти</button>
+          <label class="auth-page-field" for="loginPageEmail"><span data-i18n="common.email">Email</span>
+            <input id="loginPageEmail" type="email" autocomplete="email" required>
+          </label>
+          <label class="auth-page-field" for="loginPagePassword"><span data-i18n="common.password">Пароль</span>
+            <input id="loginPagePassword" type="password" autocomplete="current-password" required>
+          </label>
+          <button id="loginPageSubmit" class="form-action-button" type="submit" data-i18n="navigation.login">Войти</button>
         </form>
 
-        <div id="loginPageStatus" class="auth-status-box">Введите email и пароль.</div>
+        <div id="loginPageStatus" class="auth-status-box" data-i18n="auth.loginIdle">Введите email и пароль.</div>
 
         <div class="auth-page-actions">
-          <a class="ghost-button auth-page-link" href="../forgot-password/">Забыли пароль?</a>
-          <a class="ghost-button auth-page-link" href="../signup/">Создать аккаунт</a>
+          <a class="ghost-button auth-page-link" href="../forgot-password/" data-i18n="auth.forgotPassword">Забыли пароль?</a>
+          <a class="ghost-button auth-page-link" href="../signup/" data-i18n="auth.createAccount">Создать аккаунт</a>
         </div>
       </section>
     </main>

@@ -17,6 +17,7 @@ const LANDING_COPY = {
     metaTitle: "MindPulse — планирование задач по энергии и нагрузке",
     metaDescription:
       "MindPulse помогает специалистам интеллектуального труда планировать работу с учетом энергии, когнитивной и эмоциональной нагрузки.",
+    previewHint: "Прокрутите изображение в сторону, чтобы рассмотреть экран.",
     header: {
       login: "Войти",
       signup: "Начать бесплатно",
@@ -66,10 +67,6 @@ const LANDING_COPY = {
         "MindPulse появился как попытка соединить планирование, данные о нагрузке и психологически бережный подход к работе.",
       name: "Никита Филатов",
       role: "Создатель MindPulse",
-      fallbackTitle: "Видео основателя скоро появится",
-      fallbackBody:
-        "Секция уже подготовлена под реальное видео: добавьте mp4 и постер в отдельную константу.",
-      fallbackHint: "Рекомендуемый формат — горизонтальное видео 16:9",
       playLabel: "Воспроизвести видео об основателе",
       posterAlt: "Превью видео создателя MindPulse"
     },
@@ -90,6 +87,7 @@ const LANDING_COPY = {
     metaTitle: "MindPulse — plan work around your energy and capacity",
     metaDescription:
       "MindPulse helps knowledge workers plan work around energy, cognitive load, and emotional load.",
+    previewHint: "Swipe sideways to explore the screen.",
     header: {
       login: "Log in",
       signup: "Start for free",
@@ -138,10 +136,6 @@ const LANDING_COPY = {
         "MindPulse is my attempt to combine planning, workload awareness, and a psychologically sustainable way of working.",
       name: "Nikita Filatov",
       role: "Founder of MindPulse",
-      fallbackTitle: "Founder video will be added here",
-      fallbackBody:
-        "This section is already prepared for a real video: just add an mp4 file and a poster path in one constant.",
-      fallbackHint: "Recommended format — horizontal 16:9 video",
       playLabel: "Play founder video",
       posterAlt: "Preview of the MindPulse founder video"
     },
@@ -282,8 +276,15 @@ function renderFounderVideo() {
 
   const copy = getCopy().founder;
 
-  if (FOUNDER_VIDEO.src) {
-    mount.innerHTML = `
+  mount.hidden = !FOUNDER_VIDEO.src;
+  mount.closest(".landing-home-founder")?.classList.toggle("is-text-only", !FOUNDER_VIDEO.src);
+
+  if (!FOUNDER_VIDEO.src) {
+    mount.innerHTML = "";
+    return;
+  }
+
+  mount.innerHTML = `
       <div class="landing-founder-media-frame">
         <video
           class="landing-founder-video"
@@ -296,28 +297,6 @@ function renderFounderVideo() {
         </video>
       </div>
     `;
-    return;
-  }
-
-  const poster = FOUNDER_VIDEO.poster
-    ? `<img class="landing-founder-poster" src="${escapeHtml(FOUNDER_VIDEO.poster)}" alt="${escapeHtml(copy.posterAlt)}">`
-    : `<div class="landing-founder-fallback-visual" aria-hidden="true">
-         <span>MindPulse</span>
-       </div>`;
-
-  mount.innerHTML = `
-    <div class="landing-founder-media-frame is-placeholder">
-      ${poster}
-      <button class="landing-founder-play" type="button" aria-label="${escapeHtml(copy.playLabel)}" disabled>
-        <span class="landing-founder-play-icon" aria-hidden="true"></span>
-      </button>
-      <div class="landing-founder-fallback">
-        <strong>${escapeHtml(copy.fallbackTitle)}</strong>
-        <p>${escapeHtml(copy.fallbackBody)}</p>
-        <span>${escapeHtml(copy.fallbackHint)}</span>
-      </div>
-    </div>
-  `;
 }
 
 function syncCurrentYear() {

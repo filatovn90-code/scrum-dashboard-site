@@ -12,21 +12,27 @@
 
     <main class="auth-route-main">
       <section class="section auth-route-card">
-        <p class="section-kicker">Sign up</p>
-        <h2 class="dashboard-section-title">Откройте личное приложение</h2>
-        <p class="auth-route-copy">После регистрации профиль будет создан автоматически, а вы сразу попадёте в защищённую зону.</p>
+        <p class="section-kicker" data-i18n="auth.signUpKicker">Регистрация</p>
+        <h2 class="dashboard-section-title" data-i18n="auth.signUpTitle">Откройте личное приложение</h2>
+        <p class="auth-route-copy" data-i18n="auth.signUpBody">После регистрации профиль будет создан автоматически, а вы сразу попадёте в защищённую зону.</p>
 
         <form id="signupPageForm" class="auth-page-form">
-          <input id="signupPageEmail" type="email" placeholder="Email" required>
-          <input id="signupPagePassword" type="password" placeholder="Пароль" required>
-          <input id="signupPagePasswordRepeat" type="password" placeholder="Повторите пароль" required>
-          <button id="signupPageSubmit" class="form-action-button" type="submit">Создать аккаунт</button>
+          <label class="auth-page-field" for="signupPageEmail"><span data-i18n="common.email">Email</span>
+            <input id="signupPageEmail" type="email" autocomplete="email" required>
+          </label>
+          <label class="auth-page-field" for="signupPagePassword"><span data-i18n="common.password">Пароль</span>
+            <input id="signupPagePassword" type="password" autocomplete="new-password" required>
+          </label>
+          <label class="auth-page-field" for="signupPagePasswordRepeat"><span data-i18n="auth.repeatPassword">Повторите пароль</span>
+            <input id="signupPagePasswordRepeat" type="password" autocomplete="new-password" required>
+          </label>
+          <button id="signupPageSubmit" class="form-action-button" type="submit" data-i18n="auth.createAccount">Создать аккаунт</button>
         </form>
 
-        <div id="signupPageStatus" class="auth-status-box">Используйте email, с которым будете дальше заходить в MindPulse.</div>
+        <div id="signupPageStatus" class="auth-status-box" data-i18n="auth.signupIdle">Используйте email, с которым будете дальше входить в приложение.</div>
 
         <div class="auth-page-actions">
-          <a class="ghost-button auth-page-link" href="../login/">Уже есть аккаунт?</a>
+          <a class="ghost-button auth-page-link" href="../login/" data-i18n="auth.alreadyHaveAccount">Уже есть аккаунт?</a>
         </div>
       </section>
     </main>

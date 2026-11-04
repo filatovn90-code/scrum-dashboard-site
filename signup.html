@@ -17,9 +17,15 @@
         <p class="auth-route-copy" data-i18n="auth.signUpBody">После регистрации профиль будет создан автоматически, а вы сразу попадёте в защищённую зону.</p>
 
         <form id="signupPageForm" class="auth-page-form">
-          <input id="signupPageEmail" type="email" data-i18n-placeholder="common.email" placeholder="Email" required>
-          <input id="signupPagePassword" type="password" data-i18n-placeholder="common.password" placeholder="Пароль" required>
-          <input id="signupPagePasswordRepeat" type="password" data-i18n-placeholder="auth.repeatPassword" placeholder="Повторите пароль" required>
+          <label class="auth-page-field" for="signupPageEmail"><span data-i18n="common.email">Email</span>
+            <input id="signupPageEmail" type="email" autocomplete="email" required>
+          </label>
+          <label class="auth-page-field" for="signupPagePassword"><span data-i18n="common.password">Пароль</span>
+            <input id="signupPagePassword" type="password" autocomplete="new-password" required>
+          </label>
+          <label class="auth-page-field" for="signupPagePasswordRepeat"><span data-i18n="auth.repeatPassword">Повторите пароль</span>
+            <input id="signupPagePasswordRepeat" type="password" autocomplete="new-password" required>
+          </label>
           <button id="signupPageSubmit" class="form-action-button" type="submit" data-i18n="auth.createAccount">Создать аккаунт</button>
         </form>
 

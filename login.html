@@ -17,8 +17,12 @@
         <p class="auth-route-copy" data-i18n="auth.signInBody">Войдите, чтобы открыть личный трекер, проекты и оценку состояния.</p>
 
         <form id="loginPageForm" class="auth-page-form">
-          <input id="loginPageEmail" type="email" data-i18n-placeholder="common.email" placeholder="Email" required>
-          <input id="loginPagePassword" type="password" data-i18n-placeholder="common.password" placeholder="Пароль" required>
+          <label class="auth-page-field" for="loginPageEmail"><span data-i18n="common.email">Email</span>
+            <input id="loginPageEmail" type="email" autocomplete="email" required>
+          </label>
+          <label class="auth-page-field" for="loginPagePassword"><span data-i18n="common.password">Пароль</span>
+            <input id="loginPagePassword" type="password" autocomplete="current-password" required>
+          </label>
           <button id="loginPageSubmit" class="form-action-button" type="submit" data-i18n="navigation.login">Войти</button>
         </form>
 
