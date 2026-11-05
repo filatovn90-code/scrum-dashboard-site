@@ -128,8 +128,7 @@ async function loadTodayTasks() {
     endIso: todayIso,
     limit: 80
   });
-  const backlogTasks = loadBacklogTasksForRange(todayIso, todayIso);
-  todayTasks = mergeTasks(supabaseTasks, backlogTasks);
+  todayTasks = supabaseTasks;
 }
 
 async function loadRecentCheckins() {
@@ -154,8 +153,7 @@ async function loadRecentTasks() {
     endIso: todayIso,
     limit: 200
   });
-  const backlogTasks = loadBacklogTasksForRange(recentStartIso, todayIso);
-  recentTasks = mergeTasks(supabaseTasks, backlogTasks);
+  recentTasks = supabaseTasks;
 }
 
 async function queryTasks({ startIso, endIso, limit = 80 }) {

@@ -1414,12 +1414,13 @@ function readCookie(name) {
 }
 
 export function detectInitialLocale() {
-  const saved = window.appStorage?.getItem(LOCALE_STORAGE_KEY) || readCookie(LOCALE_COOKIE_KEY);
+  const saved = (typeof window !== "undefined" ? window.appStorage?.getItem(LOCALE_STORAGE_KEY) : null)
+    || (typeof document !== "undefined" ? readCookie(LOCALE_COOKIE_KEY) : null);
   if (supportedLocales.includes(saved)) {
     return saved;
   }
 
-  const browserLocale = String(window.navigator?.language || "").toLowerCase();
+  const browserLocale = String(typeof navigator !== "undefined" ? navigator.language : "").toLowerCase();
   if (browserLocale.startsWith("ru")) {
     return "ru";
   }
