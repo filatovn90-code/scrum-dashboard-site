@@ -1,5 +1,6 @@
 import { getCurrentSession, getSupabase, signOutCurrentUser } from "./auth-helpers.js";
 import { landingPath } from "./route-paths.js";
+import { createCloudRepository, createFocusRepository, createFocusSaveQueue, createLoadGuard, getInitialWeek, getLegacyEntries, getLegacyFocusDays, mapCloudTask, migrateLegacyEntries, migrateLegacyFocusDays, toIsoBoardDate } from "./cloud-backlog.js";
 import { applyTranslations, onLocaleChange, t } from "./i18n.js";
 import {
   calculateDailyLoad,
@@ -14,25 +15,17 @@ import {
 } from "./lib/workload.js";
 
 const AUTH_KEY = "scrum-dashboard-auth-user";
-
-if (!window.appStorage.getItem(AUTH_KEY)) {
-  window.location.replace("index.html");
-}
-
-const activeUser = window.appStorage.getItem(AUTH_KEY);
+let activeUser = window.appStorage.getItem(AUTH_KEY) || "";
 const weekSelect = document.getElementById("weekSelect");
 const focusTodayPanel = document.getElementById("focusTodayPanel");
 const backlogSummary = document.getElementById("backlogSummary");
 const backlogBoard = document.getElementById("backlogBoard");
 const logoutButton = document.getElementById("logoutButton");
 
-const BACKLOG_STORAGE_KEY = "scrum-master-backlog-data";
-const DAILY_FOCUS_STORAGE_KEY = "scrum-master-daily-focus";
 const DAILY_FOCUS_DAY_STORAGE_KEY = "scrum-master-daily-focus-day";
 const DAY_PULSE_SNAPSHOT_STORAGE_KEY = "mindpulse-day-pulse-snapshots";
-const userBacklogStorageKey = `${BACKLOG_STORAGE_KEY}:${activeUser}`;
-const userBacklogWeekStorageKey = `scrum-master-backlog-week:${activeUser}`;
-const userDayPulseSnapshotStorageKey = `${DAY_PULSE_SNAPSHOT_STORAGE_KEY}:${activeUser}`;
+let userBacklogWeekStorageKey = `scrum-master-backlog-week:${activeUser}`;
+let userDayPulseSnapshotStorageKey = `${DAY_PULSE_SNAPSHOT_STORAGE_KEY}:${activeUser}`;
 const BACKLOG_YEAR = 2026;
 const DEFAULT_DAY_PULSE = 70;
 
@@ -110,20 +103,26 @@ let activeEditorState = null;
 let draggedTaskKey = null;
 let supabaseClient;
 let currentSession;
+let cloudRepository;
+let focusRepository;
+let focusSaveQueue;
+let migrationChecked = false;
+const focusCache = new Map();
+const loadGuard = createLoadGuard();
+let focusEditVersion = 0;
 let dayPulseCheckins = new Map();
-let backlogRenderVersion = 0;
 const expandedPulseCards = new Set();
 let pulseSnapshots = loadPulseSnapshots();
 
 onLocaleChange(() => {
   applyTranslations(document);
-  renderBacklog(activeWeekLabel).catch((error) => console.error("Failed to rerender backlog locale", error));
+  renderBacklog(weekSelect.value).catch((error) => console.error("Failed to rerender backlog locale", error));
 });
 
 function formatDate(date) {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
-  return `${day}.${month}`;
+  return `${day}.${month}${date.getFullYear() === BACKLOG_YEAR ? "" : `.${date.getFullYear()}`}`;
 }
 
 function loadPulseSnapshots() {
@@ -154,7 +153,8 @@ function weekStartValue(label) {
   }
 
   const [, day, month] = match;
-  return new Date(BACKLOG_YEAR, Number(month) - 1, Number(day)).getTime();
+  const year = Number(/\((\d{4})\)$/.exec(label)?.[1] || BACKLOG_YEAR);
+  return new Date(year, Number(month) - 1, Number(day)).getTime();
 }
 
 function monthNameForWeek(week) {
@@ -163,7 +163,8 @@ function monthNameForWeek(week) {
     return "Без месяца";
   }
 
-  return monthNames[Number(match[2]) - 1] || "Без месяца";
+  const year = /\((\d{4})\)$/.exec(week)?.[1];
+  return `${monthNames[Number(match[2]) - 1] || "Без месяца"}${year ? ` ${year}` : ""}`;
 }
 
 function shortWeekLabel(week) {
@@ -172,7 +173,8 @@ function shortWeekLabel(week) {
     return week;
   }
 
-  return `${match[1]} - ${match[2]}`;
+  const year = /\((\d{4})\)$/.exec(week)?.[1];
+  return `${match[1]} - ${match[2]}${year ? ` · ${year}` : ""}`;
 }
 
 function addDays(date, amount) {
@@ -182,12 +184,7 @@ function addDays(date, amount) {
 }
 
 function toBacklogIsoDate(value) {
-  const [day, month] = String(value || "").split(".");
-  if (!day || !month) {
-    return "";
-  }
-
-  return `${BACKLOG_YEAR}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  return toIsoBoardDate(value);
 }
 
 function isPastBacklogDate(dateIso) {
@@ -200,7 +197,7 @@ function createEmptyWeek(startDate, endLimit) {
 
   for (let offset = 0; offset < 5; offset += 1) {
     const date = addDays(startDate, offset);
-    if (date > endLimit || date.getFullYear() !== BACKLOG_YEAR) {
+    if (date > endLimit || date.getFullYear() !== startDate.getFullYear()) {
       break;
     }
 
@@ -212,7 +209,8 @@ function createEmptyWeek(startDate, endLimit) {
   }
 
   const endDate = addDays(startDate, days.length - 1);
-  const label = `Неделя ${formatDate(startDate)} - ${formatDate(endDate)}`;
+  const year = startDate.getFullYear();
+  const label = `Неделя ${formatDate(startDate).slice(0, 5)} - ${formatDate(endDate).slice(0, 5)}${year === BACKLOG_YEAR ? "" : ` (${year})`}`;
 
   return {
     [label]: { days }
@@ -221,13 +219,14 @@ function createEmptyWeek(startDate, endLimit) {
 
 function generateWeeksUntilYearEnd() {
   const generated = {};
-  const seededStart = new Date(BACKLOG_YEAR, 3, 20);
-  const yearEnd = new Date(BACKLOG_YEAR, 11, 31);
-  let cursor = new Date(seededStart);
-
-  while (cursor <= yearEnd) {
-    Object.assign(generated, createEmptyWeek(cursor, yearEnd));
-    cursor = addDays(cursor, 7);
+  for (let year = BACKLOG_YEAR; year <= Math.max(BACKLOG_YEAR, new Date().getFullYear()); year += 1) {
+    const yearEnd = new Date(year, 11, 31);
+    const firstDay = year === BACKLOG_YEAR ? new Date(year, 3, 20) : new Date(year, 0, 1);
+    let cursor = addDays(firstDay, (8 - firstDay.getDay()) % 7);
+    while (cursor <= yearEnd) {
+      Object.assign(generated, createEmptyWeek(cursor, yearEnd));
+      cursor = addDays(cursor, 7);
+    }
   }
 
   return generated;
@@ -344,34 +343,6 @@ function normalizeStoredData(template, stored) {
   return merged;
 }
 
-function loadBacklogData(template) {
-  const raw = window.appStorage.getItem(userBacklogStorageKey);
-  const legacyRaw = window.appStorage.getItem(BACKLOG_STORAGE_KEY);
-
-  if (!raw && legacyRaw) {
-    try {
-      window.appStorage.setItem(userBacklogStorageKey, legacyRaw);
-    } catch {
-      // noop
-    }
-  }
-
-  const resolvedRaw = raw || legacyRaw;
-  if (!resolvedRaw) {
-    return normalizeStoredData(template);
-  }
-
-  try {
-    return normalizeStoredData(template, JSON.parse(resolvedRaw));
-  } catch {
-    return normalizeStoredData(template);
-  }
-}
-
-function saveBacklogData() {
-  window.appStorage.setItem(userBacklogStorageKey, JSON.stringify(backlogData));
-}
-
 function parseKey(key) {
   const [week, date, value] = key.split("::");
   return { week, date, value };
@@ -432,11 +403,11 @@ function getNextAvailableTime(day) {
   return timeline.find((time) => !day.items.some((entry) => entry.time === time)) || timeline[0];
 }
 
-const defaultBacklogData = mergeWeekData(generateWeeksUntilYearEnd(), seededBacklogData);
-const backlogData = loadBacklogData(defaultBacklogData);
+const defaultBacklogData = generateWeeksUntilYearEnd();
+const backlogData = normalizeStoredData(defaultBacklogData);
 const weekNames = Object.keys(backlogData).sort((a, b) => weekStartValue(a) - weekStartValue(b));
 const storedWeek = window.appStorage.getItem(userBacklogWeekStorageKey);
-const defaultWeek = weekNames.includes(storedWeek) ? storedWeek : weekNames[0];
+const defaultWeek = weekNames.includes(storedWeek) ? storedWeek : getInitialWeek(weekNames);
 
 const weeksByMonth = weekNames.reduce((groups, week) => {
   const month = monthNameForWeek(week);
@@ -460,10 +431,6 @@ Object.entries(weeksByMonth).forEach(([month, weeks]) => {
   weekSelect.appendChild(optgroup);
 });
 
-function focusStorageKey(week, date) {
-  return `${DAILY_FOCUS_STORAGE_KEY}:${activeUser}:${week}:${date}`;
-}
-
 function focusSelectedDayStorageKey(week) {
   return `${DAILY_FOCUS_DAY_STORAGE_KEY}:${activeUser}:${week}`;
 }
@@ -481,18 +448,11 @@ function getSelectedFocusDay(week) {
 
 function loadDailyFocus(week, date) {
   const fallback = [0, 1, 2].map(() => ({ text: "", done: false }));
-  const raw = window.appStorage.getItem(focusStorageKey(week, date));
-  if (!raw) return fallback;
-
-  try {
-    const parsed = JSON.parse(raw);
-    return [0, 1, 2].map((index) => ({
-      text: parsed[index]?.text || "",
-      done: Boolean(parsed[index]?.done)
-    }));
-  } catch {
-    return fallback;
-  }
+  const items = focusCache.get(toBacklogIsoDate(date));
+  return items ? [0, 1, 2].map((index) => ({
+    text: items[index]?.text || "",
+    done: Boolean(items[index]?.done)
+  })) : fallback;
 }
 
 function saveDailyFocus(week, date, items) {
@@ -500,7 +460,10 @@ function saveDailyFocus(week, date, items) {
     text: String(item?.text || "").trim(),
     done: Boolean(item?.done)
   }));
-  window.appStorage.setItem(focusStorageKey(week, date), JSON.stringify(normalized));
+  const focusDate = toBacklogIsoDate(date);
+  focusCache.set(focusDate, normalized);
+  focusEditVersion += 1;
+  return ensurePulseContext().then(() => focusSaveQueue.save({ focus_date: focusDate, items: normalized }));
 }
 
 function renderDailyFocus(week = weekSelect.value) {
@@ -557,7 +520,8 @@ function renderDailyFocus(week = weekSelect.value) {
 
   focusTodayPanel.querySelectorAll("[data-focus-input], [data-focus-done]").forEach((field) => {
     field.addEventListener("change", () => {
-      saveDailyFocus(week, daySelect?.value || selectedDate, collectFocusState());
+      void saveDailyFocus(week, daySelect?.value || selectedDate, collectFocusState())
+        .catch((error) => { focusTodayPanel.textContent = error.message; });
       renderDailyFocus(week);
     });
   });
@@ -611,25 +575,76 @@ function getWeekIsoRange(week) {
 }
 
 async function ensurePulseContext() {
-  if (typeof currentSession !== "undefined" && typeof supabaseClient !== "undefined") {
+  if (cloudRepository) {
     return;
   }
 
-  currentSession = await getCurrentSession().catch(() => null);
-  supabaseClient = await getSupabase().catch(() => null);
+  currentSession = await getCurrentSession();
+  supabaseClient = await getSupabase();
+  if (!currentSession?.user?.id || !supabaseClient) {
+    window.location.replace("login.html");
+    throw new Error("Войдите в аккаунт, чтобы открыть план недели.");
+  }
+  activeUser = currentSession.user.email || currentSession.user.id;
+  userBacklogWeekStorageKey = `scrum-master-backlog-week:${activeUser}`;
+  userDayPulseSnapshotStorageKey = `${DAY_PULSE_SNAPSHOT_STORAGE_KEY}:${activeUser}`;
+  pulseSnapshots = loadPulseSnapshots();
+  cloudRepository = createCloudRepository(supabaseClient, currentSession.user.id);
+  focusRepository = createFocusRepository(supabaseClient, currentSession.user.id);
+  focusSaveQueue = createFocusSaveQueue(focusRepository);
+}
+
+async function loadCloudWeek(week) {
+  await ensurePulseContext();
+  if (!migrationChecked) {
+    const demoItems = Object.values(seededBacklogData).flatMap((entry) => entry.days.flatMap((day) => day.items));
+    const legacyEntries = getLegacyEntries(window.appStorage, currentSession.user.email, BACKLOG_YEAR, demoItems);
+    await migrateLegacyEntries(window.appStorage, currentSession.user.id, legacyEntries, cloudRepository);
+    const focusDays = Object.entries(defaultBacklogData).flatMap(([label, value]) =>
+      value.days.map((day) => ({ week: label, date: day.date })));
+    const legacyFocus = getLegacyFocusDays(window.appStorage, currentSession.user.email, focusDays, BACKLOG_YEAR);
+    await migrateLegacyFocusDays(window.appStorage, currentSession.user.id, legacyFocus, focusRepository);
+    migrationChecked = true;
+  }
+
+  const range = getWeekIsoRange(week);
+  if (!range) return { rows: [], focusRows: [], focusVersion: focusEditVersion };
+  await focusSaveQueue.settled();
+  const focusVersion = focusEditVersion;
+  const [rows, focusRows] = await Promise.all([
+    cloudRepository.load(range.start, range.end),
+    focusRepository.load(range.start, range.end)
+  ]);
+  return { rows, focusRows, focusVersion };
+}
+
+function applyCloudWeek(week, { rows, focusRows, focusVersion }) {
+  const days = backlogData[week]?.days || [];
+  days.forEach((day) => { day.items = []; });
+  (rows || []).forEach((row) => {
+    const day = days.find((entry) => toBacklogIsoDate(entry.date) === row.planned_date);
+    if (!day) return;
+    const task = mapCloudTask(row);
+    if (!row.planned_time) task.time = getNextAvailableTime(day);
+    day.items.push(task);
+  });
+  if (focusVersion === focusEditVersion) {
+    days.forEach((day) => focusCache.delete(toBacklogIsoDate(day.date)));
+    (focusRows || []).forEach((row) => focusCache.set(row.focus_date, row.items));
+    renderDailyFocus(week);
+  }
 }
 
 async function loadDayPulseData(week) {
-  dayPulseCheckins = new Map();
   await ensurePulseContext();
 
   if (!supabaseClient || !currentSession?.user?.id) {
-    return;
+    return new Map();
   }
 
   const range = getWeekIsoRange(week);
   if (!range) {
-    return;
+    return new Map();
   }
 
   const { data, error } = await supabaseClient
@@ -641,12 +656,14 @@ async function loadDayPulseData(week) {
 
   if (error) {
     console.error("Failed to load backlog day pulse", error);
-    return;
+    return new Map();
   }
 
+  const checkins = new Map();
   (data || []).forEach((item) => {
-    dayPulseCheckins.set(toIsoDate(item.checkin_date), item);
+    checkins.set(toIsoDate(item.checkin_date), item);
   });
+  return checkins;
 }
 
 function getPulseCardState(percent) {
@@ -934,7 +951,7 @@ function statusClass(status) {
   return "is-todo";
 }
 
-function saveEditor(editorKey) {
+async function saveEditor(editorKey) {
   const editor = backlogBoard.querySelector(`[data-editor="${editorKey}"]`);
   if (!editor) return;
 
@@ -956,15 +973,17 @@ function saveEditor(editorKey) {
   if (!day) return;
 
   const selectedTime = timeSelect ? timeSelect.value : getNextAvailableTime(day);
-  const nextTask = normalizeBacklogTaskItem({
-    id: activeEditorState?.mode === "edit" ? value : `task-${Date.now()}`,
-    time: selectedTime,
-    text,
-    status: statusSelect.value,
+  const status = statusSelect.value === "Сделано" ? "done" : statusSelect.value === "В работе" ? "in_progress" : "todo";
+  const payload = {
+    title: text,
+    planned_date: toBacklogIsoDate(day.date),
+    planned_time: selectedTime,
+    status,
     task_type: taskTypeSelect.value,
     cognitive_load: Number(cognitiveLoadSelect.value),
-    emotional_load: Number(emotionalLoadSelect.value)
-  }, day.date);
+    emotional_load: Number(emotionalLoadSelect.value),
+    completed_at: status === "done" ? `${toBacklogIsoDate(day.date)}T18:00:00.000Z` : null
+  };
 
   if (activeEditorState?.mode === "edit") {
     const taskIndex = day.items.findIndex((entry) => entry.id === value);
@@ -976,32 +995,29 @@ function saveEditor(editorKey) {
       return;
     }
 
-    day.items[taskIndex] = nextTask;
+    await cloudRepository.updateTask(value, payload);
   } else {
     const hasConflict = day.items.some((entry) => entry.time === selectedTime);
     if (hasConflict) {
       timeSelect?.focus();
       return;
     }
-    day.items.push(nextTask);
+    await cloudRepository.createTask(payload);
   }
 
-  sortDayItems(day);
-  saveBacklogData();
   activeEditorState = null;
-  void renderBacklog(weekSelect.value);
+  await renderBacklog(weekSelect.value);
 }
 
-function deleteTask(taskKey) {
+async function deleteTask(taskKey) {
   const { day, id } = findTaskByKey(taskKey);
   if (!day) return;
-  day.items = day.items.filter((entry) => entry.id !== id);
-  saveBacklogData();
+  await cloudRepository.deleteTask(id);
   activeEditorState = null;
-  void renderBacklog(weekSelect.value);
+  await renderBacklog(weekSelect.value);
 }
 
-function moveTaskToDay(taskKey, targetDayKey) {
+async function moveTaskToDay(taskKey, targetDayKey) {
   const { week, date: sourceDate, value: id } = parseKey(taskKey);
   const { date: targetDate } = parseKey(targetDayKey);
   const sourceDay = findDay(week, sourceDate);
@@ -1011,24 +1027,38 @@ function moveTaskToDay(taskKey, targetDayKey) {
   const sourceIndex = sourceDay.items.findIndex((entry) => entry.id === id);
   if (sourceIndex < 0) return false;
 
-  const [task] = sourceDay.items.splice(sourceIndex, 1);
+  const task = sourceDay.items[sourceIndex];
   const keepTime = !targetDay.items.some((entry) => entry.time === task.time);
   const nextTime = keepTime ? task.time : getNextAvailableTime(targetDay);
-  targetDay.items.push(normalizeBacklogTaskItem({ ...task, time: nextTime }, targetDay.date));
-
-  sortDayItems(sourceDay);
-  sortDayItems(targetDay);
-  saveBacklogData();
+  await cloudRepository.updateTask(id, {
+    planned_date: toBacklogIsoDate(targetDate),
+    planned_time: nextTime,
+    completed_at: task.status === "Сделано" ? `${toBacklogIsoDate(targetDate)}T18:00:00.000Z` : null
+  });
   return true;
 }
 
 async function renderBacklog(week) {
-  const renderVersion = ++backlogRenderVersion;
+  const renderVersion = loadGuard.start();
   const data = backlogData[week];
-  await loadDayPulseData(week);
-  if (renderVersion !== backlogRenderVersion) {
+  if (!data) return;
+  let cloudData;
+  let checkins;
+  try {
+    cloudData = await loadCloudWeek(week);
+    checkins = await loadDayPulseData(week);
+  } catch (error) {
+    if (loadGuard.isCurrent(renderVersion)) {
+      backlogBoard.textContent = error?.message || "Не удалось загрузить план недели.";
+    }
+    console.error("Failed to load cloud backlog", error);
     return;
   }
+  if (!loadGuard.isCurrent(renderVersion)) {
+    return;
+  }
+  applyCloudWeek(week, cloudData);
+  dayPulseCheckins = checkins;
 
   const pulseMetricsByDay = buildDayPulseMetricsMap(week, data.days);
   renderBacklogSummary(week);
@@ -1128,9 +1158,8 @@ function bindBoardActions() {
       const moved = moveTaskToDay(draggedTaskKey, element.dataset.dayDrop);
       draggedTaskKey = null;
       activeEditorState = null;
-      if (moved) {
-        void renderBacklog(weekSelect.value);
-      }
+      void moved.then((didMove) => didMove && renderBacklog(weekSelect.value))
+        .catch((error) => { backlogBoard.textContent = error.message; });
     });
   }
 
@@ -1145,7 +1174,7 @@ function bindBoardActions() {
 
   backlogBoard.querySelectorAll("[data-editor-save]").forEach((button) => {
     button.addEventListener("click", () => {
-      saveEditor(button.dataset.editorSave);
+      void saveEditor(button.dataset.editorSave).catch((error) => { backlogBoard.textContent = error.message; });
     });
   });
 
@@ -1156,24 +1185,23 @@ function bindBoardActions() {
       if (select.value === "__edit__") {
         activeEditorState = { mode: "edit", key: taskKey };
         void renderBacklog(weekSelect.value);
-        const input = backlogBoard.querySelector("[data-editor-text]");
-        if (input) {
-          input.focus();
-          input.setSelectionRange(input.value.length, input.value.length);
-        }
         return;
       }
 
       if (select.value === "__delete__") {
-        deleteTask(taskKey);
+        void deleteTask(taskKey).catch((error) => { backlogBoard.textContent = error.message; });
         return;
       }
 
       const { task } = findTaskByKey(taskKey);
       if (!task) return;
-      task.status = select.value;
-      saveBacklogData();
-      void renderBacklog(weekSelect.value);
+      const status = select.value === "Сделано" ? "done" : select.value === "В работе" ? "in_progress" : "todo";
+      const plannedDate = toBacklogIsoDate(parseKey(taskKey).date);
+      void cloudRepository.updateTask(task.id, {
+        status,
+        completed_at: status === "done" ? `${plannedDate}T18:00:00.000Z` : null
+      }).then(() => renderBacklog(weekSelect.value))
+        .catch((error) => { backlogBoard.textContent = error.message; });
     });
   });
 

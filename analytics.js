@@ -193,9 +193,7 @@ async function fetchTasks(range) {
   }
 
   const appTasks = (data || []).map((task) => normalizeTask(task));
-  const backlogTasks = loadBacklogTasks(range);
-
-  return mergeTaskSources(appTasks, backlogTasks);
+  return appTasks;
 }
 
 function loadBacklogTasks(range) {
