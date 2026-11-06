@@ -9177,3 +9177,27 @@ body.app-has-shell .app-feedback-trigger:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
+
+body.app-has-shell .task-card.is-done {
+  background: #dcefd8;
+  border: 2px solid #589a59;
+  box-shadow: 0 4px 16px rgba(42, 105, 48, 0.16);
+}
+
+body.app-has-shell .task-card.is-done .task-done-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #276c35;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+[data-task-card]:focus-visible {
+  outline: 3px solid #276c35;
+  outline-offset: 3px;
+}

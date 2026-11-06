@@ -907,7 +907,7 @@ function renderTaskCard(week, day, rawItem) {
   const doneMark = item.status === "Сделано" ? '<span class="task-done-mark" aria-hidden="true">✓</span>' : "";
 
   return `
-    <div class="backlog-slot-cell is-task" draggable="true" data-task-card="${taskKey}">
+    <div class="backlog-slot-cell is-task" draggable="true" tabindex="0" data-task-card="${taskKey}" title="${t("plan.editTask")}">
       <div class="task-card ${item.status === "Сделано" ? "is-done" : ""}">
         ${doneMark}
         <span class="task-drag-hint" aria-hidden="true">::</span>
@@ -919,7 +919,6 @@ function renderTaskCard(week, day, rawItem) {
               <option value="Запланировано" ${item.status === "Запланировано" ? "selected" : ""}>${t("plan.taskPlanned")}</option>
               <option value="В работе" ${item.status === "В работе" ? "selected" : ""}>${t("plan.taskInProgress")}</option>
               <option value="Сделано" ${item.status === "Сделано" ? "selected" : ""}>${t("plan.taskDone")}</option>
-              <option value="__edit__">${t("plan.editTask")}</option>
               <option value="__delete__">${t("plan.deleteTask")}</option>
             </select>
           </div>
@@ -1101,6 +1100,20 @@ async function renderBacklog(week) {
 
 function bindBoardActions() {
   backlogBoard.querySelectorAll("[data-task-card]").forEach((card) => {
+    const openEditor = () => {
+      activeEditorState = { mode: "edit", key: card.dataset.taskCard };
+      void renderBacklog(weekSelect.value);
+    };
+    card.addEventListener("dblclick", (event) => {
+      if (event.target.closest("select, button, input, a")) return;
+      openEditor();
+    });
+    card.addEventListener("keydown", (event) => {
+      if (event.target === card && event.key === "Enter") {
+        event.preventDefault();
+        openEditor();
+      }
+    });
     card.addEventListener("mousedown", () => {
       card.setAttribute("draggable", "true");
     });
@@ -1181,12 +1194,6 @@ function bindBoardActions() {
   backlogBoard.querySelectorAll("[data-task-status]").forEach((select) => {
     select.addEventListener("change", () => {
       const taskKey = select.dataset.taskStatus;
-
-      if (select.value === "__edit__") {
-        activeEditorState = { mode: "edit", key: taskKey };
-        void renderBacklog(weekSelect.value);
-        return;
-      }
 
       if (select.value === "__delete__") {
         void deleteTask(taskKey).catch((error) => { backlogBoard.textContent = error.message; });
