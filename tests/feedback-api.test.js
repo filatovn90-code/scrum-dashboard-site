@@ -51,6 +51,19 @@ test("guest rate limiting does not depend on a supplied email", () => {
   assert.equal(feedbackApi.getFeedbackRateLimitKey(req, "second@example.com", "user-1"), "user:user-1");
 });
 
+test("rate limiter keeps only active keys and enforces the preview window", () => {
+  assert.equal(typeof feedbackApi.enforceFeedbackRateLimit, "function", "enforceFeedbackRateLimit is not implemented");
+  feedbackApi.resetFeedbackRateLimitForTests();
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    feedbackApi.enforceFeedbackRateLimit("ip:203.0.113.9");
+  }
+  assert.throws(
+    () => feedbackApi.enforceFeedbackRateLimit("ip:203.0.113.9"),
+    (error) => error.statusCode === 429
+  );
+  feedbackApi.resetFeedbackRateLimitForTests();
+});
+
 test("invalid authenticated feedback does not fall back to a guest", async () => {
   assert.equal(typeof feedbackApi.getFeedbackAuthContext, "function", "getFeedbackAuthContext is not implemented");
   const req = { headers: { authorization: "Bearer expired-token" } };

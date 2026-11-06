@@ -15,6 +15,7 @@ const MIN_MESSAGE_LENGTH = 10;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const WINDOW_MS = 15 * 60 * 1000;
 const LIMIT_PER_WINDOW = 5;
+const MAX_RATE_LIMIT_KEYS = 1000;
 const rateLimitStore = new Map();
 
 function createAnonClient() {
@@ -40,8 +41,11 @@ export async function getFeedbackAuthContext(req, resolveContext = getServerAuth
   return extractBearerToken(req) ? resolveContext(req) : null;
 }
 
-function enforceRateLimit(key) {
-  const now = Date.now();
+export function resetFeedbackRateLimitForTests() {
+  rateLimitStore.clear();
+}
+
+export function enforceFeedbackRateLimit(key, now = Date.now()) {
   const existing = rateLimitStore.get(key);
   const recentHits = (existing || []).filter((timestamp) => now - timestamp < WINDOW_MS);
 
@@ -52,6 +56,12 @@ function enforceRateLimit(key) {
   }
 
   recentHits.push(now);
+  if (!rateLimitStore.has(key) && rateLimitStore.size >= MAX_RATE_LIMIT_KEYS) {
+    const oldestKey = rateLimitStore.keys().next().value;
+    if (oldestKey) {
+      rateLimitStore.delete(oldestKey);
+    }
+  }
   rateLimitStore.set(key, recentHits);
 }
 
@@ -323,7 +333,7 @@ export default async function handler(req, res) {
     const payload = validatePayload(fields);
     const userId = user?.id || null;
 
-    enforceRateLimit(getFeedbackRateLimitKey(req, payload.contactEmail, userId));
+    enforceFeedbackRateLimit(getFeedbackRateLimitKey(req, payload.contactEmail, userId));
 
     let feedbackId;
     try {

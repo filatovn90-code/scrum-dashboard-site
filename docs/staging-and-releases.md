@@ -13,6 +13,8 @@ Staging has the app schema and feedback table but no copied production accounts 
 
 Server-side Supabase routes use the same Preview guard as the browser config route. The legacy health API uses `DATABASE_URL`; if it is enabled for Preview, its connection URL must point to the same staging Supabase project. Without a staging `DATABASE_URL`, health endpoints are unavailable in Preview rather than connecting to Production.
 
+Feedback submissions have a small in-memory rate limit in Preview. It is deliberately best-effort across Vercel function instances; a shared durable limiter should be added before opening feedback to a larger public audience.
+
 ## One-person release flow
 
 1. Fetch the latest `main` and create a `feature/<short-name>` branch.
