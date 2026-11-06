@@ -1,3 +1,6 @@
+import { getServerSupabaseEnv } from "../../lib/supabase-env.js";
+export { resolveSupabaseConfig } from "../../lib/supabase-env.js";
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     res.setHeader("Allow", ["GET"]);
@@ -7,19 +10,14 @@ export default async function handler(req, res) {
     });
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  try {
+    const { url, anonKey } = getServerSupabaseEnv();
 
-  if (!url || !anonKey) {
+    return res.status(200).json({ ok: true, url, anonKey });
+  } catch {
     return res.status(500).json({
       ok: false,
-      error: "Supabase environment variables are missing."
+      error: "Supabase configuration unavailable."
     });
   }
-
-  return res.status(200).json({
-    ok: true,
-    url,
-    anonKey
-  });
 }
