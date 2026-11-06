@@ -1,4 +1,5 @@
 import { getCurrentProfile, getCurrentSession } from "./auth-helpers.js";
+import { safeFeedbackPageUrl } from "./feedback-context.js";
 import { getLocale, onLocaleChange, t } from "./i18n.js";
 
 const FEEDBACK_ENDPOINT = "/api/feedback";
@@ -17,6 +18,7 @@ const state = {
   open: false,
   submitting: false,
   success: false,
+  deliveryStatus: "",
   error: "",
   fileError: "",
   source: "general",
@@ -64,7 +66,7 @@ function buildMailtoFallback() {
     state.message || "",
     "",
     `Page: ${state.pageTitle || document.title || "MindPulse"}`,
-    `URL: ${state.pageUrl || window.location.href}`,
+    `URL: ${state.pageUrl || safeFeedbackPageUrl(window.location.href)}`,
     `Locale: ${state.locale || getLocale()}`,
     state.contactEmail ? `Contact: ${state.contactEmail}` : ""
   ].filter(Boolean).join("\n");
@@ -94,6 +96,7 @@ function resetForm({ preserveEmail = true } = {}) {
   state.canContact = canContact;
   state.error = "";
   state.success = false;
+  state.deliveryStatus = "";
   state.submitting = false;
 }
 
@@ -113,7 +116,7 @@ async function bootstrapUserContext() {
       state.contactEmail = state.profileEmail;
     }
 
-    state.pageUrl = window.location.href;
+    state.pageUrl = safeFeedbackPageUrl(window.location.href);
     state.pageTitle = document.title;
     state.locale = getLocale();
   })();
@@ -179,7 +182,7 @@ function collectSafeContext() {
   const language = navigator.language || state.locale || getLocale();
 
   return {
-    pageUrl: window.location.href,
+    pageUrl: safeFeedbackPageUrl(window.location.href),
     pageTitle: document.title,
     locale: state.locale || getLocale(),
     submittedAt: new Date().toISOString(),
@@ -222,11 +225,14 @@ function renderAttachmentPreview() {
 }
 
 function renderSuccessState() {
+  const description = state.deliveryStatus === "sent"
+    ? t("feedback.success.sent")
+    : t("feedback.success.saved");
   return `
     <div class="feedback-success">
       <div class="feedback-success-mark" aria-hidden="true">✓</div>
       <h2>${escapeHtml(t("feedback.success.title"))}</h2>
-      <p>${escapeHtml(t("feedback.success.description"))}</p>
+      <p>${escapeHtml(description)}</p>
       <div class="feedback-success-actions">
         <button class="form-action-button" type="button" data-feedback-close>${escapeHtml(t("feedback.close"))}</button>
       </div>
@@ -260,7 +266,7 @@ function renderForm() {
             <label class="feedback-field">
               <div class="feedback-field-head">
                 <span>${escapeHtml(t("feedback.message.label"))}</span>
-                <small>${escapeHtml(counter)}</small>
+                <small data-feedback-counter>${escapeHtml(counter)}</small>
               </div>
               <textarea
                 name="message"
@@ -286,18 +292,8 @@ function renderForm() {
               <span>${escapeHtml(t("feedback.canContact"))}</span>
             </label>
 
-            <div class="feedback-field">
-              <span>${escapeHtml(t("feedback.attachment.label"))}</span>
-              <label class="feedback-upload">
-                <input type="file" name="attachment" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp">
-                <span>${escapeHtml(t("feedback.attachment.action"))}</span>
-                <small>${escapeHtml(t("feedback.attachment.hint"))}</small>
-              </label>
-              ${renderAttachmentPreview()}
-            </div>
-
             <p class="feedback-privacy">${escapeHtml(t("feedback.privacy"))}</p>
-            ${state.error ? `<div class="feedback-banner is-error">${escapeHtml(state.error)}</div>` : ""}
+            ${state.error ? `<div class="feedback-banner is-error" data-feedback-error>${escapeHtml(state.error)}</div>` : ""}
             ${state.fileError ? `<div class="feedback-banner is-error">${escapeHtml(state.fileError)}</div>` : ""}
             <div class="feedback-actions">
               <button class="ghost-button" type="button" data-feedback-close>${escapeHtml(t("common.cancel"))}</button>
@@ -376,10 +372,6 @@ async function submitFeedback() {
   formData.set("browserInfo", context.browserInfo);
   formData.set("source", state.source || "general");
 
-  if (state.attachment) {
-    formData.set("attachment", state.attachment, state.attachment.name);
-  }
-
   const session = await getCurrentSession().catch(() => null);
   const headers = session?.access_token
     ? { Authorization: `Bearer ${session.access_token}` }
@@ -400,6 +392,7 @@ async function submitFeedback() {
 
     state.submitting = false;
     state.success = true;
+    state.deliveryStatus = payload.deliveryStatus || "skipped";
     state.error = "";
     clearAttachment();
     rerender();
@@ -446,7 +439,8 @@ function bindEvents() {
     if (target.name === "message") {
       state.message = target.value.slice(0, MAX_MESSAGE_LENGTH);
       state.error = "";
-      rerender();
+      feedbackRoot.querySelector("[data-feedback-counter]")?.replaceChildren(`${state.message.length} / ${MAX_MESSAGE_LENGTH}`);
+      feedbackRoot.querySelector("[data-feedback-error]")?.remove();
       return;
     }
 
@@ -559,7 +553,7 @@ export async function openFeedbackDialog(options = {}) {
   await bootstrapUserContext();
   state.source = options.source || "general";
   state.type = typeOptions.includes(options.initialType) ? options.initialType : "suggestion";
-  state.pageUrl = window.location.href;
+  state.pageUrl = safeFeedbackPageUrl(window.location.href);
   state.pageTitle = document.title;
   state.locale = getLocale();
   state.open = true;

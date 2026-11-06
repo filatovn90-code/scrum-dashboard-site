@@ -274,6 +274,34 @@ async function deliverFeedbackEmail(payload, attachment) {
   return { status: "sent" };
 }
 
+export async function saveFeedbackRecord(supabase, payload, userId, {
+  createId = () => crypto.randomUUID(),
+  emailConfigured = Boolean(process.env.RESEND_API_KEY)
+} = {}) {
+  const id = createId();
+  const { error } = await supabase.from("feedback").insert({
+    id,
+    user_id: userId,
+    type: payload.type,
+    message: payload.message,
+    contact_email: payload.contactEmail || null,
+    can_contact: Boolean(payload.canContact),
+    locale: payload.locale,
+    page_url: payload.pageUrl || null,
+    page_title: payload.pageTitle || null,
+    app_version: payload.appVersion || null,
+    browser_info: payload.browserInfo || null,
+    status: "new",
+    email_delivery_status: emailConfigured ? "pending" : "skipped"
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return id;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST"]);
@@ -303,28 +331,10 @@ export default async function handler(req, res) {
 
     enforceRateLimit(getRateLimitKey(req, payload, userId));
 
-    const insertPayload = {
-      user_id: userId,
-      type: payload.type,
-      message: payload.message,
-      contact_email: payload.contactEmail || null,
-      can_contact: payload.canContact,
-      locale: payload.locale,
-      page_url: payload.pageUrl || null,
-      page_title: payload.pageTitle || null,
-      app_version: payload.appVersion || null,
-      browser_info: payload.browserInfo || null,
-      status: "new",
-      email_delivery_status: "pending"
-    };
-
-    const { data: feedbackRow, error: insertError } = await supabase
-      .from("feedback")
-      .insert(insertPayload)
-      .select("id")
-      .single();
-
-    if (insertError) {
+    let feedbackId;
+    try {
+      feedbackId = await saveFeedbackRecord(supabase, payload, userId);
+    } catch (insertError) {
       if (isMissingTableError(insertError, "feedback")) {
         return res.status(500).json({
           ok: false,
@@ -353,16 +363,18 @@ export default async function handler(req, res) {
       emailMessage = error?.message || "Unknown email error";
     }
 
-    await supabase
-      .from("feedback")
-      .update({
-        email_delivery_status: emailMessage ? `${emailStatus}: ${emailMessage}` : emailStatus
-      })
-      .eq("id", feedbackRow.id);
+    if (process.env.RESEND_API_KEY) {
+      await supabase
+        .from("feedback")
+        .update({
+          email_delivery_status: emailMessage ? `${emailStatus}: ${emailMessage}` : emailStatus
+        })
+        .eq("id", feedbackId);
+    }
 
     return res.status(200).json({
       ok: true,
-      id: feedbackRow.id,
+      id: feedbackId,
       deliveryStatus: emailStatus
     });
   } catch (error) {

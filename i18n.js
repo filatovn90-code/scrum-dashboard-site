@@ -50,7 +50,8 @@ const messages = {
       settings: "Настройки",
       billing: "Тариф и оплата",
       help: "Помощь",
-      feedback: "Оставить отзыв",
+      feedback: "Дать обратную связь",
+      feedbackShort: "Отзыв",
       logout: "Выйти",
       density: "Плотность интерфейса",
       comfortable: "Комфортный",
@@ -64,7 +65,8 @@ const messages = {
     feedback: {
       kicker: "Обратная связь",
       title: "Поделитесь обратной связью",
-      description: "Расскажите, что вам понравилось, что мешает или чего не хватает. Сообщение получит создатель MindPulse.",
+      description: "Расскажите об ошибке, предложите идею или задайте вопрос. Мы сохраним сообщение в тестовой версии MindPulse.",
+      quickPrompt: "Идея, ошибка или вопрос?",
       type: {
         label: "Тип обращения",
         suggestion: "Предложение",
@@ -88,12 +90,13 @@ const messages = {
         hint: "PNG, JPG, JPEG или WebP до 5 МБ",
         remove: "Удалить"
       },
-      privacy: "Сообщение и базовый технический контекст будут отправлены создателю MindPulse. Данные ваших задач и показатели состояния не прикладываются.",
+      privacy: "Сообщение и базовый технический контекст сохраняются для просмотра создателем MindPulse. Данные задач и показатели состояния не прикладываются.",
       submit: "Отправить",
       sending: "Отправляем...",
       success: {
         title: "Спасибо за обратную связь",
-        description: "Сообщение сохранено и отправлено создателю MindPulse."
+        saved: "Сообщение сохранено в тестовой версии. Автоматическое письмо пока не настроено.",
+        sent: "Сообщение сохранено и отправлено создателю MindPulse."
       },
       error: {
         title: "Не удалось отправить сообщение",
@@ -746,7 +749,8 @@ const messages = {
       settings: "Settings",
       billing: "Plan & Billing",
       help: "Help",
-      feedback: "Send feedback",
+      feedback: "Give feedback",
+      feedbackShort: "Feedback",
       logout: "Log out",
       density: "Density",
       comfortable: "Comfortable",
@@ -760,7 +764,8 @@ const messages = {
     feedback: {
       kicker: "Feedback",
       title: "Share your feedback",
-      description: "Tell us what works, what gets in the way, or what is missing. Your message will go directly to the creator of MindPulse.",
+      description: "Report a bug, suggest an idea, or ask a question. We will save your message in the MindPulse preview.",
+      quickPrompt: "Idea, bug, or question?",
       type: {
         label: "Message type",
         suggestion: "Suggestion",
@@ -784,12 +789,13 @@ const messages = {
         hint: "PNG, JPG, JPEG or WebP up to 5 MB",
         remove: "Remove"
       },
-      privacy: "Your message and basic technical context will be sent to the creator of MindPulse. Your task content and state data are not included.",
+      privacy: "Your message and basic technical context are saved for the MindPulse creator to review. Your tasks and state data are not included.",
       submit: "Send",
       sending: "Sending...",
       success: {
         title: "Thanks for the feedback",
-        description: "Your message has been saved and sent to the creator of MindPulse."
+        saved: "Your message is saved in the preview. Automatic email is not configured yet.",
+        sent: "Your message was saved and emailed to the MindPulse creator."
       },
       error: {
         title: "Could not send feedback",

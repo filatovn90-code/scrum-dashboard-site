@@ -123,8 +123,11 @@ export async function mountAppShell() {
 
     <div class="app-sidebar-secondary">
       <button class="app-nav-link is-utility app-feedback-trigger" type="button" data-feedback-open data-feedback-source="app-sidebar">
-        <span class="app-nav-icon" aria-hidden="true">${icon("feedback")}</span>
-        <span>${t("navigation.feedback")}</span>
+        <span class="app-feedback-cta-icon" aria-hidden="true">${icon("feedback")}</span>
+        <span class="app-feedback-cta-copy">
+          <strong>${t("navigation.feedback")}</strong>
+          <small>${t("feedback.quickPrompt")}</small>
+        </span>
       </button>
     </div>
 
@@ -320,7 +323,12 @@ function ensureMobileNav(active) {
         <span>${link.label}</span>
       </a>
     `;
-  }).join("");
+  }).join("") + `
+    <button class="app-mobile-nav-link is-feedback" type="button" data-feedback-open data-feedback-source="app-mobile-nav">
+      <span class="app-mobile-nav-icon" aria-hidden="true">${icon("feedback")}</span>
+      <span>${t("navigation.feedbackShort")}</span>
+    </button>
+  `;
 
   document.body.appendChild(nav);
 }
