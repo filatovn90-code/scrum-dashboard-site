@@ -42,3 +42,29 @@ test("feedback save reports a database failure", async () => {
     type: "suggestion", message: "A useful suggestion", locale: "ru"
   }, "user-1", { createId: () => "test-feedback-id", emailConfigured: false }), /Database unavailable/);
 });
+
+test("guest rate limiting does not depend on a supplied email", () => {
+  assert.equal(typeof feedbackApi.getFeedbackRateLimitKey, "function", "getFeedbackRateLimitKey is not implemented");
+  const req = { headers: { "x-forwarded-for": "203.0.113.8" }, socket: {} };
+  assert.equal(feedbackApi.getFeedbackRateLimitKey(req, "first@example.com", null), "ip:203.0.113.8");
+  assert.equal(feedbackApi.getFeedbackRateLimitKey(req, "second@example.com", null), "ip:203.0.113.8");
+  assert.equal(feedbackApi.getFeedbackRateLimitKey(req, "second@example.com", "user-1"), "user:user-1");
+});
+
+test("invalid authenticated feedback does not fall back to a guest", async () => {
+  assert.equal(typeof feedbackApi.getFeedbackAuthContext, "function", "getFeedbackAuthContext is not implemented");
+  const req = { headers: { authorization: "Bearer expired-token" } };
+  await assert.rejects(
+    feedbackApi.getFeedbackAuthContext(req, async () => { throw new Error("Invalid token"); }),
+    /Invalid token/
+  );
+});
+
+test("email-enabled feedback records an attempt without requiring update permission", async () => {
+  let inserted;
+  const supabase = { from: () => ({ async insert(row) { inserted = row; return { error: null }; } }) };
+  await saveFeedbackRecord(supabase, { type: "bug", message: "An issue with the page", locale: "en" }, null, {
+    createId: () => "test-id", emailConfigured: true
+  });
+  assert.equal(inserted.email_delivery_status, "attempted");
+});

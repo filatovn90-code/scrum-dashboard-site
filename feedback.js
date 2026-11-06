@@ -225,14 +225,17 @@ function renderAttachmentPreview() {
 }
 
 function renderSuccessState() {
-  const description = state.deliveryStatus === "sent"
-    ? t("feedback.success.sent")
-    : t("feedback.success.saved");
+  const descriptionKey = state.deliveryStatus === "sent"
+    ? "feedback.success.sent"
+    : state.deliveryStatus === "failed"
+      ? "feedback.success.failed"
+      : "feedback.success.saved";
   return `
     <div class="feedback-success">
       <div class="feedback-success-mark" aria-hidden="true">✓</div>
       <h2>${escapeHtml(t("feedback.success.title"))}</h2>
-      <p>${escapeHtml(description)}</p>
+      <p>${escapeHtml(t(descriptionKey))}</p>
+      ${state.deliveryStatus === "failed" ? `<a href="${buildMailtoFallback()}">${escapeHtml(t("feedback.emailFallback"))}</a>` : ""}
       <div class="feedback-success-actions">
         <button class="form-action-button" type="button" data-feedback-close>${escapeHtml(t("feedback.close"))}</button>
       </div>

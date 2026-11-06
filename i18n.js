@@ -96,6 +96,7 @@ const messages = {
       success: {
         title: "Спасибо за обратную связь",
         saved: "Сообщение сохранено в тестовой версии. Автоматическое письмо пока не настроено.",
+        failed: "Сообщение сохранено, но письмо не отправилось. При необходимости напишите нам напрямую.",
         sent: "Сообщение сохранено и отправлено создателю MindPulse."
       },
       error: {
@@ -795,6 +796,7 @@ const messages = {
       success: {
         title: "Thanks for the feedback",
         saved: "Your message is saved in the preview. Automatic email is not configured yet.",
+        failed: "Your message was saved, but the email could not be delivered. You can contact us directly if needed.",
         sent: "Your message was saved and emailed to the MindPulse creator."
       },
       error: {

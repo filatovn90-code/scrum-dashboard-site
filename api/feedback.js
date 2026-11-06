@@ -27,13 +27,17 @@ function createAnonClient() {
   });
 }
 
-function getRateLimitKey(req, fields, userId) {
+export function getFeedbackRateLimitKey(req, _contactEmail, userId) {
   const forwarded = req.headers["x-forwarded-for"];
   const ip = Array.isArray(forwarded)
     ? forwarded[0]
     : String(forwarded || req.socket?.remoteAddress || "unknown").split(",")[0].trim();
 
-  return userId || String(fields.contactEmail || "").trim().toLowerCase() || ip || "anonymous";
+  return userId ? `user:${userId}` : `ip:${ip || "unknown"}`;
+}
+
+export async function getFeedbackAuthContext(req, resolveContext = getServerAuthContext) {
+  return extractBearerToken(req) ? resolveContext(req) : null;
 }
 
 function enforceRateLimit(key) {
@@ -292,7 +296,7 @@ export async function saveFeedbackRecord(supabase, payload, userId, {
     app_version: payload.appVersion || null,
     browser_info: payload.browserInfo || null,
     status: "new",
-    email_delivery_status: emailConfigured ? "pending" : "skipped"
+    email_delivery_status: emailConfigured ? "attempted" : "skipped"
   });
 
   if (error) {
@@ -311,25 +315,15 @@ export default async function handler(req, res) {
     });
   }
 
-  let authContext = null;
   try {
-    if (extractBearerToken(req)) {
-      authContext = await getServerAuthContext(req);
-    }
-  } catch (error) {
-    console.error("[feedback] auth bootstrap failed", error);
-    authContext = null;
-  }
-
-  const supabase = authContext?.supabase || createAnonClient();
-  const user = authContext?.user || null;
-
-  try {
+    const authContext = await getFeedbackAuthContext(req);
+    const supabase = authContext?.supabase || createAnonClient();
+    const user = authContext?.user || null;
     const { fields, attachment } = await parseRequest(req);
     const payload = validatePayload(fields);
     const userId = user?.id || null;
 
-    enforceRateLimit(getRateLimitKey(req, payload, userId));
+    enforceRateLimit(getFeedbackRateLimitKey(req, payload.contactEmail, userId));
 
     let feedbackId;
     try {
@@ -345,7 +339,6 @@ export default async function handler(req, res) {
     }
 
     let emailStatus = "skipped";
-    let emailMessage = "";
 
     try {
       const result = await deliverFeedbackEmail(
@@ -356,20 +349,9 @@ export default async function handler(req, res) {
         attachment
       );
       emailStatus = result.status;
-      emailMessage = result.reason || "";
     } catch (error) {
       console.error("[feedback] email delivery failed", error);
       emailStatus = "failed";
-      emailMessage = error?.message || "Unknown email error";
-    }
-
-    if (process.env.RESEND_API_KEY) {
-      await supabase
-        .from("feedback")
-        .update({
-          email_delivery_status: emailMessage ? `${emailStatus}: ${emailMessage}` : emailStatus
-        })
-        .eq("id", feedbackId);
     }
 
     return res.status(200).json({
