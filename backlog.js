@@ -893,6 +893,7 @@ function renderTaskCard(week, day, rawItem) {
 
   if (isEditEditor(taskKey)) {
     return renderTaskEditor(taskKey, day, {
+      hideTime: true,
       time: item.time,
       originalTime: item.time,
       text: item.text,
@@ -988,12 +989,7 @@ async function saveEditor(editorKey) {
     const taskIndex = day.items.findIndex((entry) => entry.id === value);
     if (taskIndex < 0) return;
 
-    const hasConflict = day.items.some((entry, index) => entry.time === selectedTime && index !== taskIndex);
-    if (hasConflict) {
-      timeSelect?.focus();
-      return;
-    }
-
+    delete payload.planned_time;
     await cloudRepository.updateTask(value, payload);
   } else {
     const hasConflict = day.items.some((entry) => entry.time === selectedTime);
