@@ -136,11 +136,12 @@ to authenticated
 with check (
   auth.uid() is not null
   and auth.uid() = user_id
-  and exists (
-    select 1
-    from public.projects
-    where projects.id = tasks.project_id
-      and projects.user_id = auth.uid()
+  and (
+    project_id is null
+    or exists (
+      select 1 from public.projects
+      where projects.id = tasks.project_id and projects.user_id = auth.uid()
+    )
   )
 );
 
@@ -150,7 +151,17 @@ on public.tasks
 for update
 to authenticated
 using (auth.uid() is not null and auth.uid() = user_id)
-with check (auth.uid() is not null and auth.uid() = user_id);
+with check (
+  auth.uid() is not null
+  and auth.uid() = user_id
+  and (
+    project_id is null
+    or exists (
+      select 1 from public.projects
+      where projects.id = tasks.project_id and projects.user_id = auth.uid()
+    )
+  )
+);
 
 drop policy if exists "tasks_delete_own" on public.tasks;
 create policy "tasks_delete_own"

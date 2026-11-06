@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from "./supabase-public-config.js";
+import { loadHostedSupabaseConfig } from "./supabase-config.js";
 
 let remoteSupabasePromise;
 let localSupabasePromise;
@@ -517,7 +517,7 @@ async function getLocalSupabase() {
 }
 
 export async function getSupabase() {
-  if (canUseLocalAuthFallback() && getLocalUser()) {
+  if (canUseLocalAuthFallback()) {
     return getLocalSupabase();
   }
 
@@ -525,26 +525,7 @@ export async function getSupabase() {
 }
 
 async function createRemoteBrowserClient() {
-  let url = PUBLIC_SUPABASE_URL;
-  let anonKey = PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!isFilePreview()) {
-    try {
-      const response = await fetch("/api/config/supabase");
-      const data = await response.json();
-
-      if (response.ok && data.ok) {
-        url = data.url;
-        anonKey = data.anonKey;
-      }
-    } catch {
-      // Fallback to public config.
-    }
-  }
-
-  if (!url || !anonKey) {
-    throw new Error("Не удалось получить настройки Supabase.");
-  }
+  const { url, anonKey } = await loadHostedSupabaseConfig();
 
   return createClient(url, anonKey, {
     auth: {
