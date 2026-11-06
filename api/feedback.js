@@ -1,6 +1,7 @@
 import Busboy from "busboy";
 import { createClient } from "@supabase/supabase-js";
 import { extractBearerToken, getServerAuthContext, isMissingTableError } from "../lib/server-supabase.js";
+import { getServerSupabaseEnv } from "../lib/supabase-env.js";
 
 export const config = {
   api: {
@@ -16,19 +17,8 @@ const WINDOW_MS = 15 * 60 * 1000;
 const LIMIT_PER_WINDOW = 5;
 const rateLimitStore = new Map();
 
-function getSupabaseEnv() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!url || !anonKey) {
-    throw new Error("Supabase environment variables are missing on the server.");
-  }
-
-  return { url, anonKey };
-}
-
 function createAnonClient() {
-  const { url, anonKey } = getSupabaseEnv();
+  const { url, anonKey } = getServerSupabaseEnv();
   return createClient(url, anonKey, {
     auth: {
       persistSession: false,

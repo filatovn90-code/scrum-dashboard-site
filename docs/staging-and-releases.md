@@ -9,14 +9,16 @@
 
 Vercel's `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are scoped separately to Production and Preview. Never put a service-role key in either variable. The hosted client requires `/api/config/supabase`; a failed request must not fall back to Production. A `file:` preview uses only local test data.
 
-Staging has the app schema but no copied production accounts or content. To rebuild a new empty staging project, apply `supabase/schema.sql`, then `supabase/today-screen-migration.sql`, then `supabase/cloud-backlog-migration.sql`. Do not run the other experimental SQL files merely because they exist. The current production schema does not include every experimental file.
+Staging has the app schema and feedback table but no copied production accounts or content. To rebuild a new empty staging project, apply `supabase/schema.sql`, then `supabase/today-screen-migration.sql`, then `supabase/cloud-backlog-migration.sql`, then `supabase/feedback.sql`. Do not run the other experimental SQL files merely because they exist. The current production schema does not include every experimental file.
+
+Server-side Supabase routes use the same Preview guard as the browser config route. The legacy health API uses `DATABASE_URL`; if it is enabled for Preview, its connection URL must point to the same staging Supabase project. Without a staging `DATABASE_URL`, health endpoints are unavailable in Preview rather than connecting to Production.
 
 ## One-person release flow
 
 1. Fetch the latest `main` and create a `feature/<short-name>` branch.
 2. Make changes and run `npm test` plus relevant browser checks locally.
 3. Push the branch and open a PR to `main`. Wait for the Verify workflow and Vercel Preview to finish.
-4. Open the Preview URL from the PR. Confirm `/api/config/supabase` reports the staging project URL, not the production URL. Use two staging accounts to test registration, task and focus persistence, and user separation. Never test a Preview against production data.
+4. Open the Preview URL from the PR. Confirm `/api/config/supabase` reports the staging project URL, not the production URL. Use two staging accounts to test registration, task and focus persistence, feedback, and user separation. Never test a Preview against production data.
 5. Review the visual result and errors. Merge the PR only when checks and manual testing pass. Vercel then deploys `main` to Production.
 6. Smoke-test the public URL with a dedicated QA account. If the new UI fails, use Vercel Instant Rollback to restore the prior deployment. A code rollback does not undo a database migration.
 

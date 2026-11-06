@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { loadHostedSupabaseConfig } from "../supabase-config.js";
 import { resolveSupabaseConfig } from "../api/config/supabase.js";
+import { resolveDatabaseUrl } from "../lib/db-config.js";
 
 const stagingUrl = "https://pltvmpnrvguofhyolvps.supabase.co";
 const productionUrl = "https://fzgphisavsmtmvserson.supabase.co";
@@ -42,4 +43,35 @@ test("server serves production database only in production", () => {
   assert.deepEqual(resolveSupabaseConfig({
     environment: "production", url: productionUrl, anonKey: "public-key"
   }), { url: productionUrl, anonKey: "public-key" });
+});
+
+test("server-side Supabase routes reject production in preview", () => {
+  assert.throws(() => resolveSupabaseConfig({
+    environment: "preview", url: productionUrl, anonKey: "public-key"
+  }), /production/);
+});
+
+test("health database accepts only the matching staging project in preview", () => {
+  const stagingDb = "postgresql://postgres.pltvmpnrvguofhyolvps:password@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
+  const productionDb = "postgresql://postgres.fzgphisavsmtmvserson:password@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
+  assert.equal(resolveDatabaseUrl({ databaseUrl: stagingDb, supabaseUrl: stagingUrl, environment: "preview" }), stagingDb);
+  assert.throws(() => resolveDatabaseUrl({ databaseUrl: productionDb, supabaseUrl: stagingUrl, environment: "preview" }), /matching Supabase project/);
+  assert.throws(() => resolveDatabaseUrl({ databaseUrl: productionDb, supabaseUrl: productionUrl, environment: "preview" }), /production/);
+});
+
+test("health database refuses an unknown connection string in preview", () => {
+  assert.throws(() => resolveDatabaseUrl({
+    databaseUrl: "postgresql://postgres:password@other.example.com/postgres",
+    supabaseUrl: stagingUrl,
+    environment: "preview"
+  }), /matching Supabase project/);
+  assert.throws(() => resolveDatabaseUrl({
+    databaseUrl: "postgresql://postgres.pltvmpnrvguofhyolvps:password@other.example.com/postgres",
+    supabaseUrl: stagingUrl,
+    environment: "preview"
+  }), /matching Supabase project/);
+  assert.throws(() => resolveDatabaseUrl({
+    databaseUrl: "postgresql://postgres.pltvmpnrvguofhyolvps:password@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres",
+    environment: "preview"
+  }), /Supabase URL/);
 });
