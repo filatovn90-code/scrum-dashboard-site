@@ -90,7 +90,7 @@ const messages = {
         hint: "PNG, JPG, JPEG или WebP до 5 МБ",
         remove: "Удалить"
       },
-      privacy: "Сообщение и базовый технический контекст сохраняются для просмотра создателем MindPulse. Данные задач и показатели состояния не прикладываются.",
+      privacy: "Сообщение и базовый технический контекст сохраняются и передаются создателю через почтовый сервис Resend. Данные задач и показатели состояния не прикладываются.",
       submit: "Отправить",
       sending: "Отправляем...",
       success: {
@@ -792,7 +792,7 @@ const messages = {
         hint: "PNG, JPG, JPEG or WebP up to 5 MB",
         remove: "Remove"
       },
-      privacy: "Your message and basic technical context are saved for the MindPulse creator to review. Your tasks and state data are not included.",
+      privacy: "Your message and basic technical context are saved and sent to the MindPulse creator through Resend. Your tasks and state data are not included.",
       submit: "Send",
       sending: "Sending...",
       success: {

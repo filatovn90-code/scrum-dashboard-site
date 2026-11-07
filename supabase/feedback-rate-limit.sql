@@ -37,3 +37,4 @@ $$;
 revoke all on function public.guard_feedback_insert() from public, anon, authenticated;
 create trigger feedback_insert_guard before insert on public.feedback
 for each row execute function public.guard_feedback_insert();
+grant select, insert on table public.feedback to authenticated;
