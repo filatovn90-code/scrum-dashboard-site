@@ -48,3 +48,6 @@ using (auth.uid() = user_id);
 
 create index if not exists idx_feedback_user_created_at on public.feedback(user_id, created_at desc);
 create index if not exists idx_feedback_status_created_at on public.feedback(status, created_at desc);
+
+-- Keep the table inaccessible to app roles until the guard migration is applied.
+revoke all on table public.feedback from public, anon, authenticated;

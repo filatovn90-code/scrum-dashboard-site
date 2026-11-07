@@ -50,7 +50,8 @@ const messages = {
       settings: "Настройки",
       billing: "Тариф и оплата",
       help: "Помощь",
-      feedback: "Оставить отзыв",
+      feedback: "Дать обратную связь",
+      feedbackShort: "Отзыв",
       logout: "Выйти",
       density: "Плотность интерфейса",
       comfortable: "Комфортный",
@@ -64,7 +65,8 @@ const messages = {
     feedback: {
       kicker: "Обратная связь",
       title: "Поделитесь обратной связью",
-      description: "Расскажите, что вам понравилось, что мешает или чего не хватает. Сообщение получит создатель MindPulse.",
+      description: "Расскажите об ошибке, предложите идею или задайте вопрос. Мы сохраним ваше сообщение в MindPulse.",
+      quickPrompt: "Идея, ошибка или вопрос?",
       type: {
         label: "Тип обращения",
         suggestion: "Предложение",
@@ -88,12 +90,14 @@ const messages = {
         hint: "PNG, JPG, JPEG или WebP до 5 МБ",
         remove: "Удалить"
       },
-      privacy: "Сообщение и базовый технический контекст будут отправлены создателю MindPulse. Данные ваших задач и показатели состояния не прикладываются.",
+      privacy: "Сообщение и базовый технический контекст сохраняются и передаются создателю через почтовый сервис Resend. Данные задач и показатели состояния не прикладываются.",
       submit: "Отправить",
       sending: "Отправляем...",
       success: {
         title: "Спасибо за обратную связь",
-        description: "Сообщение сохранено и отправлено создателю MindPulse."
+        saved: "Сообщение сохранено. Автоматическое письмо пока не настроено.",
+        failed: "Сообщение сохранено, но письмо не отправилось. При необходимости напишите нам напрямую.",
+        sent: "Сообщение сохранено и отправлено создателю MindPulse."
       },
       error: {
         title: "Не удалось отправить сообщение",
@@ -102,6 +106,8 @@ const messages = {
       emailFallback: "Написать через email",
       close: "Закрыть",
       errors: {
+        signInRequired: "Войдите в аккаунт заново, чтобы отправить обратную связь.",
+        tooMany: "Вы отправили несколько обращений подряд. Попробуйте снова через 15 минут.",
         typeRequired: "Выберите тип обращения.",
         messageTooShort: "Опишите обращение чуть подробнее — минимум 10 символов.",
         messageTooLong: "Сообщение получилось слишком длинным. Сократите его до 5000 символов.",
@@ -746,7 +752,8 @@ const messages = {
       settings: "Settings",
       billing: "Plan & Billing",
       help: "Help",
-      feedback: "Send feedback",
+      feedback: "Give feedback",
+      feedbackShort: "Feedback",
       logout: "Log out",
       density: "Density",
       comfortable: "Comfortable",
@@ -760,7 +767,8 @@ const messages = {
     feedback: {
       kicker: "Feedback",
       title: "Share your feedback",
-      description: "Tell us what works, what gets in the way, or what is missing. Your message will go directly to the creator of MindPulse.",
+      description: "Report a bug, suggest an idea, or ask a question. We will save your message in MindPulse.",
+      quickPrompt: "Idea, bug, or question?",
       type: {
         label: "Message type",
         suggestion: "Suggestion",
@@ -784,12 +792,14 @@ const messages = {
         hint: "PNG, JPG, JPEG or WebP up to 5 MB",
         remove: "Remove"
       },
-      privacy: "Your message and basic technical context will be sent to the creator of MindPulse. Your task content and state data are not included.",
+      privacy: "Your message and basic technical context are saved and sent to the MindPulse creator through Resend. Your tasks and state data are not included.",
       submit: "Send",
       sending: "Sending...",
       success: {
         title: "Thanks for the feedback",
-        description: "Your message has been saved and sent to the creator of MindPulse."
+        saved: "Your message was saved. Automatic email is not configured yet.",
+        failed: "Your message was saved, but the email could not be delivered. You can contact us directly if needed.",
+        sent: "Your message was saved and emailed to the MindPulse creator."
       },
       error: {
         title: "Could not send feedback",
@@ -798,6 +808,8 @@ const messages = {
       emailFallback: "Email instead",
       close: "Close",
       errors: {
+        signInRequired: "Please sign in again before sending feedback.",
+        tooMany: "You have sent several messages. Please try again in 15 minutes.",
         typeRequired: "Choose a feedback type.",
         messageTooShort: "Please describe your feedback in a bit more detail — at least 10 characters.",
         messageTooLong: "Your message is too long. Please keep it within 5000 characters.",

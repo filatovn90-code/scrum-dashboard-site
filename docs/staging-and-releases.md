@@ -9,9 +9,11 @@
 
 Vercel's `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are scoped separately to Production and Preview. Never put a service-role key in either variable. The hosted client requires `/api/config/supabase`; a failed request must not fall back to Production. A `file:` preview uses only local test data.
 
-Staging has the app schema and feedback table but no copied production accounts or content. To rebuild a new empty staging project, apply `supabase/schema.sql`, then `supabase/today-screen-migration.sql`, then `supabase/cloud-backlog-migration.sql`, then `supabase/feedback.sql`. Do not run the other experimental SQL files merely because they exist. The current production schema does not include every experimental file.
+Staging has the app schema and feedback table but no copied production accounts or content. To rebuild a new empty staging project, apply `supabase/schema.sql`, then `supabase/today-screen-migration.sql`, then `supabase/cloud-backlog-migration.sql`, then `supabase/feedback.sql` and `supabase/feedback-rate-limit.sql`. Feedback remains inaccessible to app roles until the guard is installed. Do not run the other experimental SQL files merely because they exist. The current production schema does not include every experimental file.
 
 Server-side Supabase routes use the same Preview guard as the browser config route. The legacy health API uses `DATABASE_URL`; if it is enabled for Preview, its connection URL must point to the same staging Supabase project. Without a staging `DATABASE_URL`, health endpoints are unavailable in Preview rather than connecting to Production.
+
+Feedback submissions require a signed-in user. Apply `supabase/feedback-rate-limit.sql` after `supabase/feedback.sql`: the database enforces a shared per-user limit across Vercel instances, including direct Data API inserts. Existing anonymous feedback is retained.
 
 ## One-person release flow
 

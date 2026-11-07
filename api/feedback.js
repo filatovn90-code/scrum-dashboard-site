@@ -13,8 +13,10 @@ const FEEDBACK_TYPES = new Set(["suggestion", "bug", "feature_request", "questio
 const MAX_MESSAGE_LENGTH = 5000;
 const MIN_MESSAGE_LENGTH = 10;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_JSON_SIZE = 64 * 1024;
 const WINDOW_MS = 15 * 60 * 1000;
 const LIMIT_PER_WINDOW = 5;
+const MAX_RATE_LIMIT_KEYS = 1000;
 const rateLimitStore = new Map();
 
 function createAnonClient() {
@@ -27,17 +29,29 @@ function createAnonClient() {
   });
 }
 
-function getRateLimitKey(req, fields, userId) {
+export function getFeedbackRateLimitKey(req, _contactEmail, userId) {
   const forwarded = req.headers["x-forwarded-for"];
   const ip = Array.isArray(forwarded)
     ? forwarded[0]
     : String(forwarded || req.socket?.remoteAddress || "unknown").split(",")[0].trim();
 
-  return userId || String(fields.contactEmail || "").trim().toLowerCase() || ip || "anonymous";
+  return userId ? `user:${userId}` : `ip:${ip || "unknown"}`;
 }
 
-function enforceRateLimit(key) {
-  const now = Date.now();
+export async function getFeedbackAuthContext(req, resolveContext = getServerAuthContext) {
+  if (!extractBearerToken(req)) {
+    const error = new Error("Please sign in before sending feedback.");
+    error.statusCode = 401;
+    throw error;
+  }
+  return resolveContext(req);
+}
+
+export function resetFeedbackRateLimitForTests() {
+  rateLimitStore.clear();
+}
+
+export function enforceFeedbackRateLimit(key, now = Date.now()) {
   const existing = rateLimitStore.get(key);
   const recentHits = (existing || []).filter((timestamp) => now - timestamp < WINDOW_MS);
 
@@ -48,6 +62,12 @@ function enforceRateLimit(key) {
   }
 
   recentHits.push(now);
+  if (!rateLimitStore.has(key) && rateLimitStore.size >= MAX_RATE_LIMIT_KEYS) {
+    const oldestKey = rateLimitStore.keys().next().value;
+    if (oldestKey) {
+      rateLimitStore.delete(oldestKey);
+    }
+  }
   rateLimitStore.set(key, recentHits);
 }
 
@@ -118,17 +138,24 @@ async function parseMultipart(req) {
     const fields = {};
     let attachment = null;
     let fileTooLarge = false;
+    let fieldsTooLarge = false;
     const busboy = Busboy({
       headers: req.headers,
       limits: {
         files: 1,
-        fileSize: MAX_FILE_SIZE
+        fileSize: MAX_FILE_SIZE,
+        fieldSize: 8192,
+        fields: 20,
+        parts: 21
       }
     });
 
-    busboy.on("field", (name, value) => {
+    busboy.on("field", (name, value, info) => {
+      if (info.valueTruncated || info.nameTruncated) fieldsTooLarge = true;
       fields[name] = value;
     });
+    busboy.on("fieldsLimit", () => { fieldsTooLarge = true; });
+    busboy.on("partsLimit", () => { fieldsTooLarge = true; });
 
     busboy.on("file", (name, file, info) => {
       if (name !== "attachment") {
@@ -159,9 +186,9 @@ async function parseMultipart(req) {
 
     busboy.on("error", reject);
     busboy.on("finish", () => {
-      if (fileTooLarge) {
-        const error = new Error("Screenshot is too large. The limit is 5 MB.");
-        error.statusCode = 400;
+      if (fileTooLarge || fieldsTooLarge) {
+        const error = new Error("Feedback request is too large.");
+        error.statusCode = 413;
         reject(error);
         return;
       }
@@ -172,15 +199,23 @@ async function parseMultipart(req) {
   });
 }
 
-async function parseRequest(req) {
+export async function parseRequest(req) {
   const contentType = String(req.headers["content-type"] || "");
   if (contentType.includes("multipart/form-data")) {
     return parseMultipart(req);
   }
 
   const chunks = [];
+  let total = 0;
   for await (const chunk of req) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    total += buffer.length;
+    if (total > MAX_JSON_SIZE) {
+      const error = new Error("Feedback request is too large.");
+      error.statusCode = 413;
+      throw error;
+    }
+    chunks.push(buffer);
   }
 
   const raw = Buffer.concat(chunks).toString("utf8");
@@ -274,6 +309,39 @@ async function deliverFeedbackEmail(payload, attachment) {
   return { status: "sent" };
 }
 
+export async function saveFeedbackRecord(supabase, payload, userId, {
+  createId = () => crypto.randomUUID(),
+  emailConfigured = Boolean(process.env.RESEND_API_KEY)
+} = {}) {
+  const id = createId();
+  const { error } = await supabase.from("feedback").insert({
+    id,
+    user_id: userId,
+    type: payload.type,
+    message: payload.message,
+    contact_email: payload.contactEmail || null,
+    can_contact: Boolean(payload.canContact),
+    locale: payload.locale,
+    page_url: payload.pageUrl || null,
+    page_title: payload.pageTitle || null,
+    app_version: payload.appVersion || null,
+    browser_info: payload.browserInfo || null,
+    status: "new",
+    email_delivery_status: emailConfigured ? "attempted" : "skipped"
+  });
+
+  if (error) {
+    if (error.code === "P0001" && error.message === "feedback_rate_limit") {
+      const limitError = new Error("Too many feedback attempts. Please wait a few minutes and try again.");
+      limitError.statusCode = 429;
+      throw limitError;
+    }
+    throw error;
+  }
+
+  return id;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST"]);
@@ -283,48 +351,20 @@ export default async function handler(req, res) {
     });
   }
 
-  let authContext = null;
   try {
-    if (extractBearerToken(req)) {
-      authContext = await getServerAuthContext(req);
-    }
-  } catch (error) {
-    console.error("[feedback] auth bootstrap failed", error);
-    authContext = null;
-  }
-
-  const supabase = authContext?.supabase || createAnonClient();
-  const user = authContext?.user || null;
-
-  try {
+    const authContext = await getFeedbackAuthContext(req);
+    const supabase = authContext?.supabase || createAnonClient();
+    const user = authContext?.user || null;
+    const userId = user?.id || null;
+    enforceFeedbackRateLimit(getFeedbackRateLimitKey(req, null, userId));
     const { fields, attachment } = await parseRequest(req);
     const payload = validatePayload(fields);
-    const userId = user?.id || null;
 
-    enforceRateLimit(getRateLimitKey(req, payload, userId));
-
-    const insertPayload = {
-      user_id: userId,
-      type: payload.type,
-      message: payload.message,
-      contact_email: payload.contactEmail || null,
-      can_contact: payload.canContact,
-      locale: payload.locale,
-      page_url: payload.pageUrl || null,
-      page_title: payload.pageTitle || null,
-      app_version: payload.appVersion || null,
-      browser_info: payload.browserInfo || null,
-      status: "new",
-      email_delivery_status: "pending"
-    };
-
-    const { data: feedbackRow, error: insertError } = await supabase
-      .from("feedback")
-      .insert(insertPayload)
-      .select("id")
-      .single();
-
-    if (insertError) {
+    let feedbackId;
+    try {
+      feedbackId = await saveFeedbackRecord(supabase, payload, userId);
+    } catch (insertError) {
+      if (insertError.statusCode === 429) throw insertError;
       if (isMissingTableError(insertError, "feedback")) {
         return res.status(500).json({
           ok: false,
@@ -335,7 +375,6 @@ export default async function handler(req, res) {
     }
 
     let emailStatus = "skipped";
-    let emailMessage = "";
 
     try {
       const result = await deliverFeedbackEmail(
@@ -346,23 +385,14 @@ export default async function handler(req, res) {
         attachment
       );
       emailStatus = result.status;
-      emailMessage = result.reason || "";
     } catch (error) {
       console.error("[feedback] email delivery failed", error);
       emailStatus = "failed";
-      emailMessage = error?.message || "Unknown email error";
     }
-
-    await supabase
-      .from("feedback")
-      .update({
-        email_delivery_status: emailMessage ? `${emailStatus}: ${emailMessage}` : emailStatus
-      })
-      .eq("id", feedbackRow.id);
 
     return res.status(200).json({
       ok: true,
-      id: feedbackRow.id,
+      id: feedbackId,
       deliveryStatus: emailStatus
     });
   } catch (error) {
