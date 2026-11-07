@@ -8565,7 +8565,7 @@ body.app-has-shell .analytics-load-bar-top strong {
   body.app-has-shell .app-page-header-actions {
     display: flex;
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 10px;
   }
 

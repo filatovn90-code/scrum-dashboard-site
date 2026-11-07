@@ -2,7 +2,6 @@ const DENSITY_STORAGE_KEY = "mindpulse_density_mode";
 const DESKTOP_QUERY = "(min-width: 1280px)";
 const VALID_DENSITY_MODES = new Set(["compact", "comfortable"]);
 
-let resizeBound = false;
 const listeners = new Set();
 
 function readStoredDensityMode() {
@@ -30,20 +29,8 @@ function applyDensityMode(mode) {
   return nextMode;
 }
 
-function handleAutoResize() {
-  if (readStoredDensityMode()) {
-    return;
-  }
-  applyDensityMode(detectAutoDensityMode());
-}
-
 export function initDensityMode() {
-  const mode = applyDensityMode(resolveDensityMode());
-  if (!resizeBound) {
-    window.addEventListener("resize", handleAutoResize);
-    resizeBound = true;
-  }
-  return mode;
+  return applyDensityMode("comfortable");
 }
 
 export function getDensityMode() {
