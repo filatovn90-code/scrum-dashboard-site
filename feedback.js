@@ -390,6 +390,8 @@ async function submitFeedback() {
     const payload = await response.json().catch(() => ({}));
 
     if (!response.ok || !payload?.ok) {
+      if (response.status === 401) throw new Error(t("feedback.errors.signInRequired"));
+      if (response.status === 429) throw new Error(t("feedback.errors.tooMany"));
       throw new Error(payload?.error || t("feedback.error.description"));
     }
 

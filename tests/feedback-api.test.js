@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { Readable } from "node:stream";
 import * as feedbackApi from "../api/feedback.js";
 
 const saveFeedbackRecord = (...args) => {
@@ -71,6 +72,30 @@ test("invalid authenticated feedback does not fall back to a guest", async () =>
     feedbackApi.getFeedbackAuthContext(req, async () => { throw new Error("Invalid token"); }),
     /Invalid token/
   );
+});
+
+test("feedback submission requires a signed-in user", async () => {
+  await assert.rejects(
+    feedbackApi.getFeedbackAuthContext({ headers: {} }),
+    (error) => error.statusCode === 401
+  );
+});
+
+test("the shared database limit is returned as HTTP 429", async () => {
+  const supabase = { from: () => ({ async insert() {
+    return { error: { code: "P0001", message: "feedback_rate_limit" } };
+  } }) };
+  await assert.rejects(
+    saveFeedbackRecord(supabase, { type: "bug", message: "An issue with the page", locale: "en" }, "user-1"),
+    (error) => error.statusCode === 429
+  );
+});
+
+test("oversized JSON feedback is rejected before buffering the whole body", async () => {
+  assert.equal(typeof feedbackApi.parseRequest, "function");
+  const req = Readable.from([Buffer.alloc(65537, "x")]);
+  req.headers = { "content-type": "application/json" };
+  await assert.rejects(feedbackApi.parseRequest(req), (error) => error.statusCode === 413);
 });
 
 test("email-enabled feedback records an attempt without requiring update permission", async () => {
