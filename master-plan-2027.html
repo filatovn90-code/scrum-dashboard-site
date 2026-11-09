@@ -311,6 +311,36 @@ body{font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--text)}
 @media(min-width:801px){.press-has-details:nth-child(n+3) .press-details{left:auto;right:10px}}
 @media(max-width:800px){.press-has-details:nth-child(even) .press-details{left:auto;right:10px}}
 .communications-results-title{font-size:16px;font-weight:650;margin:24px 0 12px}.communications-results-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #dce5dd;border-radius:10px;background:white;overflow:hidden}.communications-quarter{min-width:0;border-right:1px solid #dce5dd}.communications-quarter:last-child{border-right:0}.communications-quarter>strong{display:block;padding:12px 14px;border-bottom:1px solid #e5ebe4;background:#f7f9f6;font-size:14px}.communications-quarter .matrix-cell{border:0}@media(max-width:800px){.communications-results-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.communications-quarter:nth-child(2){border-right:0}.communications-quarter:nth-child(-n+2){border-bottom:1px solid #dce5dd}}@media(max-width:480px){.communications-results-grid{grid-template-columns:1fr}.communications-quarter{border-right:0;border-bottom:1px solid #dce5dd}.communications-quarter:last-child{border-bottom:0}}
+
+/* Planning workspace: calm surfaces, clear hierarchy, readable dense content. */
+:root{--page:#f5f6f4;--paper:#fff;--text:#202825;--muted:#66736b;--line:#e1e7e1}
+body{background:var(--page);font-family:Inter,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.topbar{height:56px;background:#fff;border-bottom:1px solid #e6ebe6;padding:0 24px}
+.brand{font-size:14px;font-weight:700;letter-spacing:-.2px}.brand b{color:#8a958d;font-weight:500}.source-link{font-size:12px;color:#627168}
+.sidebar{top:56px;width:232px;padding:26px 14px;background:#fff;border-right:1px solid #e7ebe7}
+.sidebar-section{gap:4px;margin-bottom:28px}.sidebar-label{padding:0 12px 8px;font-size:10px;letter-spacing:.09em;color:#8a978d}
+.sidebar-link{min-height:42px;padding:9px 12px;border:0;border-radius:8px;font-size:13px;color:#536258}
+.sidebar-link:hover{background:#f4f7f3;border:0;color:#25382c}.sidebar-link.active{background:#e9f1e7;border:0;color:#263e2e}
+.sidebar-icon{color:#819084}.sidebar-link em{background:#e2ece0;border:0;color:#496750}
+main{margin-left:232px;padding:0 28px 48px}
+.director-lead{padding:24px 0 20px;gap:14px;border-bottom:1px solid var(--line)}
+.director-avatar{width:50px;height:50px}.director-lead strong{font-size:24px;letter-spacing:-.55px;line-height:1.2}
+.mbo-stream-list{gap:18px;margin-top:22px}.mbo-stream-card,.matrix-scroll,.matrix-head-scroll,.workflow-card,.workflow-history,.communications-results-grid{border:1px solid var(--line);box-shadow:0 2px 10px rgba(36,49,39,.035)}
+.mbo-stream-card{border-radius:10px}.mbo-stream-title{padding:16px 20px;background:#fff;border-bottom:1px solid #eef1ed}
+.mbo-stream-title h2{font-size:17px;letter-spacing:-.25px}.mbo-stream-photo{width:44px;height:44px;flex-basis:44px}
+.mbo-stream-mbo{grid-template-columns:110px minmax(0,1fr);gap:16px;padding:18px 20px;border-left:0;background:#eef5ec;border-bottom:1px solid #e2ebe0}
+.mbo-label{padding-top:4px;font-size:10px;letter-spacing:.1em;color:#65816a}.mbo-stream-mbo p{font-size:15px;line-height:1.45;color:#263e2d}
+.mbo-press{min-width:0;min-height:112px;padding:17px 20px;border-color:#edf0ec}.mbo-press>span{color:#89978b;font-size:10px;letter-spacing:.04em}.mbo-press strong{font-size:12px;color:#304137}.mbo-press p{font-size:12px;line-height:1.55;color:#59695e}
+.press-details{border-color:#dbe5db;border-radius:10px;box-shadow:0 14px 35px rgba(30,48,33,.16)}
+.stream-heading{margin:24px 0 18px}.stream-identity{gap:12px}.stream-avatar{width:46px;height:46px}.stream-title{font-size:28px;letter-spacing:-.7px}
+.annual{margin-bottom:16px;border-radius:8px;overflow:hidden}.annual-label,.annual-content{border-color:#dfeadd}.annual-label{background:#e4efe1}.annual-content{background:#f1f7ef}.annual-content p{font-size:14px;line-height:1.5}
+.matrix-scroll,.matrix-head-scroll{border-radius:8px;background:#fff}.quarter-head .matrix-cell{padding:13px 14px;background:#f7f9f6}.q-label{font-size:13px;font-weight:700}
+.row-label{padding:15px 13px;background:#fafbf9}.row-label h3{font-size:13px;line-height:1.4}.result-content{padding:12px 14px}.result-content .cell-meta{font-size:10px;letter-spacing:.04em;color:#829087}
+.result-content .full-results{font-size:13px;line-height:1.48;color:#26332c}.result-content .full-results li{padding:10px 0;border-bottom:1px solid #edf1ed}.result-content .full-results li[data-propose]:hover{background:#f5f9f3}
+.communications-results-title{margin:22px 0 12px;font-size:16px}.communications-quarter>strong{padding:13px 14px;background:#f7f9f6}
+.workflow-panel-heading{padding:20px 22px;background:#f8faf7;border-radius:10px}.workflow-panel-heading h2{font-size:22px;letter-spacing:-.4px}.workflow-cards{gap:14px}.workflow-card{padding:18px 20px;border-radius:10px}.workflow-card h3{font-size:15px;line-height:1.4}.workflow-empty{border-radius:10px;background:#fff}
+.button-primary,.button-secondary{border-radius:7px;min-height:40px}.button-primary{background:#506f55;border-color:#506f55}.button-primary:hover{background:#405e45}.button-secondary:hover{background:#f4f7f3}
+@media(max-width:700px){.topbar{height:52px;padding:0 14px}.sidebar{top:0;width:auto;padding:7px 10px;background:#fff}.sidebar-section{margin:0;gap:4px}.sidebar-link{min-height:38px;padding:8px 10px;font-size:12px}.sidebar-label{display:none}main{margin-left:0;padding:0 14px 32px}.director-lead{padding:18px 0}.director-lead strong{font-size:19px}.director-avatar{width:42px;height:42px}.mbo-stream-list{margin-top:16px;gap:14px}.mbo-stream-title,.mbo-stream-mbo,.mbo-press{padding:14px}.mbo-stream-mbo{grid-template-columns:1fr;gap:6px}.mbo-stream-mbo p{font-size:14px}.stream-heading{margin:18px 0 14px}.stream-title{font-size:24px}.matrix{min-width:1050px}.result-content .full-results{font-size:13px}}
 </style>
   <script type="application/json" id="embedded-data">{
   "year": 2027,
