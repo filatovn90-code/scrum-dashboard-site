@@ -4,6 +4,7 @@ import { applyTranslations, onLocaleChange, t } from "./i18n.js";
 import { backlogPath, landingPath, loginPath, todayPath } from "./route-paths.js";
 import { getCurrentPlan, isProPlan } from "./pricing-helpers.js";
 import { requestWeeklyReview } from "./ai-service.js";
+import { getOverloadRisk } from "./analytics-risk.js";
 import {
   calculateDailyLoad,
   calculateDailyLoadLevel,
@@ -397,7 +398,7 @@ function buildSummary(days, tasks, checkins) {
     avgFocus,
     debt: debtMeta,
     readinessAverage,
-    overloadRisk: overloadRiskLabel(avgEnergy, avgStress),
+    overloadRisk: overloadRiskLabel(checkinDays.length ? avgEnergy : null, checkinDays.length ? avgStress : null),
     overloadDays,
     highDays
   };
@@ -959,7 +960,11 @@ function clampLoad(value) {
 }
 
 function overloadRiskLabel(avgEnergy, avgStress) {
-  if (avgStress >= 8 && avgEnergy <= 4) {
+  const risk = getOverloadRisk(avgEnergy, avgStress);
+  if (risk === "unknown") {
+    return { label: "—", note: t("analytics.checkinAppearsLater"), state: "" };
+  }
+  if (risk === "risk") {
     return {
       label: t("analytics.overloadRiskHigh"),
       note: t("analytics.overloadRiskHighNote"),
@@ -967,7 +972,7 @@ function overloadRiskLabel(avgEnergy, avgStress) {
     };
   }
 
-  if (avgStress >= 6 || avgEnergy <= 5) {
+  if (risk === "high") {
     return {
       label: t("analytics.overloadRiskMedium"),
       note: t("analytics.overloadRiskMediumNote"),

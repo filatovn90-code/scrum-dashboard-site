@@ -3865,6 +3865,7 @@ body {
 }
 
 .auth-page-form input,
+.auth-page-form select,
 .projects-create-form input,
 .project-task-form input,
 .project-task-form select,
@@ -3878,6 +3879,7 @@ body {
 }
 
 .auth-page-form input:focus,
+.auth-page-form select:focus,
 .projects-create-form input:focus,
 .project-task-form input:focus,
 .project-task-form select:focus,
@@ -8564,7 +8566,8 @@ body.app-has-shell .analytics-load-bar-top strong {
 @media (max-width: 960px) {
   body.app-has-shell .app-page-header-actions {
     display: flex;
-    width: 100%;
+    width: auto;
+    flex: 0 0 auto;
     justify-content: flex-end;
     gap: 10px;
   }
@@ -8594,7 +8597,20 @@ body.app-has-shell {
   --mp-ui-card-radius: 22px;
   --mp-ui-card-radius-tight: 18px;
   --mp-ui-muted: rgba(32, 54, 30, 0.68);
-  --mp-ui-subtle: rgba(32, 54, 30, 0.5);
+  --mp-ui-subtle: rgba(32, 54, 30, 0.72);
+}
+
+body.app-has-shell .weekly-board {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+body.app-has-shell .profile-form label {
+  margin-bottom: -6px;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 body.app-has-shell .app-content-shell {
