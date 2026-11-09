@@ -830,6 +830,7 @@ function renderTaskEditor(editorKey, day, defaults) {
     <div class="backlog-slot-cell is-editor">
       <div class="inline-task-editor" data-editor="${editorKey}">
         <input class="inline-task-input" type="text" placeholder="${t("plan.addTaskPlaceholder")}" value="${escapeHtml(defaults.text)}" data-editor-text>
+        <p class="inline-task-help">${t("plan.loadHelp")}</p>
         <div class="inline-task-row ${defaults.hideTime ? "is-single" : ""}">
           ${defaults.hideTime ? "" : `
             <select data-editor-time>

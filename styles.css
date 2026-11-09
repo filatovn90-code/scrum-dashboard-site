@@ -8606,11 +8606,22 @@ body.app-has-shell .weekly-board {
   overflow-x: auto;
 }
 
+body.app-has-shell .app-page-layout main {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 body.app-has-shell .profile-form label {
   margin-bottom: -6px;
   color: var(--text);
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+.inline-task-help {
+  margin: 0;
+  color: #425440;
+  font-size: 0.82rem;
+  line-height: 1.4;
 }
 
 body.app-has-shell .app-content-shell {
