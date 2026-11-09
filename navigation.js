@@ -103,6 +103,16 @@ export async function mountAppShell() {
   const active = document.body.dataset.appActive || "";
   const title = document.body.dataset.appTitle || "";
   const subtitle = document.body.dataset.appSubtitle || "";
+  document.body.classList.add("app-has-shell");
+  sidebarMount.className = "app-sidebar";
+  headerMount.className = "app-page-header";
+  headerMount.innerHTML = `
+    <div class="app-page-header-copy">
+      <p class="section-kicker">${t("brand.kicker")}</p>
+      <h1>${escapeHtml(title)}</h1>
+      ${subtitle ? `<p class="app-page-subtitle">${escapeHtml(subtitle)}</p>` : ""}
+    </div>
+  `;
   const session = await getCurrentSession().catch(() => null);
   const profile = session?.user ? await getCurrentProfile().catch(() => null) : null;
 
