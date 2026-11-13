@@ -1,5 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap");
 
+@font-face { font-family: "MindPulse Manrope"; src: url("assets/fonts/Manrope-Regular.ttf") format("truetype"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "MindPulse Manrope"; src: url("assets/fonts/Manrope-Medium.ttf") format("truetype"); font-style: normal; font-weight: 500; font-display: swap; }
+@font-face { font-family: "MindPulse Manrope"; src: url("assets/fonts/Manrope-Semibold.ttf") format("truetype"); font-style: normal; font-weight: 600; font-display: swap; }
+@font-face { font-family: "MindPulse Manrope"; src: url("assets/fonts/Manrope-Bold.ttf") format("truetype"); font-style: normal; font-weight: 700; font-display: swap; }
+
 :root {
   --bg: #f4fbf4;
   --bg-soft: #eef5ee;
@@ -9227,4 +9232,72 @@ body.app-has-shell .task-card.is-done .task-done-mark {
 [data-task-card]:focus-visible {
   outline: 3px solid #276c35;
   outline-offset: 3px;
+}
+
+/* MindPulse preview design system: neutral surfaces, clear controls, calm green. */
+body.app-has-shell {
+  --bg: #eeeeec;
+  --bg-soft: #e7e9e4;
+  --surface: #ffffff;
+  --surface-low: #f7f8f5;
+  --surface-high: #e9ebe6;
+  --surface-line: #d9ddd5;
+  --text: #1d2820;
+  --text-strong: #19231b;
+  --text-soft: #526055;
+  --primary: #244e34;
+  --primary-strong: #183b26;
+  --lime: #d9ef81;
+  --mp-ui-surface: #ffffff;
+  --mp-ui-surface-soft: #f5f7f2;
+  --mp-ui-border: #dfe4dc;
+  --mp-ui-border-strong: #cdd7cb;
+  --mp-ui-muted: #526055;
+  --mp-ui-subtle: #59675a;
+  --mp-ui-shadow: 0 3px 14px rgba(32, 48, 32, 0.035);
+  --mp-ui-card-radius: 18px;
+  background: #eeeeec;
+  font-family: "MindPulse Manrope", "Manrope", sans-serif;
+}
+
+body.app-has-shell .app-sidebar {
+  background: #f6f7f4;
+  border-right: 1px solid #dde2d9;
+  box-shadow: none;
+}
+body.app-has-shell .sidebar-logo { color: #233c2a; }
+body.app-has-shell .sidebar-caption { color: #657168; letter-spacing: 0.08em; }
+body.app-has-shell .app-nav-link { color: #4c5b4f; }
+body.app-has-shell .app-nav-link:hover,
+body.app-has-shell .app-nav-link:focus-visible { background: #e9ede4; color: #203a27; }
+body.app-has-shell .app-nav-link.is-active { color: #203a27; background: #e2ebd7; box-shadow: inset 3px 0 0 #79a641; }
+body.app-has-shell .app-sidebar .app-user-toggle { color: #263b2a; background: #edf0ea; border-color: #dce3d9; }
+body.app-has-shell .app-sidebar .app-user-meta span { color: #5b6a5e; }
+body.app-has-shell .app-sidebar .app-user-avatar { color: #274c31; background: #dbe9cb; }
+body.app-has-shell .app-feedback-trigger { background: #e0efbf; color: #253d25; border-color: #c8dcaa; box-shadow: none; }
+body.app-has-shell .app-feedback-trigger:hover,
+body.app-has-shell .app-feedback-trigger:focus-visible { background: #d3e9a7; color: #1c3420; outline-color: #638842; }
+
+body.app-has-shell .app-page-header-copy h1 { font-size: clamp(2rem, 1.8rem + 1vw, 2.8rem); line-height: 1.08; letter-spacing: -0.045em; }
+body.app-has-shell .section-kicker,
+body.app-has-shell .analytics-card-label,
+body.app-has-shell .task-meta-label { letter-spacing: 0.07em; }
+body.app-has-shell .backlog-column-header,
+body.app-has-shell .day-pulse-card,
+body.app-has-shell .today-range-field,
+body.app-has-shell .daily-focus-card { background: #f5f7f2; border-color: #dfe4dc; box-shadow: none; }
+body.app-has-shell .task-card { background: #ffffff; border-color: #dfe4dc; box-shadow: 0 2px 8px rgba(32,48,32,.035); }
+body.app-has-shell .task-card.is-done { background: #edf6e9; border-color: #7ba36e; }
+body.app-has-shell .form-action-button,
+body.app-has-shell .inline-action-button.is-primary { background: #244e34; color: #fff; }
+body.app-has-shell .form-action-button:hover,
+body.app-has-shell .inline-action-button.is-primary:hover { background: #183b26; }
+body.app-has-shell .analytics-v0-hero { background: #f7f9f4; }
+body.app-has-shell .analytics-v0-control-card { background: #edf3e6; border-color: #dbe5d4; }
+body.app-has-shell .analytics-v0-top-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+body.app-has-shell :is(a, button, input, select, textarea):focus-visible { outline: 3px solid #537f49; outline-offset: 2px; }
+
+@media (max-width: 960px) {
+  body.app-has-shell .app-main { padding: 16px 16px 96px; }
+  body.app-has-shell .app-page-header-copy h1 { font-size: clamp(1.8rem, 7vw, 2.4rem); }
 }
