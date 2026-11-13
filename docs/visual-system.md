@@ -10,4 +10,4 @@ MindPulse uses a calm planning workspace with neutral surfaces and restrained gr
 - Components: use shared surface and action tokens; distinguish completed tasks with both text/icon and color.
 - Layout: preserve existing functionality and responsive behavior; keep horizontal scrolling within the weekly board.
 
-This system is applied to the authenticated workspace in preview. Public pages retain their existing visual styling until separately redesigned and verified.
+The preview applies these tokens to the authenticated workspace and aligns the public landing and authentication pages. The daily check-in uses separators instead of nested cards; the weekly summary is compact and responsive; analytics prioritizes weekly insights and provides a single action for an empty dataset. Feedback remains visible but uses a smaller navigation control. Existing application data and business rules are unchanged.

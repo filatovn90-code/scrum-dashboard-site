@@ -9301,3 +9301,84 @@ body.app-has-shell :is(a, button, input, select, textarea):focus-visible { outli
   body.app-has-shell .app-main { padding: 16px 16px 96px; }
   body.app-has-shell .app-page-header-copy h1 { font-size: clamp(1.8rem, 7vw, 2.4rem); }
 }
+
+/* Preview refinement: content first, consistent surfaces and controls. */
+body:has(.public-page) {
+  --bg: #eeeeec;
+  --surface: #fff;
+  --text: #1d2820;
+  --text-soft: #526055;
+  --primary: #244e34;
+  --primary-strong: #183b26;
+  font-family: "MindPulse Manrope", "Manrope", sans-serif;
+  color: #1d2820;
+  background: #eeeeec;
+}
+body:has(.public-page) :is(.auth-route-card, .landing-home-step, .landing-home-cta-card) {
+  border-color: #dfe4dc;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 3px 14px rgba(32, 48, 32, .035);
+}
+body:has(.public-page) :is(a, button, input, select, textarea):focus-visible,
+body.app-has-shell :is(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid #537f49;
+  outline-offset: 3px;
+}
+body:has(.public-page) .form-action-button { background: #244e34; color: #fff; }
+body:has(.public-page) .form-action-button:hover { background: #183b26; }
+body.app-has-shell .today-range-field {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid #e1e6de;
+  box-shadow: none;
+  padding: 16px 0;
+}
+body.app-has-shell .today-range-field strong { font-size: 1rem; }
+body.app-has-shell .today-grid { align-items: start; gap: 24px; }
+body.app-has-shell #backlogSummary .analytics-overview-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin: 0 0 20px;
+  border: 1px solid #dfe4dc;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f7f8f5;
+}
+body.app-has-shell #backlogSummary .analytics-card {
+  min-height: 0;
+  padding: 16px;
+  border: 0;
+  border-right: 1px solid #dfe4dc;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body.app-has-shell #backlogSummary .analytics-card:last-child { border-right: 0; }
+body.app-has-shell #backlogSummary .analytics-card-value { font-size: 1.8rem; }
+body.app-has-shell #backlogSummary .analytics-card-note { font-size: .8rem; line-height: 1.4; }
+body.app-has-shell .task-card { border-radius: 14px; padding: 14px; }
+body.app-has-shell .task-card strong { color: #1d2820; line-height: 1.35; }
+body.app-has-shell .task-meta-label { color: #526055; }
+body.app-has-shell .task-card.is-done { border-width: 1px; box-shadow: none; }
+body.app-has-shell .analytics-v0-hero { padding: 18px 20px; gap: 16px; }
+body.app-has-shell .analytics-v0-hero-copy .today-section-copy { max-width: 58ch; font-size: .9rem; line-height: 1.5; }
+body.app-has-shell .analytics-v0-control-card { padding: 14px; }
+body.app-has-shell #analyticsTopCards .analytics-empty-state { grid-column: 1 / -1; }
+body.app-has-shell .analytics-card-label,
+body.app-has-shell .section-kicker,
+body.app-has-shell .task-meta-label { letter-spacing: .025em; text-transform: none; }
+body.app-has-shell .app-feedback-trigger { min-height: 54px; padding: 8px 10px; gap: 8px; }
+body.app-has-shell .app-feedback-cta-icon { width: 32px; height: 32px; flex-basis: 32px; }
+body.app-has-shell .app-feedback-cta-copy small { color: #405840; }
+body.app-has-shell :is(input, select, textarea):disabled,
+body:has(.public-page) :is(input, select, textarea, button):disabled { opacity: .65; cursor: not-allowed; }
+@media (max-width: 800px) {
+  body.app-has-shell #backlogSummary .analytics-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.app-has-shell #backlogSummary .analytics-card:nth-child(2) { border-right: 0; }
+  body.app-has-shell #backlogSummary .analytics-card:nth-child(-n+2) { border-bottom: 1px solid #dfe4dc; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body:has(.public-page) *, body.app-has-shell * { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

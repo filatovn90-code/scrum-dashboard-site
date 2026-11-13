@@ -568,6 +568,10 @@ function buildWeeklyReview(dataset) {
 }
 
 function renderTopCards(dataset) {
+  if (!dataset.checkins.length && !dataset.tasks.length) {
+    topCards.innerHTML = emptyState(t("analytics.noState"), t("analytics.goToPulse"), todayPath());
+    return;
+  }
   const cards = [
     {
       label: t("analytics.energyAverage"),
