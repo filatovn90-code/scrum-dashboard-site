@@ -9443,3 +9443,35 @@ body.app-has-shell .task-card .task-badge {
   line-height: 1.35;
   text-align: center;
 }
+
+/* Weekly review: calm summary first, deeper analysis on demand. */
+body.app-has-shell .rhythm-review { padding: clamp(24px, 3vw, 40px); }
+body.app-has-shell .rhythm-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+body.app-has-shell .rhythm-heading h2 { margin: 8px 0; font-size: clamp(1.45rem, 2vw, 2rem); line-height: 1.2; letter-spacing: -.035em; }
+body.app-has-shell .rhythm-heading p, body.app-has-shell .rhythm-scope { color: #526055; line-height: 1.55; }
+body.app-has-shell .rhythm-period { display: grid; gap: 8px; flex: 0 0 210px; color: #526055; font-size: .85rem; font-weight: 700; }
+body.app-has-shell .rhythm-period select { width: 100%; min-height: 44px; }
+body.app-has-shell .rhythm-date { margin: 20px 0 12px; color: #526055; font-size: .85rem; }
+body.app-has-shell .rhythm-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; overflow: hidden; border: 1px solid #dfe4dc; border-radius: 16px; background: #dfe4dc; }
+body.app-has-shell .rhythm-metrics > div { display: grid; gap: 6px; padding: 20px; background: #f5f7f2; }
+body.app-has-shell .rhythm-metrics strong { font-size: 2rem; line-height: 1; color: #244e34; }
+body.app-has-shell .rhythm-metrics span { color: #526055; font-size: .9rem; }
+body.app-has-shell .rhythm-scope { font-size: .8rem; margin: 10px 0 24px; }
+body.app-has-shell .rhythm-insight { padding: 18px 20px; border-left: 3px solid #86a85d; border-radius: 0 12px 12px 0; background: #f2f6ec; }
+body.app-has-shell .rhythm-insight p { margin: 0; color: #304834; line-height: 1.6; }
+body.app-has-shell .rhythm-insight p + p { margin-top: 10px; }
+body.app-has-shell .rhythm-reflection { display: grid; gap: 8px; margin: 24px 0; }
+body.app-has-shell .rhythm-reflection label { color: #1d2820; font-weight: 700; }
+body.app-has-shell .rhythm-reflection textarea { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid #cdd7cb; border-radius: 12px; background: #fff; color: #1d2820; font: inherit; resize: vertical; }
+body.app-has-shell .rhythm-reflection p { margin: 0; color: #526055; font-size: .8rem; }
+body.app-has-shell .rhythm-action { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+body.app-has-shell .rhythm-details > summary { cursor: pointer; padding: 18px 22px; border: 1px solid #dfe4dc; border-radius: 16px; background: #fff; color: #244e34; font-weight: 700; }
+body.app-has-shell .rhythm-details-content { display: grid; gap: 18px; padding-top: 18px; }
+@media (max-width: 700px) {
+  body.app-has-shell .rhythm-heading { flex-direction: column; }
+  body.app-has-shell .rhythm-period { flex: auto; width: 100%; }
+  body.app-has-shell .rhythm-metrics > div { padding: 14px 10px; }
+  body.app-has-shell .rhythm-metrics strong { font-size: 1.5rem; }
+  body.app-has-shell .rhythm-metrics span { font-size: .76rem; }
+  body.app-has-shell .rhythm-action { width: 100%; box-sizing: border-box; text-align: center; }
+}

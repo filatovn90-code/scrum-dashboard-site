@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Аналитика — MindPulse</title>
+  <title>Итоги и ритм — MindPulse</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body
   data-app-active="analytics"
-  data-app-title="Аналитика"
-  data-app-subtitle="Связь состояния, нагрузки и темпа работы без лишней тревоги — с фокусом на понятные выводы."
+  data-app-title="Итоги и ритм"
+  data-app-subtitle="Посмотрите, как прошла неделя, и подготовьтесь к следующей."
 >
   <div class="app-shell app-page-layout">
     <aside data-app-sidebar></aside>
@@ -19,6 +19,19 @@
         <header data-app-page-header></header>
 
         <main class="analytics-main analytics-health-main analytics-v0-main">
+          <section class="section rhythm-review" aria-labelledby="rhythmTitle">
+            <div class="rhythm-heading">
+              <div><p class="section-kicker" data-i18n="rhythm.kicker">Ваш недельный обзор</p><h2 id="rhythmTitle" data-i18n="rhythm.title">Оглянуться и двигаться дальше</h2><p data-i18n="rhythm.subtitle">Посмотрите на задачи и нагрузку без лишней оценки.</p></div>
+              <label class="rhythm-period"><span data-i18n="analytics.period">Период</span><select id="analyticsPeriodSelect" class="analytics-period-select"><option value="this_week" data-i18n="analytics.periodThisWeek">Эта неделя</option><option value="last_week" data-i18n="analytics.periodLastWeek">Прошлая неделя</option><option value="last_14_days" data-i18n="analytics.periodLast14Days">Последние 14 дней</option><option value="last_30_days" data-i18n="analytics.periodLast30Days">Последние 30 дней</option></select></label>
+            </div>
+            <div class="rhythm-date" id="analyticsStatus" role="status" data-i18n="analytics.loading">Загружаю аналитику...</div>
+            <div class="rhythm-metrics" id="rhythmMetrics" aria-live="polite"></div>
+            <p class="rhythm-scope" data-i18n="rhythm.scope">Задачи, запланированные на выбранный период, по их текущему статусу.</p>
+            <div class="rhythm-insight" id="rhythmInsight"></div>
+            <div class="rhythm-reflection"><label for="rhythmNote" data-i18n="rhythm.question">Что вы хотите изменить на следующей неделе?</label><textarea id="rhythmNote" rows="2" data-i18n-placeholder="rhythm.placeholder" placeholder="Например: оставить больше времени на сложные задачи"></textarea><p id="rhythmNoteStatus" data-i18n="rhythm.noteHint">Личная заметка сохраняется только в этом браузере.</p></div>
+            <a class="form-action-button rhythm-action" href="backlog.html?week=next" data-i18n="rhythm.next">Перейти к плану следующей недели</a>
+          </section>
+          <details class="rhythm-details"><summary data-i18n="rhythm.details">Подробнее: графики, рекомендации и ИИ-обзор</summary><div class="rhythm-details-content">
           <section class="section analytics-hero-card analytics-v0-hero">
             <div class="analytics-v0-hero-copy">
               <p class="section-kicker" data-i18n="analytics.heroKicker">Персональная аналитика энергии</p>
@@ -38,17 +51,7 @@
                 </div>
               </div>
 
-              <label class="analytics-filter">
-                <span class="analytics-filter-label" data-i18n="analytics.period">Период</span>
-                <select id="analyticsPeriodSelect" class="analytics-period-select">
-                  <option value="this_week" data-i18n="analytics.periodThisWeek">Эта неделя</option>
-                  <option value="last_week" data-i18n="analytics.periodLastWeek">Прошлая неделя</option>
-                  <option value="last_14_days" data-i18n="analytics.periodLast14Days">Последние 14 дней</option>
-                  <option value="last_30_days" data-i18n="analytics.periodLast30Days">Последние 30 дней</option>
-                </select>
-              </label>
-
-              <div class="auth-status-box analytics-inline-status analytics-v0-status" id="analyticsStatus" data-i18n="analytics.loading">Загружаю аналитику...</div>
+              <p class="analytics-filter-label" data-i18n="rhythm.detailsPeriod">Период выбирается в обзоре выше.</p>
             </aside>
           </section>
 
@@ -162,6 +165,7 @@
               <div id="analyticsRecommendations" class="analytics-stack-list"></div>
             </article>
           </section>
+          </div></details>
         </main>
       </div>
     </div>

@@ -406,7 +406,10 @@ const defaultBacklogData = generateWeeksUntilYearEnd();
 const backlogData = normalizeStoredData(defaultBacklogData);
 const weekNames = Object.keys(backlogData).sort((a, b) => weekStartValue(a) - weekStartValue(b));
 const storedWeek = window.appStorage.getItem(userBacklogWeekStorageKey);
-const defaultWeek = weekNames.includes(storedWeek) ? storedWeek : getInitialWeek(weekNames);
+const initialWeek = getInitialWeek(weekNames);
+const nextWeekRequested = new URLSearchParams(window.location.search).get("week") === "next";
+const nextWeek = weekNames[weekNames.indexOf(initialWeek) + 1];
+const defaultWeek = nextWeekRequested && nextWeek ? nextWeek : (weekNames.includes(storedWeek) ? storedWeek : initialWeek);
 
 const weeksByMonth = weekNames.reduce((groups, week) => {
   const month = monthNameForWeek(week);

@@ -5,6 +5,7 @@ import { backlogPath, landingPath, loginPath, todayPath } from "./route-paths.js
 import { getCurrentPlan, isProPlan } from "./pricing-helpers.js";
 import { requestWeeklyReview } from "./ai-service.js";
 import { getOverloadRisk } from "./analytics-risk.js";
+import { summarizeWeek } from "./lib/weekly-rhythm.js";
 import {
   calculateDailyLoad,
   calculateDailyLoadLevel,
@@ -38,6 +39,10 @@ const taskTypesInsight = document.getElementById("analyticsTaskTypesInsight");
 const overloadTrendBox = document.getElementById("analyticsOverloadTrend");
 const recommendationsBox = document.getElementById("analyticsRecommendations");
 const aiAssistantToggle = document.getElementById("aiAssistantToggle");
+const rhythmMetrics = document.getElementById("rhythmMetrics");
+const rhythmInsight = document.getElementById("rhythmInsight");
+const rhythmNote = document.getElementById("rhythmNote");
+const rhythmNoteStatus = document.getElementById("rhythmNoteStatus");
 
 let supabase;
 let currentUser;
@@ -73,6 +78,16 @@ periodSelect?.addEventListener("change", () => {
 
 weeklyReviewButton?.addEventListener("click", async () => {
   await renderWeeklyReview(currentDataset);
+});
+
+rhythmNote?.addEventListener("input", () => {
+  if (!currentDataset || !currentUser) return;
+  try {
+    localStorage.setItem(`mindpulse-rhythm-note:${currentUser.id}:${currentDataset.range.start}`, rhythmNote.value);
+    rhythmNoteStatus.textContent = t("rhythm.noteHint");
+  } catch {
+    rhythmNoteStatus.textContent = t("rhythm.noteUnavailable");
+  }
 });
 
 async function bootstrap() {
@@ -129,6 +144,7 @@ async function renderAnalytics() {
 
   currentDataset = buildDataset(range, checkins, tasks);
 
+  renderRhythm(currentDataset);
   renderWeeklyInsights(currentDataset);
   renderWeeklyReviewPlaceholder(currentDataset);
   renderTopCards(currentDataset);
@@ -141,6 +157,39 @@ async function renderAnalytics() {
   renderRecommendations(currentDataset);
 
   setStatus(`${t(PERIOD_OPTIONS[periodKey])} • ${formatDate(range.start)} - ${formatDate(range.end)}`);
+}
+
+function renderRhythm(dataset) {
+  const result = summarizeWeek(dataset);
+  rhythmMetrics.replaceChildren();
+  [[result.completed, "rhythm.done"], [result.open, "rhythm.open"], [result.checkins, "rhythm.checkins"]].forEach(([value, key]) => {
+    const item = document.createElement("div");
+    const number = document.createElement("strong");
+    const label = document.createElement("span");
+    number.textContent = String(value);
+    label.textContent = t(key);
+    item.append(number, label);
+    rhythmMetrics.append(item);
+  });
+  rhythmInsight.replaceChildren();
+  const observation = document.createElement("p");
+  observation.textContent = result.busiest ? t("rhythm.busiest", { day: result.busiest.weekday, date: formatDate(result.busiest.date), count: result.busiest.tasks.length, load: Math.round(result.busiest.loadValue) }) : t("rhythm.empty");
+  rhythmInsight.append(observation);
+  if (!result.checkins) {
+    const state = document.createElement("p");
+    state.textContent = t("rhythm.noState");
+    rhythmInsight.append(state);
+  }
+  const suggestion = document.createElement("p");
+  suggestion.textContent = t("rhythm.suggestion");
+  rhythmInsight.append(suggestion);
+  try {
+    rhythmNote.value = localStorage.getItem(`mindpulse-rhythm-note:${currentUser.id}:${dataset.range.start}`) || "";
+    rhythmNoteStatus.textContent = t("rhythm.noteHint");
+  } catch {
+    rhythmNote.value = "";
+    rhythmNoteStatus.textContent = t("rhythm.noteUnavailable");
+  }
 }
 
 async function fetchCheckins(range) {
@@ -608,7 +657,7 @@ function renderTopCards(dataset) {
     }
   ];
 
-  topCards.innerHTML = cards.map((card) => `
+  topCards.innerHTML = cards.filter((card) => dataset.checkins.length || card.label !== t("pulse.energyDebt")).map((card) => `
     <article class="analytics-card analytics-card-state ${card.state ? `is-${card.state}` : ""}">
       <p class="analytics-card-label">${card.label}</p>
       <strong class="analytics-card-value">${card.value}</strong>
@@ -690,9 +739,9 @@ function renderDebtTrend(dataset) {
     return;
   }
 
-  if (!dataset.checkins.length && !dataset.tasks.length) {
-    debtTrend.innerHTML = emptyState(t("analytics.weeklyReviewEmpty"), t("analytics.goToPulse"), todayPath());
-    debtInsight.textContent = t("analytics.weeklyReviewPrompt");
+  if (!dataset.checkins.length) {
+    debtTrend.innerHTML = emptyState(t("rhythm.noState"), t("analytics.goToPulse"), todayPath());
+    debtInsight.textContent = "";
     return;
   }
 
