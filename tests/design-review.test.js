@@ -27,3 +27,12 @@ test("task card content can wrap within the card", () => {
   assert.ok(section.includes("overflow-wrap: anywhere"));
   assert.ok(section.includes("white-space: normal"));
 });
+
+test("task card centers values without the task type icon", () => {
+  const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+  const code = readFileSync(new URL("../backlog.js", import.meta.url), "utf8");
+  const cardStyles = css.slice(css.lastIndexOf("/* Task card readability */"));
+  assert.ok(cardStyles.includes("justify-content: center"));
+  assert.ok(cardStyles.includes("text-align: center"));
+  assert.match(code, /class="task-badge">\$\{getTaskTypeLabel\(item\.task_type\)\}/);
+});

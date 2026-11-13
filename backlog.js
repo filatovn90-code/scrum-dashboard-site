@@ -7,7 +7,6 @@ import {
   calculateEnergyDebtSeries,
   calculateTaskIntensity,
   calculateReadinessScore,
-  getTaskTypeIcon,
   getTaskTypeLabel,
   normalizeTask,
   summarizeEnergyDebt,
@@ -926,7 +925,7 @@ function renderTaskCard(week, day, rawItem) {
           </div>
           <div class="task-meta task-meta-labeled">
             <span class="task-meta-label">${t("plan.taskType")}</span>
-            <span class="task-badge">${getTaskTypeIcon(item.task_type)} ${getTaskTypeLabel(item.task_type)}</span>
+            <span class="task-badge">${getTaskTypeLabel(item.task_type)}</span>
           </div>
           <div class="task-meta task-meta-labeled">
             <span class="task-meta-label">${t("plan.cognitive")}</span>
