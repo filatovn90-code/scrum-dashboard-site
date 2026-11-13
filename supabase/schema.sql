@@ -11,6 +11,7 @@ create table if not exists public.profiles (
 
 alter table public.profiles add column if not exists full_name text;
 alter table public.profiles add column if not exists timezone text;
+alter table public.profiles add column if not exists locale text;
 alter table public.profiles add column if not exists updated_at timestamptz not null default now();
 
 create table if not exists public.projects (

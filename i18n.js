@@ -45,7 +45,7 @@ const messages = {
       openApp: "В рабочее пространство",
       pulse: "Пульс дня",
       plan: "Моя неделя",
-      analytics: "Аналитика",
+      analytics: "Итоги и ритм",
       profile: "Профиль",
       settings: "Настройки",
       billing: "Тариф и оплата",
@@ -411,6 +411,7 @@ const messages = {
       focusTitle: "Фокус на день",
       add: "Добавить",
       addTaskPlaceholder: "Задача",
+      loadHelp: "Оцените нагрузку от 1 до 5: когнитивная — усилия и концентрация, эмоциональная — переживания и общение.",
       focusItemPlaceholder: "Пункт {index}",
       pulse: "Пульс",
       pulseNotAssessed: "Пульс не оценён",
@@ -454,9 +455,15 @@ const messages = {
       cognitiveHeavyTasks: "С нагрузкой 4/5 и выше",
       emotionalHeavyTasks: "С нагрузкой 4/5 и выше"
     },
+    rhythm: {
+      kicker: "Ваш недельный обзор", title: "Оглянуться и двигаться дальше", subtitle: "Посмотрите на задачи и нагрузку без лишней оценки.",
+      scope: "Задачи, запланированные на выбранный период, по их текущему статусу.", done: "Завершено", open: "Осталось открытыми", checkins: "Отметок состояния", noState: "Оценок состояния пока нет. Без них нельзя судить о вашем самочувствии.",
+      busiest: "Самый насыщенный день по запланированной нагрузке: {day}, {date}. Задач: {count}; нагрузка: {load}.", empty: "В этом периоде пока нет запланированных задач.",
+      suggestion: "Посмотрите на план следующей недели: при необходимости распределите сложные задачи по дням.", question: "Что вы хотите изменить на следующей неделе?", placeholder: "Например: оставить больше времени на сложные задачи", noteHint: "Личная заметка сохраняется только в этом браузере.", noteUnavailable: "Не удалось сохранить заметку в браузере.", next: "Перейти к плану следующей недели", details: "Подробнее: графики, рекомендации и ИИ-обзор", detailsPeriod: "Период выбирается в обзоре выше."
+    },
     analytics: {
-      pageTitle: "Аналитика",
-      pageSubtitle: "Связь состояния, нагрузки и темпа работы без лишней тревоги — с фокусом на понятные выводы.",
+      pageTitle: "Итоги и ритм",
+      pageSubtitle: "Посмотрите, как прошла неделя, и подготовьтесь к следующей.",
       heroKicker: "Персональная аналитика энергии",
       heroTitle: "Связь состояния, нагрузки и темпа работы",
       heroBody: "Здесь видно, как задачи влияют на энергию, стресс и фокус. Это помогает раньше замечать риск перегруза и собирать более устойчивый ритм недели.",
@@ -587,7 +594,7 @@ const messages = {
       pageTitle: "Настройки",
       pageSubtitle: "Базовые системные настройки продукта будут собраны здесь по мере развития MindPulse.",
       title: "Язык и регион",
-      body: "Пока основной системной настройкой является язык интерфейса. Позже сюда можно будет добавить регион, формат времени и другие параметры поведения продукта.",
+      body: "Выберите язык интерфейса MindPulse.",
       field: "Язык интерфейса",
       hint: "Выберите основной язык приложения.",
       save: "Сохранить настройки",
@@ -747,7 +754,7 @@ const messages = {
       openApp: "Go to workspace",
       pulse: "Daily Pulse",
       plan: "My Week",
-      analytics: "Analytics",
+      analytics: "Review & rhythm",
       profile: "Profile",
       settings: "Settings",
       billing: "Plan & Billing",
@@ -1113,6 +1120,7 @@ const messages = {
       focusTitle: "Today’s focus",
       add: "Add",
       addTaskPlaceholder: "Task",
+      loadHelp: "Rate each load from 1 to 5: cognitive is effort and focus; emotional is feelings and communication.",
       focusItemPlaceholder: "Item {index}",
       pulse: "Pulse",
       pulseNotAssessed: "Pulse not assessed",
@@ -1156,9 +1164,15 @@ const messages = {
       cognitiveHeavyTasks: "With load 4/5 or higher",
       emotionalHeavyTasks: "With load 4/5 or higher"
     },
+    rhythm: {
+      kicker: "Your weekly review", title: "Reflect and move forward", subtitle: "Review your tasks and workload without judgment.",
+      scope: "Tasks planned for the selected period, by their current status.", done: "Completed", open: "Still open", checkins: "Check-ins", noState: "No check-ins yet. There is not enough information to assess how you feel.",
+      busiest: "Busiest planned day: {day}, {date}. Tasks: {count}; workload: {load}.", empty: "No tasks are planned for this period yet.",
+      suggestion: "Review next week's plan and distribute demanding tasks across days if needed.", question: "What would you like to change next week?", placeholder: "For example, leave more time for demanding tasks", noteHint: "Your private note is saved only in this browser.", noteUnavailable: "The note could not be saved in this browser.", next: "Go to next week's plan", details: "More: charts, recommendations and AI review", detailsPeriod: "Choose the period in the review above."
+    },
     analytics: {
-      pageTitle: "Analytics",
-      pageSubtitle: "See the relationship between state, workload, and pace with a focus on clear conclusions instead of noise.",
+      pageTitle: "Review & rhythm",
+      pageSubtitle: "Reflect on your week and prepare for the next one.",
       heroKicker: "Personal energy insights",
       heroTitle: "State, workload, and pace",
       heroBody: "This view shows how tasks influence your energy, stress, and focus. It helps you spot overload earlier and build a more sustainable weekly rhythm.",

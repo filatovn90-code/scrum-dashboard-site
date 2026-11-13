@@ -7,7 +7,6 @@ import {
   calculateEnergyDebtSeries,
   calculateTaskIntensity,
   calculateReadinessScore,
-  getTaskTypeIcon,
   getTaskTypeLabel,
   normalizeTask,
   summarizeEnergyDebt,
@@ -407,7 +406,10 @@ const defaultBacklogData = generateWeeksUntilYearEnd();
 const backlogData = normalizeStoredData(defaultBacklogData);
 const weekNames = Object.keys(backlogData).sort((a, b) => weekStartValue(a) - weekStartValue(b));
 const storedWeek = window.appStorage.getItem(userBacklogWeekStorageKey);
-const defaultWeek = weekNames.includes(storedWeek) ? storedWeek : getInitialWeek(weekNames);
+const initialWeek = getInitialWeek(weekNames);
+const nextWeekRequested = new URLSearchParams(window.location.search).get("week") === "next";
+const nextWeek = weekNames[weekNames.indexOf(initialWeek) + 1];
+const defaultWeek = nextWeekRequested && nextWeek ? nextWeek : (weekNames.includes(storedWeek) ? storedWeek : initialWeek);
 
 const weeksByMonth = weekNames.reduce((groups, week) => {
   const month = monthNameForWeek(week);
@@ -830,6 +832,7 @@ function renderTaskEditor(editorKey, day, defaults) {
     <div class="backlog-slot-cell is-editor">
       <div class="inline-task-editor" data-editor="${editorKey}">
         <input class="inline-task-input" type="text" placeholder="${t("plan.addTaskPlaceholder")}" value="${escapeHtml(defaults.text)}" data-editor-text>
+        <p class="inline-task-help">${t("plan.loadHelp")}</p>
         <div class="inline-task-row ${defaults.hideTime ? "is-single" : ""}">
           ${defaults.hideTime ? "" : `
             <select data-editor-time>
@@ -925,7 +928,7 @@ function renderTaskCard(week, day, rawItem) {
           </div>
           <div class="task-meta task-meta-labeled">
             <span class="task-meta-label">${t("plan.taskType")}</span>
-            <span class="task-badge">${getTaskTypeIcon(item.task_type)} ${getTaskTypeLabel(item.task_type)}</span>
+            <span class="task-badge">${getTaskTypeLabel(item.task_type)}</span>
           </div>
           <div class="task-meta task-meta-labeled">
             <span class="task-meta-label">${t("plan.cognitive")}</span>
