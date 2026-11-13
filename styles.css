@@ -9374,6 +9374,9 @@ body.app-has-shell .app-feedback-cta-icon { width: 32px; height: 32px; flex-basi
 body.app-has-shell .app-feedback-cta-copy small { color: #405840; }
 body.app-has-shell :is(input, select, textarea):disabled,
 body:has(.public-page) :is(input, select, textarea, button):disabled { opacity: .65; cursor: not-allowed; }
+@media (max-width: 960px) {
+  body.app-has-shell .app-shell { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 800px) {
   body.app-has-shell #backlogSummary .analytics-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body.app-has-shell #backlogSummary .analytics-card:nth-child(2) { border-right: 0; }

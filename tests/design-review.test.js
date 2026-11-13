@@ -14,3 +14,8 @@ test("empty analytics do not report an overload risk", async () => {
   assert.equal(getOverloadRisk(5, 4), "high");
   assert.equal(getOverloadRisk(7, 3), "normal");
 });
+
+test("the application shell uses one column on narrow screens", () => {
+  const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+  assert.match(css, /@media\s*\(max-width:\s*960px\)\s*\{\s*body\.app-has-shell\s+\.app-shell\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+});
