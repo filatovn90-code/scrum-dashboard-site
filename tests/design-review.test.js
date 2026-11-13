@@ -36,3 +36,12 @@ test("task card centers values without the task type icon", () => {
   assert.ok(cardStyles.includes("text-align: center"));
   assert.match(code, /class="task-badge">\$\{getTaskTypeLabel\(item\.task_type\)\}/);
 });
+
+test("task load inputs remain editable but are hidden from the regular card", () => {
+  const code = readFileSync(new URL("../backlog.js", import.meta.url), "utf8");
+  const card = code.slice(code.indexOf("function renderTaskCard("), code.indexOf("function statusClass("));
+  assert.doesNotMatch(card, /t\("plan\.(cognitive|emotional)"\)/);
+  assert.match(code, /data-editor-cognitive-load/);
+  assert.match(code, /data-editor-emotional-load/);
+  assert.match(card, /t\("plan\.overallLoad"\)/);
+});
