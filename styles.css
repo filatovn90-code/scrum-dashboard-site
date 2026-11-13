@@ -9385,3 +9385,51 @@ body:has(.public-page) :is(input, select, textarea, button):disabled { opacity: 
 @media (prefers-reduced-motion: reduce) {
   body:has(.public-page) *, body.app-has-shell * { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Task card readability */
+body.app-has-shell .task-card {
+  min-width: 0;
+  padding: 14px;
+}
+body.app-has-shell .task-card p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  font-weight: 700;
+  line-height: 1.4;
+}
+body.app-has-shell .task-card-actions-stacked { gap: 10px; }
+body.app-has-shell .task-status-group,
+body.app-has-shell .task-meta-labeled {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  min-width: 0;
+}
+body.app-has-shell .task-meta-label {
+  font-size: .75rem;
+  line-height: 1.35;
+  color: #526055;
+}
+body.app-has-shell .task-status-select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 30px 0 10px;
+  font-size: .82rem;
+}
+body.app-has-shell .task-card .task-badge {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 32px;
+  height: auto;
+  padding: 6px 10px;
+  border-radius: 10px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}

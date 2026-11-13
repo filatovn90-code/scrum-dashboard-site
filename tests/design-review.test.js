@@ -19,3 +19,11 @@ test("the application shell uses one column on narrow screens", () => {
   const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
   assert.match(css, /@media\s*\(max-width:\s*960px\)\s*\{\s*body\.app-has-shell\s+\.app-shell\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
 });
+
+test("task card content can wrap within the card", () => {
+  const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+  const section = css.slice(css.lastIndexOf("/* Task card readability */"));
+  assert.ok(section.includes("grid-template-columns: minmax(0, 1fr)"));
+  assert.ok(section.includes("overflow-wrap: anywhere"));
+  assert.ok(section.includes("white-space: normal"));
+});
