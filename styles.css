@@ -9467,6 +9467,7 @@ body.app-has-shell .rhythm-reflection p { margin: 0; color: #526055; font-size: 
 body.app-has-shell .rhythm-action { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 body.app-has-shell .rhythm-details > summary { cursor: pointer; padding: 18px 22px; border: 1px solid #dfe4dc; border-radius: 16px; background: #fff; color: #244e34; font-weight: 700; }
 body.app-has-shell .rhythm-details-content { display: grid; gap: 18px; padding-top: 18px; }
+body.app-has-shell .rhythm-ai-toggle { position: static; width: fit-content; max-width: 100%; justify-self: start; }
 @media (max-width: 700px) {
   body.app-has-shell .rhythm-heading { flex-direction: column; }
   body.app-has-shell .rhythm-period { flex: auto; width: 100%; }
