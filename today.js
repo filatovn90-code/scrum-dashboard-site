@@ -36,6 +36,8 @@ const capacityPercent = document.getElementById("todayCapacityPercent");
 const capacityLabel = document.getElementById("todayCapacityLabel");
 const capacityBar = document.getElementById("todayCapacityBar");
 const capacityNote = document.getElementById("todayCapacityNote");
+const stateValues = document.getElementById("todayStateValues");
+const stressWarning = document.getElementById("todayStressWarning");
 const energyDebtValue = document.getElementById("todayEnergyDebtValue");
 const energyDebtStatus = document.getElementById("todayEnergyDebtStatus");
 const energyDebtNote = document.getElementById("todayEnergyDebtNote");
@@ -243,11 +245,11 @@ function renderTodayView() {
   const debtSeries = calculateEnergyDebtSeries(recentCheckins, recentTasks);
   const energyDebt = summarizeEnergyDebt(debtSeries);
   const readiness = todayCheckin ? calculateReadinessScore(checkinState, activeTasks, energyDebt) : null;
-  renderCapacity(readiness, energyDebt);
+  renderCapacity(readiness, energyDebt, todayCheckin ? checkinState : null);
   renderLoadExplanation(checkinState, activeTasks);
 }
 
-function renderCapacity(readiness, energyDebt) {
+function renderCapacity(readiness, energyDebt, checkin) {
   const safeReadiness = readiness;
   const safeDebt = energyDebt || summarizeEnergyDebt([]);
   const loadLevel = safeReadiness?.dailyLoadLevel || calculateDailyLoadLevel(todayTasks.filter((task) => !isDone(task)));
@@ -270,8 +272,14 @@ function renderCapacity(readiness, energyDebt) {
   }
 
   if (capacityNote) {
-    const parts = [readinessCopy.note, safeReadiness ? loadLevel?.note : ""].filter(Boolean);
+    const parts = [readinessCopy.note, safeReadiness && !safeReadiness.stressWarning ? loadLevel?.note : ""].filter(Boolean);
     capacityNote.textContent = parts.join(" ");
+  }
+
+  if (stateValues) stateValues.textContent = checkin ? t("workload.stateValues", { energy: checkin.energy_level, focus: checkin.focus_level, stress: checkin.stress_level }) : "";
+  if (stressWarning) {
+    stressWarning.hidden = !safeReadiness?.stressWarning;
+    stressWarning.textContent = safeReadiness?.stressWarning === "high" ? t("workload.stressHighNote") : safeReadiness?.stressWarning ? t("workload.stressElevatedNote") : "";
   }
 
   if (energyDebtValue) {
@@ -320,6 +328,7 @@ function looksCorruptedText(value) {
 }
 
 function getCleanReadinessCopy(readiness) {
+  if (readiness?.stressWarning) return { label: t("workload.stressAttention"), note: "" };
   const state = readiness?.state || "stable";
   let label = t("workload.readinessStable");
   let note = t("workload.readinessFallback");

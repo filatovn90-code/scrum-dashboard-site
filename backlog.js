@@ -684,8 +684,9 @@ function getPulseCardLabel(state) {
 }
 
 function getPulseCardHint(metrics) {
-  if (!metrics.explanation.count) return t("loadExplanation.noTasks");
   if (!metrics.hasPulse) return t("loadExplanation.noCheckin");
+  if (metrics.stressWarning) return t(metrics.stressWarning === "high" ? "workload.stressHighNote" : "workload.stressElevatedNote");
+  if (!metrics.explanation.count) return t("loadExplanation.noTasks");
   if (metrics.overBy > 0) {
     return t("plan.noteHeavy");
   }
@@ -765,6 +766,7 @@ function buildDayPulseMetricsMap(week, days) {
       explanation: explainLoad(tasks),
       dateIso,
       hasPulse: Number.isFinite(computedPulse),
+      stressWarning: checkin && Number(checkin.stress_level) >= 9 ? "high" : checkin && Number(checkin.stress_level) >= 7 ? "elevated" : null,
       pulse: computedPulse,
       capacity,
       totalLoad,
