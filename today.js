@@ -2,6 +2,7 @@ import { requireAuth, signOutCurrentUser } from "./auth-helpers.js";
 import { getCurrentProfile, getSupabase } from "./supabase-client.js";
 import { applyTranslations, onLocaleChange, t } from "./i18n.js";
 import { landingPath, loginPath } from "./route-paths.js";
+import { explainLoad } from "./lib/load-explanation.js";
 import {
   calculateDailyLoadLevel,
   calculateEnergyDebtSeries,
@@ -39,6 +40,7 @@ const energyDebtValue = document.getElementById("todayEnergyDebtValue");
 const energyDebtStatus = document.getElementById("todayEnergyDebtStatus");
 const energyDebtNote = document.getElementById("todayEnergyDebtNote");
 const capacityMode = document.getElementById("todayCapacityMode");
+const loadExplanation = document.getElementById("todayLoadExplanation");
 
 let supabase;
 let currentUser;
@@ -240,53 +242,76 @@ function renderTodayView() {
   const activeTasks = todayTasks.filter((task) => !isDone(task));
   const debtSeries = calculateEnergyDebtSeries(recentCheckins, recentTasks);
   const energyDebt = summarizeEnergyDebt(debtSeries);
-  const readiness = calculateReadinessScore(checkinState, activeTasks, energyDebt);
+  const readiness = todayCheckin ? calculateReadinessScore(checkinState, activeTasks, energyDebt) : null;
   renderCapacity(readiness, energyDebt);
+  renderLoadExplanation(checkinState, activeTasks);
 }
 
 function renderCapacity(readiness, energyDebt) {
-  const safeReadiness = readiness || calculateReadinessScore(buildCheckinFromForm(), [], summarizeEnergyDebt([]));
+  const safeReadiness = readiness;
   const safeDebt = energyDebt || summarizeEnergyDebt([]);
-  const loadLevel = safeReadiness.dailyLoadLevel || calculateDailyLoadLevel(todayTasks.filter((task) => !isDone(task)));
-  const readinessCopy = getCleanReadinessCopy(safeReadiness);
+  const loadLevel = safeReadiness?.dailyLoadLevel || calculateDailyLoadLevel(todayTasks.filter((task) => !isDone(task)));
+  const readinessCopy = safeReadiness ? getCleanReadinessCopy(safeReadiness) : { label: t("loadExplanation.unknown"), note: t("loadExplanation.missing") };
   const debtCopy = getCleanDebtCopy(safeDebt);
 
   if (capacityPercent) {
-    capacityPercent.textContent = String(safeReadiness.score ?? 0);
+    capacityPercent.textContent = safeReadiness ? String(safeReadiness.score) : "—";
   }
 
   if (capacityLabel) {
     capacityLabel.textContent = readinessCopy.label;
-    capacityLabel.dataset.state = safeReadiness.state || "stable";
+    capacityLabel.dataset.state = safeReadiness?.state || "unknown";
   }
 
   if (capacityBar) {
-    const score = Number(safeReadiness.score ?? 0);
+    const score = Number(safeReadiness?.score ?? 0);
     capacityBar.style.width = `${Math.max(0, Math.min(100, score))}%`;
-    capacityBar.dataset.state = safeReadiness.state || "stable";
+    capacityBar.dataset.state = safeReadiness?.state || "unknown";
   }
 
   if (capacityNote) {
-    const parts = [readinessCopy.note, loadLevel?.note].filter(Boolean);
+    const parts = [readinessCopy.note, safeReadiness ? loadLevel?.note : ""].filter(Boolean);
     capacityNote.textContent = parts.join(" ");
   }
 
   if (energyDebtValue) {
-    energyDebtValue.textContent = String(safeDebt.value ?? 0);
+    energyDebtValue.textContent = recentCheckins.length ? String(safeDebt.value ?? 0) : "—";
   }
 
   if (energyDebtStatus) {
-    energyDebtStatus.textContent = debtCopy.label;
-    energyDebtStatus.dataset.state = mapDebtStateToBadgeState(safeDebt.state);
+    energyDebtStatus.textContent = recentCheckins.length ? debtCopy.label : t("loadExplanation.unknown");
+    energyDebtStatus.dataset.state = recentCheckins.length ? mapDebtStateToBadgeState(safeDebt.state) : "unknown";
   }
 
   if (energyDebtNote) {
-    energyDebtNote.textContent = debtCopy.note;
+    energyDebtNote.textContent = recentCheckins.length ? debtCopy.note : t("loadExplanation.missing");
   }
 
   if (capacityMode) {
-    capacityMode.textContent = safeReadiness.mode || t("workload.modeLightTasks");
+    capacityMode.textContent = safeReadiness?.mode || t("loadExplanation.unknown");
   }
+}
+
+function renderLoadExplanation(checkin, tasks) {
+  if (!loadExplanation) return;
+  const result = explainLoad(tasks);
+  loadExplanation.replaceChildren();
+  const add = (tag, text) => { const element = document.createElement(tag); element.textContent = text; loadExplanation.append(element); return element; };
+  add("p", todayCheckin ? t("loadExplanation.formState", { energy: checkin.energy_level, stress: checkin.stress_level, focus: checkin.focus_level }) : t("loadExplanation.noCheckin"));
+  add("p", result.count ? t("loadExplanation.planned", { count: result.count }) : t("loadExplanation.noTasks"));
+  if (result.contributors.length) {
+    add("p", t("loadExplanation.contributors"));
+    const list = add("ul", "");
+    result.contributors.forEach((task) => {
+      const item = document.createElement("li");
+      const title = document.createElement("strong");
+      title.textContent = task.title;
+      item.append(title, document.createElement("br"), document.createTextNode(t("loadExplanation.values", { cognitive: task.cognitive_load, emotional: task.emotional_load })));
+      list.append(item);
+    });
+  }
+  if (result.hasRecovery) add("p", t("loadExplanation.recovery"));
+  add("p", t("loadExplanation.method"));
 }
 
 function looksCorruptedText(value) {

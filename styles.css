@@ -9468,6 +9468,16 @@ body.app-has-shell .rhythm-action { display: inline-flex; align-items: center; j
 body.app-has-shell .rhythm-details > summary { cursor: pointer; padding: 18px 22px; border: 1px solid #dfe4dc; border-radius: 16px; background: #fff; color: #244e34; font-weight: 700; }
 body.app-has-shell .rhythm-details-content { display: grid; gap: 18px; padding-top: 18px; }
 body.app-has-shell .rhythm-ai-toggle { position: static; width: fit-content; max-width: 100%; justify-self: start; }
+body.app-has-shell .day-pulse-details,
+body.app-has-shell .today-load-explanation { display: block; min-width: 0; padding: 12px; border: 1px solid #dfe4dc; border-radius: 12px; background: #f5f7f2; color: #304834; font-size: .8rem; line-height: 1.5; overflow-wrap: anywhere; }
+body.app-has-shell .day-pulse-details p,
+body.app-has-shell .today-load-explanation p { margin: 8px 0; }
+body.app-has-shell .day-pulse-details ul,
+body.app-has-shell .today-load-explanation ul { margin: 8px 0; padding-left: 18px; }
+body.app-has-shell .day-pulse-details li + li,
+body.app-has-shell .today-load-explanation li + li { margin-top: 8px; }
+body.app-has-shell .day-pulse-details summary,
+body.app-has-shell .today-load-explanation summary { cursor: pointer; color: #244e34; font-weight: 700; }
 @media (max-width: 700px) {
   body.app-has-shell .rhythm-heading { flex-direction: column; }
   body.app-has-shell .rhythm-period { flex: auto; width: 100%; }

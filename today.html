@@ -108,13 +108,17 @@
               </div>
 
               <div class="today-capacity-head">
-                <strong id="todayCapacityPercent">0</strong>
-                <span id="todayCapacityLabel" class="today-capacity-badge">Стабильное состояние</span>
+                <strong id="todayCapacityPercent">—</strong>
+                <span id="todayCapacityLabel" class="today-capacity-badge" data-i18n="loadExplanation.unknown">Нет оценки</span>
               </div>
               <div class="today-capacity-bar">
                 <span id="todayCapacityBar"></span>
               </div>
               <p id="todayCapacityNote" class="today-capacity-note"></p>
+              <details class="load-explanation today-load-explanation">
+                <summary data-i18n="loadExplanation.title">Из чего складывается оценка?</summary>
+                <div id="todayLoadExplanation"></div>
+              </details>
 
               <div class="today-energy-debt-card">
                 <span class="today-summary-label" data-i18n="pulse.energyDebt">Энергетический долг</span>

@@ -2,6 +2,7 @@ import { getCurrentSession, getSupabase, signOutCurrentUser } from "./auth-helpe
 import { landingPath } from "./route-paths.js";
 import { createCloudRepository, createFocusRepository, createFocusSaveQueue, createLoadGuard, getInitialWeek, getLegacyEntries, getLegacyFocusDays, mapCloudTask, migrateLegacyEntries, migrateLegacyFocusDays, toIsoBoardDate } from "./cloud-backlog.js";
 import { applyTranslations, onLocaleChange, t } from "./i18n.js";
+import { explainLoad } from "./lib/load-explanation.js";
 import {
   calculateDailyLoad,
   calculateEnergyDebtSeries,
@@ -683,6 +684,8 @@ function getPulseCardLabel(state) {
 }
 
 function getPulseCardHint(metrics) {
+  if (!metrics.explanation.count) return t("loadExplanation.noTasks");
+  if (!metrics.hasPulse) return t("loadExplanation.noCheckin");
   if (metrics.overBy > 0) {
     return t("plan.noteHeavy");
   }
@@ -759,6 +762,7 @@ function buildDayPulseMetricsMap(week, days) {
     const remaining = Math.max(0, capacity - totalLoad);
 
     return [day.date, {
+      explanation: explainLoad(tasks),
       dateIso,
       hasPulse: Number.isFinite(computedPulse),
       pulse: computedPulse,
@@ -818,9 +822,11 @@ function renderDayPulseCard(week, day, metrics) {
       </button>
       ${expanded ? `
         <div class="day-pulse-details">
-          <span>${t("plan.cognitive")}: ${metrics.cognitiveLoad}</span>
-          <span>${t("plan.emotional")}: ${metrics.emotionalLoad}</span>
-          <span>${t("workload.heavyTasksCount")}: ${metrics.heavyTasks}</span>
+          <p>${metrics.explanation.count ? t("loadExplanation.planned", { count: metrics.explanation.count }) : t("loadExplanation.noTasks")}</p>
+          ${!metrics.hasPulse ? `<p>${t("loadExplanation.noCheckin")}</p>` : ""}
+          ${metrics.explanation.contributors.length ? `<p>${t("loadExplanation.contributors")}</p><ul>${metrics.explanation.contributors.map((task) => `<li><strong>${escapeHtml(task.title)}</strong><br>${t("loadExplanation.values", { cognitive: task.cognitive_load, emotional: task.emotional_load })}</li>`).join("")}</ul>` : ""}
+          ${metrics.explanation.hasRecovery ? `<p>${t("loadExplanation.recovery")}</p>` : ""}
+          <details><summary>${t("loadExplanation.title")}</summary><p>${t("loadExplanation.method")}</p></details>
         </div>
       ` : ""}
     </div>

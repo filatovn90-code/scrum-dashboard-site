@@ -360,6 +360,15 @@ const messages = {
       weakPassword: "Пароль слишком короткий. Используйте более длинный пароль.",
       sessionPersistenceSignup: "Регистрация прошла, но сессия не сохранилась. Обычно это связано с настройками домена, Redirect URL или переменных окружения."
     },
+    loadExplanation: {
+      title: "Из чего складывается оценка?", planned: "В плане задач: {count}", noTasks: "На этот день пока нет задач. Запланированную нагрузку рассчитать не из чего.",
+      noCheckin: "Состояние на этот день не отмечено. План показан без оценки самочувствия.",
+      formState: "Сейчас в форме: энергия {energy}/10, стресс {stress}/10, фокус {focus}/10. Несохранённые изменения тоже влияют на предварительную оценку.",
+      contributors: "Наибольший вклад в запланированную нагрузку:", values: "Когнитивная {cognitive}/5 · эмоциональная {emotional}/5",
+      recovery: "Задачи восстановления учитываются отдельно и могут уменьшать расчётную нагрузку в пределах установленного ограничения.",
+      method: "Нагрузка зависит от типа задач и их когнитивной и эмоциональной оценки. При нескольких сложных задачах формула добавляет поправку. Готовность также учитывает энергию, стресс, фокус и расчётный долг по недавним данным. Это ориентир для планирования, а не измерение усталости или медицинская оценка.",
+      missing: "Сначала сохраните оценку состояния, чтобы увидеть готовность дня.", unknown: "Нет оценки"
+    },
     pulse: {
       pageTitle: "Пульс дня",
       pageSubtitle: "Ежедневная оценка состояния, готовность к дню и устойчивый рабочий ритм без лишней перегрузки.",
@@ -1068,6 +1077,15 @@ const messages = {
       emailRateLimit: "Too many sign-up attempts in a row. Wait a few minutes or use a different email.",
       weakPassword: "The password is too short. Use a longer password.",
       sessionPersistenceSignup: "Sign-up succeeded, but the session was not persisted. This is usually caused by domain, Redirect URL, or environment variable settings."
+    },
+    loadExplanation: {
+      title: "How is this calculated?", planned: "Planned tasks: {count}", noTasks: "There are no tasks planned for this day yet.",
+      noCheckin: "No check-in was recorded for this day. The plan is shown without assessing how you feel.",
+      formState: "Current form values: energy {energy}/10, stress {stress}/10, focus {focus}/10. Unsaved changes also affect the preview.",
+      contributors: "Largest contributors to planned load:", values: "Cognitive {cognitive}/5 · emotional {emotional}/5",
+      recovery: "Recovery tasks are accounted for separately and can reduce calculated load within a limit.",
+      method: "Load depends on task type and cognitive and emotional ratings. Several demanding tasks add an adjustment. Readiness also considers energy, stress, focus and estimated debt from recent data. This is a planning guide, not a measure of fatigue or a medical assessment.",
+      missing: "Save a check-in to see your readiness for today.", unknown: "No check-in"
     },
     pulse: {
       pageTitle: "Daily Pulse",
