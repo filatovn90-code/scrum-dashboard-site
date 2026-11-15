@@ -931,14 +931,6 @@ function renderTaskCard(week, day, rawItem) {
             <span class="task-badge">${getTaskTypeLabel(item.task_type)}</span>
           </div>
           <div class="task-meta task-meta-labeled">
-            <span class="task-meta-label">${t("plan.cognitive")}</span>
-            <span class="task-badge">${item.cognitive_load}/5</span>
-          </div>
-          <div class="task-meta task-meta-labeled">
-            <span class="task-meta-label">${t("plan.emotional")}</span>
-            <span class="task-badge">${item.emotional_load}/5</span>
-          </div>
-          <div class="task-meta task-meta-labeled">
             <span class="task-meta-label">${t("plan.overallLoad")}</span>
             <span class="task-badge">${intensity.label}</span>
           </div>
