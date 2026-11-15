@@ -86,6 +86,19 @@ function testReadinessScoreRange() {
   assert.ok(readiness.score >= 0 && readiness.score <= 100);
 }
 
+function testStressIsIndependentAndGradual() {
+  const scores = [];
+  for (let stress = 1; stress <= 10; stress++) {
+    const result = calculateReadinessScore({ energy_level: 10, focus_level: 10, stress_level: stress });
+    scores.push(result.score);
+    assert.equal(result.stressLevel, stress);
+    assert.equal(result.stressWarning, stress >= 9 ? "high" : stress >= 7 ? "elevated" : null);
+    if (stress >= 7) assert.notEqual(result.label, "Стабильное состояние");
+  }
+  for (let i = 1; i < scores.length; i++) assert.ok(scores[i] <= scores[i - 1]);
+  assert.ok(scores[7] > scores[8] && scores[8] > scores[9]);
+}
+
 function testEnergyDebtNeverNegative() {
   const series = calculateEnergyDebtSeries(
     [{ checkin_date: "2026-07-14", energy_level: 8, stress_level: 2, focus_level: 8 }],
@@ -123,6 +136,7 @@ const tests = [
   ["three deep work tasks trigger risk", testThreeDeepWorkTasksTriggerRisk],
   ["heavy communication tasks trigger risk", testHeavyCommunicationTasksTriggerRisk],
   ["readiness score stays in range", testReadinessScoreRange],
+  ["stress remains visible and increases gradually", testStressIsIndependentAndGradual],
   ["energy debt never negative", testEnergyDebtNeverNegative],
   ["legacy tasks normalize", testLegacyNormalization],
   ["normalized tasks keep user separation", testNoUserMixingProxy]

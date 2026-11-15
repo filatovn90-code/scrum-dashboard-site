@@ -45,3 +45,11 @@ test("task load inputs remain editable but are hidden from the regular card", ()
   assert.match(code, /data-editor-emotional-load/);
   assert.match(card, /t\("plan\.overallLoad"\)/);
 });
+
+test("stress warning is independent and missing check-ins do not produce a score", () => {
+  const code = readFileSync(new URL("../today.js", import.meta.url), "utf8");
+  const html = readFileSync(new URL("../today.html", import.meta.url), "utf8");
+  assert.match(code, /todayCheckin \? calculateReadinessScore\(checkinState, activeTasks, energyDebt\) : null/);
+  assert.match(code, /readiness\?\.stressWarning/);
+  assert.match(html, /id="todayStressWarning"[^>]*hidden/);
+});

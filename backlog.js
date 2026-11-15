@@ -683,6 +683,7 @@ function getPulseCardLabel(state) {
 }
 
 function getPulseCardHint(metrics) {
+  if (metrics.stressWarning) return t(metrics.stressWarning === "high" ? "workload.stressHighNote" : "workload.stressElevatedNote");
   if (metrics.overBy > 0) {
     return t("plan.noteHeavy");
   }
@@ -761,6 +762,7 @@ function buildDayPulseMetricsMap(week, days) {
     return [day.date, {
       dateIso,
       hasPulse: Number.isFinite(computedPulse),
+      stressWarning: checkin && Number(checkin.stress_level) >= 9 ? "high" : checkin && Number(checkin.stress_level) >= 7 ? "elevated" : null,
       pulse: computedPulse,
       capacity,
       totalLoad,

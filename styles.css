@@ -4494,6 +4494,16 @@ body {
   line-height: 1.65;
 }
 
+.today-stress-warning:not([hidden]) {
+  margin: 14px 0 0;
+  padding: 12px 15px;
+  border: 1px solid #d9bf8b;
+  border-radius: 12px;
+  background: #fff7e8;
+  color: #59451f;
+  line-height: 1.55;
+}
+
 .today-energy-debt-card {
   margin-top: 18px;
   padding-top: 16px;

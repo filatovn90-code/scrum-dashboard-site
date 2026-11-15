@@ -35,6 +35,8 @@ const capacityPercent = document.getElementById("todayCapacityPercent");
 const capacityLabel = document.getElementById("todayCapacityLabel");
 const capacityBar = document.getElementById("todayCapacityBar");
 const capacityNote = document.getElementById("todayCapacityNote");
+const stateValues = document.getElementById("todayStateValues");
+const stressWarning = document.getElementById("todayStressWarning");
 const energyDebtValue = document.getElementById("todayEnergyDebtValue");
 const energyDebtStatus = document.getElementById("todayEnergyDebtStatus");
 const energyDebtNote = document.getElementById("todayEnergyDebtNote");
@@ -240,35 +242,41 @@ function renderTodayView() {
   const activeTasks = todayTasks.filter((task) => !isDone(task));
   const debtSeries = calculateEnergyDebtSeries(recentCheckins, recentTasks);
   const energyDebt = summarizeEnergyDebt(debtSeries);
-  const readiness = calculateReadinessScore(checkinState, activeTasks, energyDebt);
-  renderCapacity(readiness, energyDebt);
+  const readiness = todayCheckin ? calculateReadinessScore(checkinState, activeTasks, energyDebt) : null;
+  renderCapacity(readiness, energyDebt, todayCheckin ? checkinState : null);
 }
 
-function renderCapacity(readiness, energyDebt) {
-  const safeReadiness = readiness || calculateReadinessScore(buildCheckinFromForm(), [], summarizeEnergyDebt([]));
+function renderCapacity(readiness, energyDebt, checkin) {
+  const safeReadiness = readiness;
   const safeDebt = energyDebt || summarizeEnergyDebt([]);
-  const loadLevel = safeReadiness.dailyLoadLevel || calculateDailyLoadLevel(todayTasks.filter((task) => !isDone(task)));
-  const readinessCopy = getCleanReadinessCopy(safeReadiness);
+  const loadLevel = safeReadiness?.dailyLoadLevel || calculateDailyLoadLevel(todayTasks.filter((task) => !isDone(task)));
+  const readinessCopy = safeReadiness ? getCleanReadinessCopy(safeReadiness) : { label: t("workload.readinessUnknown"), note: t("workload.readinessMissing") };
   const debtCopy = getCleanDebtCopy(safeDebt);
 
   if (capacityPercent) {
-    capacityPercent.textContent = String(safeReadiness.score ?? 0);
+    capacityPercent.textContent = safeReadiness ? String(safeReadiness.score) : "—";
   }
 
   if (capacityLabel) {
     capacityLabel.textContent = readinessCopy.label;
-    capacityLabel.dataset.state = safeReadiness.state || "stable";
+    capacityLabel.dataset.state = safeReadiness?.state || "unknown";
   }
 
   if (capacityBar) {
-    const score = Number(safeReadiness.score ?? 0);
+    const score = Number(safeReadiness?.score ?? 0);
     capacityBar.style.width = `${Math.max(0, Math.min(100, score))}%`;
-    capacityBar.dataset.state = safeReadiness.state || "stable";
+    capacityBar.dataset.state = safeReadiness?.state || "unknown";
   }
 
   if (capacityNote) {
-    const parts = [readinessCopy.note, loadLevel?.note].filter(Boolean);
+    const parts = [readinessCopy.note, safeReadiness && !safeReadiness.stressWarning ? loadLevel?.note : ""].filter(Boolean);
     capacityNote.textContent = parts.join(" ");
+  }
+
+  if (stateValues) stateValues.textContent = checkin ? t("workload.stateValues", { energy: checkin.energy_level, focus: checkin.focus_level, stress: checkin.stress_level }) : "";
+  if (stressWarning) {
+    stressWarning.hidden = !safeReadiness?.stressWarning;
+    stressWarning.textContent = safeReadiness?.stressWarning === "high" ? t("workload.stressHighNote") : safeReadiness?.stressWarning ? t("workload.stressElevatedNote") : "";
   }
 
   if (energyDebtValue) {
@@ -285,7 +293,7 @@ function renderCapacity(readiness, energyDebt) {
   }
 
   if (capacityMode) {
-    capacityMode.textContent = safeReadiness.mode || t("workload.modeLightTasks");
+    capacityMode.textContent = safeReadiness?.mode || t("workload.readinessUnknown");
   }
 }
 
@@ -295,6 +303,7 @@ function looksCorruptedText(value) {
 }
 
 function getCleanReadinessCopy(readiness) {
+  if (readiness?.stressWarning) return { label: t("workload.stressAttention"), note: "" };
   const state = readiness?.state || "stable";
   let label = t("workload.readinessStable");
   let note = t("workload.readinessFallback");
