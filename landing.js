@@ -55,7 +55,7 @@ const LANDING_COPY = {
       point1: "Замечает повторяющуюся перегрузку.",
       point2: "Объясняет, какие задачи создают основное давление.",
       point3:
-        "Помогает скорректировать план до того, как накопится энергетический долг.",
+        "Помогает скорректировать план с учётом текущего состояния.",
       imageAlt: "Экран аналитики MindPulse с нагрузкой, состоянием и недельным обзором"
     },
     founder: {
@@ -124,7 +124,7 @@ const LANDING_COPY = {
         "Regular trackers ask: “What got done?” MindPulse asks: “What did that cost you?”",
       point1: "Spots repeated overload patterns.",
       point2: "Shows which tasks create the main pressure.",
-      point3: "Helps adjust the plan before energy debt starts to build up.",
+      point3: "Helps adjust your plan to how you feel today.",
       imageAlt: "MindPulse analytics screen with state, workload, and weekly review"
     },
     founder: {

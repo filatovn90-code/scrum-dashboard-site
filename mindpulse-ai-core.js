@@ -67,17 +67,10 @@ export function buildAiContext({
     taskMap.get(task.planned_date).push(task);
   });
 
-  const debtSeries = calculateEnergyDebtSeries(checkins, normalizedTasks);
-  const debtMap = new Map(debtSeries.map((item) => [item.date, item]));
-
   const days = listDates(periodStart, periodEnd).map((date) => {
     const dayCheckin = checkinMap.get(date) || null;
     const dayTasks = taskMap.get(date) || [];
-    const debtSnapshot = debtMap.get(date) || { value: 0, delta: 0 };
-    const energyDebt = summarizeEnergyDebt(
-      debtSeries.filter((item) => item.date <= date)
-    );
-    const readiness = calculateReadinessScore(dayCheckin, dayTasks, energyDebt);
+    const readiness = calculateReadinessScore(dayCheckin, dayTasks);
     const dailyLoad = readiness.dailyLoad || calculateDailyLoad(dayTasks);
     const dailyLoadLevel = readiness.dailyLoadLevel || calculateDailyLoadLevel(dayTasks);
 
@@ -93,14 +86,11 @@ export function buildAiContext({
       overloadState: dailyLoadLevel.key,
       deepWorkCount: dailyLoad.deepWorkCount,
       highEmotionalCount: dailyLoad.emotionalHeavyCount,
-      completedCount: dayTasks.filter(isDoneTask).length,
-      energyDebtValue: debtSnapshot.value,
-      energyDebtDelta: debtSnapshot.delta
+      completedCount: dayTasks.filter(isDoneTask).length
     };
   });
 
   const today = days.find((day) => day.date === todayIso) || days[days.length - 1] || null;
-  const energyDebt = summarizeEnergyDebt(debtSeries);
   const topHeavyTasks = [...normalizedTasks]
     .map((task) => ({
       ...task,
@@ -117,8 +107,6 @@ export function buildAiContext({
     tasks: normalizedTasks,
     days,
     today,
-    energyDebt,
-    debtSeries,
     summary: {
       avgEnergy: average(checkins.map((item) => item.energy_level)),
       avgStress: average(checkins.map((item) => item.stress_level)),
@@ -141,7 +129,6 @@ export function buildCompactAiInput(context) {
     periodEnd: context.periodEnd,
     todayIso: context.todayIso,
     summary: context.summary,
-    energyDebt: context.energyDebt,
     today: context.today
       ? {
           date: context.today.date,
@@ -186,12 +173,11 @@ export function buildCompactAiInput(context) {
 export function buildRuleBasedCoachResponse(action, context) {
   const today = context.today;
   const todayTasks = today?.tasks || [];
-  const readiness = today?.readiness || calculateReadinessScore(null, [], context.energyDebt);
+  const readiness = today?.readiness || calculateReadinessScore(null, []);
   const checkin = today?.checkin || null;
   const state = currentState(checkin);
   const recommendations = generateRuleBasedRecommendations(checkin, todayTasks, {
-    readiness,
-    energyDebt: context.energyDebt
+    readiness
   });
 
   if (action === "move") {
@@ -209,9 +195,7 @@ export function buildRuleBasedCoachResponse(action, context) {
         todayTasks.length
           ? "Если день уже плотный, лучше переносить не всё подряд, а самые дорогие по вниманию и эмоциям задачи."
           : "Сегодня задач немного, поэтому переносить почти нечего.",
-        context.energyDebt.value > 20
-          ? "Перенос особенно полезен сейчас: энергетическая нагрузка уже успела накопиться."
-          : "Даже один перенос может сохранить больше запаса энергии к концу дня."
+        "Даже один перенос может оставить больше места для пауз в течение дня."
       ],
       points: candidates.length ? candidates : ["Оставь только 1–2 действительно главные задачи и не добавляй новый тяжёлый блок без необходимости."]
     };
@@ -222,7 +206,6 @@ export function buildRuleBasedCoachResponse(action, context) {
     if (state.stress >= 7) reasons.push("стресс держится выше комфортного уровня");
     if (state.energy <= 4) reasons.push("энергии сегодня немного");
     if ((today?.taskLoad || 0) > DAILY_LOAD_LIMITS.noticeable) reasons.push("план дня уже довольно плотный");
-    if (context.energyDebt.value > 20) reasons.push("последние дни уже копят энергетический долг");
 
     return {
       title: "Почему я устал?",
@@ -247,7 +230,7 @@ export function buildRuleBasedCoachResponse(action, context) {
         readiness.state === "risk"
           ? "День уже близок к перегрузу. Лучший способ разгрузить его — упростить план, а не ускоряться."
           : "Нагрузку лучше снижать заранее, пока день ещё можно сделать управляемым.",
-        `Readiness Score сейчас ${readiness.score}, Energy Debt — ${context.energyDebt.value}.`
+        `Готовность дня сейчас ${readiness.score}.`
       ],
       points: [
         "Оставь только одну главную задачу с высокой когнитивной нагрузкой.",
@@ -282,7 +265,7 @@ export function buildRuleBasedCoachResponse(action, context) {
       : [
           "Выбери 1–2 главные задачи вместо длинного списка.",
           "Не добавляй новый тяжёлый блок без необходимости.",
-          `Следи за Energy Debt: сейчас зона «${context.energyDebt.label}».`
+          "Оставь время для пауз между задачами."
         ]
   };
 }
@@ -310,9 +293,7 @@ export function buildRuleBasedWeeklyReview(context) {
         : "Самые энергозатратные задачи проявятся яснее, когда накопится больше данных."
     ],
     points: [
-      context.energyDebt.value > 20
-        ? "На следующей неделе стоит заранее заложить восстановление после тяжёлых дней."
-        : "Сохраняй текущий умеренный ритм и не наслаивай сложные задачи подряд.",
+      "На следующей неделе стоит заранее заложить время для восстановления.",
       context.summary.deepWorkTasks > 2
         ? "Ограничь Deep Work до 1–2 задач в день."
         : "Ставь самые сложные задачи в лучшие по энергии окна.",

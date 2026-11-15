@@ -735,12 +735,6 @@ function buildDayPulseMetricsMap(week, days) {
   const checkins = Array.from(dayPulseCheckins.values()).sort((left, right) => {
     return toIsoDate(left.checkin_date || left.date).localeCompare(toIsoDate(right.checkin_date || right.date));
   });
-  const debtSeries = calculateEnergyDebtSeries(checkins, analyticsTasks);
-  const debtByDate = new Map();
-
-  debtSeries.forEach((entry, index) => {
-    debtByDate.set(entry.date, summarizeEnergyDebt(debtSeries.slice(0, index + 1)));
-  });
 
   return new Map(days.map((day) => {
     const dateIso = toBacklogIsoDate(day.date);
@@ -748,7 +742,7 @@ function buildDayPulseMetricsMap(week, days) {
     const loadMetrics = calculateDailyLoad(tasks);
     const checkin = dayPulseCheckins.get(dateIso);
     const computedPulse = checkin
-      ? resolveStoredPulse(dateIso, calculateReadinessScore(checkin, tasks, debtByDate.get(dateIso)).score)
+      ? resolveStoredPulse(dateIso, calculateReadinessScore(checkin, tasks).score)
       : null;
     const capacity = computedPulse ?? DEFAULT_DAY_PULSE;
     const totalLoad = Math.max(0, Math.round(loadMetrics.total));

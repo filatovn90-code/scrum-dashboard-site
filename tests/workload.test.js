@@ -86,6 +86,11 @@ function testReadinessScoreRange() {
   assert.ok(readiness.score >= 0 && readiness.score <= 100);
 }
 
+function testReadinessIgnoresEnergyDebt() {
+  const checkin = { energy_level: 6, stress_level: 5, focus_level: 6 };
+  assert.equal(calculateReadinessScore(checkin, [], { state: "overloaded", value: 100 }).score, calculateReadinessScore(checkin, [], { state: "healthy", value: 0 }).score);
+}
+
 function testStressIsIndependentAndGradual() {
   const scores = [];
   for (let stress = 1; stress <= 10; stress++) {
@@ -136,6 +141,7 @@ const tests = [
   ["three deep work tasks trigger risk", testThreeDeepWorkTasksTriggerRisk],
   ["heavy communication tasks trigger risk", testHeavyCommunicationTasksTriggerRisk],
   ["readiness score stays in range", testReadinessScoreRange],
+  ["readiness is independent of retired energy debt", testReadinessIgnoresEnergyDebt],
   ["stress remains visible and increases gradually", testStressIsIndependentAndGradual],
   ["energy debt never negative", testEnergyDebtNeverNegative],
   ["legacy tasks normalize", testLegacyNormalization],

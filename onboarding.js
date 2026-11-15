@@ -592,10 +592,9 @@ function buildSummary() {
   };
   const activeTasks = todayTasks.filter((task) => String(task.status || "").toLowerCase() !== "done");
   const focusTasks = activeTasks.filter((task) => selectedFocusIds.has(task.id) || task.is_focus).slice(0, 3);
-  const energyDebt = summarizeEnergyDebt(calculateEnergyDebtSeries([checkin], activeTasks));
-  const readiness = calculateReadinessScore(checkin, activeTasks, energyDebt);
+  const readiness = calculateReadinessScore(checkin, activeTasks);
   const loadLevel = calculateDailyLoadLevel(activeTasks);
-  const recommendations = generateRuleBasedRecommendations(checkin, activeTasks, { readiness, energyDebt });
+  const recommendations = generateRuleBasedRecommendations(checkin, activeTasks, { readiness });
   const goalText = selectedGoal ? `Твой главный запрос сейчас — ${selectedGoal.toLowerCase()}.` : "Сейчас мы собираем спокойный и реалистичный ритм дня.";
   const focusLine = focusTasks.length
     ? `Главные задачи дня: ${focusTasks.map((task) => task.title).join(", ")}.`

@@ -242,19 +242,15 @@ async function saveTodayCheckin() {
 function renderTodayView() {
   const checkinState = buildCheckinFromForm();
   const activeTasks = todayTasks.filter((task) => !isDone(task));
-  const debtSeries = calculateEnergyDebtSeries(recentCheckins, recentTasks);
-  const energyDebt = summarizeEnergyDebt(debtSeries);
-  const readiness = todayCheckin ? calculateReadinessScore(checkinState, activeTasks, energyDebt) : null;
-  renderCapacity(readiness, energyDebt, todayCheckin ? checkinState : null);
+  const readiness = todayCheckin ? calculateReadinessScore(checkinState, activeTasks) : null;
+  renderCapacity(readiness, todayCheckin ? checkinState : null);
   renderLoadExplanation(checkinState, activeTasks);
 }
 
-function renderCapacity(readiness, energyDebt, checkin) {
+function renderCapacity(readiness, checkin) {
   const safeReadiness = readiness;
-  const safeDebt = energyDebt || summarizeEnergyDebt([]);
   const loadLevel = safeReadiness?.dailyLoadLevel || calculateDailyLoadLevel(todayTasks.filter((task) => !isDone(task)));
   const readinessCopy = safeReadiness ? getCleanReadinessCopy(safeReadiness) : { label: t("loadExplanation.unknown"), note: t("loadExplanation.missing") };
-  const debtCopy = getCleanDebtCopy(safeDebt);
 
   if (capacityPercent) {
     capacityPercent.textContent = safeReadiness ? String(safeReadiness.score) : "—";
@@ -280,19 +276,6 @@ function renderCapacity(readiness, energyDebt, checkin) {
   if (stressWarning) {
     stressWarning.hidden = !safeReadiness?.stressWarning;
     stressWarning.textContent = safeReadiness?.stressWarning === "high" ? t("workload.stressHighNote") : safeReadiness?.stressWarning ? t("workload.stressElevatedNote") : "";
-  }
-
-  if (energyDebtValue) {
-    energyDebtValue.textContent = recentCheckins.length ? String(safeDebt.value ?? 0) : "—";
-  }
-
-  if (energyDebtStatus) {
-    energyDebtStatus.textContent = recentCheckins.length ? debtCopy.label : t("loadExplanation.unknown");
-    energyDebtStatus.dataset.state = recentCheckins.length ? mapDebtStateToBadgeState(safeDebt.state) : "unknown";
-  }
-
-  if (energyDebtNote) {
-    energyDebtNote.textContent = recentCheckins.length ? debtCopy.note : t("loadExplanation.missing");
   }
 
   if (capacityMode) {

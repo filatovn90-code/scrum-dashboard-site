@@ -378,19 +378,6 @@ function buildDataset(range, checkins, tasks) {
     });
   });
 
-  const debtSeries = calculateEnergyDebtSeries(checkins, tasks);
-  const debtMap = new Map(debtSeries.map((item) => [item.date, item]));
-
-  days.forEach((day) => {
-    day.debt = debtMap.get(day.date) || {
-      date: day.date,
-      debt: 0,
-      delta: 0,
-      status: "healthy",
-      label: "Устойчивый ритм"
-    };
-  });
-
   const taskTypes = buildTaskTypeSummary(tasks);
   const summary = buildSummary(days, tasks, checkins);
 
@@ -436,7 +423,6 @@ function buildSummary(days, tasks, checkins) {
   const avgEnergy = average(checkinDays.map((day) => Number(day.checkin.energy_level || 0)));
   const avgStress = average(checkinDays.map((day) => Number(day.checkin.stress_level || 0)));
   const avgFocus = average(checkinDays.map((day) => Number(day.checkin.focus_level || 0)));
-  const debtMeta = summarizeEnergyDebt(calculateEnergyDebtSeries(checkins, tasks));
   const readinessAverage = average(days.map((day) => Number(day.readiness?.score || 0)));
   const overloadDays = days.filter((day) => day.overloadState === "overload").length;
   const highDays = days.filter((day) => day.overloadState === "high").length;
@@ -445,7 +431,6 @@ function buildSummary(days, tasks, checkins) {
     avgEnergy,
     avgStress,
     avgFocus,
-    debt: debtMeta,
     readinessAverage,
     overloadRisk: overloadRiskLabel(checkinDays.length ? avgEnergy : null, checkinDays.length ? avgStress : null),
     overloadDays,
@@ -580,7 +565,6 @@ function buildWeeklyReview(dataset) {
   const topHeavyTasks = [...dataset.tasks]
     .sort((left, right) => Number(right.task_load || 0) - Number(left.task_load || 0))
     .slice(0, 3);
-  const debt = dataset.summary.debt;
   const dominantType = dataset.taskTypes[0];
 
   return {
@@ -608,10 +592,7 @@ function buildWeeklyReview(dataset) {
         : t("analytics.weekSummaryFallbackBody"),
       dominantType
         ? t("analytics.weeklyReviewNext", { type: dominantType.label })
-        : t("analytics.insightFewData"),
-      debt.value > 20
-        ? t("analytics.weeklyReviewDebt", { value: debt.value, label: debt.label })
-        : t("analytics.debtHealthy")
+        : t("analytics.insightFewData")
     ]
   };
 }
@@ -648,16 +629,10 @@ function renderTopCards(dataset) {
       value: dataset.summary.overloadRisk.label,
       note: dataset.summary.overloadRisk.note,
       state: dataset.summary.overloadRisk.state
-    },
-    {
-      label: t("pulse.energyDebt"),
-      value: String(dataset.summary.debt.value),
-      note: dataset.summary.debt.note,
-      state: dataset.summary.debt.state
     }
   ];
 
-  topCards.innerHTML = cards.filter((card) => dataset.checkins.length || card.label !== t("pulse.energyDebt")).map((card) => `
+  topCards.innerHTML = cards.map((card) => `
     <article class="analytics-card analytics-card-state ${card.state ? `is-${card.state}` : ""}">
       <p class="analytics-card-label">${card.label}</p>
       <strong class="analytics-card-value">${card.value}</strong>
@@ -875,7 +850,6 @@ function renderRecommendations(dataset) {
     dataset.days[dataset.days.length - 1]?.tasks || [],
     {
       readiness: dataset.days[dataset.days.length - 1]?.readiness,
-      energyDebt: dataset.summary.debt,
       dailyLoad: dataset.days[dataset.days.length - 1]?.loadMeta
     }
   );

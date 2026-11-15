@@ -187,23 +187,18 @@ function renderCoachHero() {
   const name = currentProfile?.full_name?.trim();
   const today = coachContext.today;
   const readiness = today?.readiness;
-  const debt = coachContext.energyDebt;
   const pro = isProPlan(currentPlan);
 
   greetingBox.textContent = name ? `AI Coach для ${name}` : "AI Coach помогает собрать реалистичный день";
   introBox.textContent = pro
     ? "Глубокий AI-анализ использует агрегированные данные недели и ищет повторяющиеся паттерны перегруза."
-    : "Free Coach работает локально: без внешнего AI, только на основе задач, состояния, Readiness Score и Energy Debt.";
+    : "Free Coach работает локально: без внешнего AI, на основе задач, состояния и готовности дня.";
 
   readinessScoreBox.textContent = String(readiness?.score ?? 0);
   readinessStatusBox.textContent = readiness?.label || "Stable";
   readinessStatusBox.dataset.state = readiness?.state || "stable";
   readinessNoteBox.textContent = readiness?.note || "Оценка дня появится после check-in и задач.";
 
-  debtValueBox.textContent = String(debt?.value ?? 0);
-  debtStatusBox.textContent = debt?.label || "Healthy";
-  debtStatusBox.dataset.state = debt?.state || "excellent";
-  debtNoteBox.textContent = debt?.note || "Energy Debt появится после нескольких дней использования.";
 }
 
 function renderCoachContext() {
