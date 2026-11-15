@@ -307,6 +307,12 @@ function renderLoadExplanation(checkin, tasks) {
   const add = (tag, text) => { const element = document.createElement(tag); element.textContent = text; loadExplanation.append(element); return element; };
   add("p", todayCheckin ? t("loadExplanation.formState", { energy: checkin.energy_level, stress: checkin.stress_level, focus: checkin.focus_level }) : t("loadExplanation.noCheckin"));
   add("p", result.count ? t("loadExplanation.planned", { count: result.count }) : t("loadExplanation.noTasks"));
+  add("p", t("loadExplanation.todayScope"));
+  if (result.count) {
+    const b = result.breakdown;
+    add("p", t("loadExplanation.breakdown", { positive: b.positiveLoads, multiplier: b.multiplier.toFixed(2), recovery: b.recoveryOffset, total: b.total }));
+    add("p", t("loadExplanation.ratingCaution"));
+  }
   if (result.contributors.length) {
     add("p", t("loadExplanation.contributors"));
     const list = add("ul", "");

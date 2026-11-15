@@ -825,6 +825,8 @@ function renderDayPulseCard(week, day, metrics) {
       ${expanded ? `
         <div class="day-pulse-details">
           <p>${metrics.explanation.count ? t("loadExplanation.planned", { count: metrics.explanation.count }) : t("loadExplanation.noTasks")}</p>
+          <p>${t("loadExplanation.weekScope")}</p>
+          ${metrics.explanation.count ? `<p>${t("loadExplanation.breakdown", { positive: metrics.explanation.breakdown.positiveLoads, multiplier: metrics.explanation.breakdown.multiplier.toFixed(2), recovery: metrics.explanation.breakdown.recoveryOffset, total: metrics.explanation.breakdown.total })}</p><p>${t("loadExplanation.ratingCaution")}</p>` : ""}
           ${!metrics.hasPulse ? `<p>${t("loadExplanation.noCheckin")}</p>` : ""}
           ${metrics.explanation.contributors.length ? `<p>${t("loadExplanation.contributors")}</p><ul>${metrics.explanation.contributors.map((task) => `<li><strong>${escapeHtml(task.title)}</strong><br>${t("loadExplanation.values", { cognitive: task.cognitive_load, emotional: task.emotional_load })}</li>`).join("")}</ul>` : ""}
           ${metrics.explanation.hasRecovery ? `<p>${t("loadExplanation.recovery")}</p>` : ""}

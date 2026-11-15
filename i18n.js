@@ -366,6 +366,10 @@ const messages = {
       formState: "Сейчас в форме: энергия {energy}/10, стресс {stress}/10, фокус {focus}/10. Несохранённые изменения тоже влияют на предварительную оценку.",
       contributors: "Наибольший вклад в запланированную нагрузку:", values: "Когнитивная {cognitive}/5 · эмоциональная {emotional}/5",
       recovery: "Задачи восстановления учитываются отдельно и могут уменьшать расчётную нагрузку в пределах установленного ограничения.",
+      todayScope: "Здесь учитываются только незавершённые задачи на сегодня. В недельном плане учитываются также выполненные.",
+      weekScope: "Здесь показана нагрузка всех задач дня, включая выполненные. В «Пульсе дня» учитываются только незавершённые задачи.",
+      breakdown: "Расчёт: задачи {positive} × поправка {multiplier}, восстановление {recovery}; итог с округлением: {total}.",
+      ratingCaution: "Проверь оценки в редактировании задачи: для некоторых старых или ранее добавленных задач значения могли быть подставлены автоматически. Сейчас нельзя надёжно определить, кто их выбрал.",
       method: "Нагрузка зависит от типа задач и их когнитивной и эмоциональной оценки. При нескольких сложных задачах формула добавляет поправку. Готовность также учитывает энергию, стресс, фокус и расчётный долг по недавним данным. Это ориентир для планирования, а не измерение усталости или медицинская оценка.",
       missing: "Сначала сохраните оценку состояния, чтобы увидеть готовность дня.", unknown: "Нет оценки"
     },
@@ -1088,6 +1092,10 @@ const messages = {
       formState: "Current form values: energy {energy}/10, stress {stress}/10, focus {focus}/10. Unsaved changes also affect the preview.",
       contributors: "Largest contributors to planned load:", values: "Cognitive {cognitive}/5 · emotional {emotional}/5",
       recovery: "Recovery tasks are accounted for separately and can reduce calculated load within a limit.",
+      todayScope: "Only unfinished tasks for today are included here. The weekly plan also includes completed tasks.",
+      weekScope: "This shows the load of all tasks for the day, including completed ones. Daily Pulse includes only unfinished tasks.",
+      breakdown: "Calculation: tasks {positive} × adjustment {multiplier}, recovery {recovery}; rounded total: {total}.",
+      ratingCaution: "Check task ratings in the editor: some older or previously added tasks may have received automatic defaults. It is not currently possible to reliably tell who chose them.",
       method: "Load depends on task type and cognitive and emotional ratings. Several demanding tasks add an adjustment. Readiness also considers energy, stress, focus and estimated debt from recent data. This is a planning guide, not a measure of fatigue or a medical assessment.",
       missing: "Save a check-in to see your readiness for today.", unknown: "No check-in"
     },
