@@ -608,11 +608,6 @@ export async function getCurrentUser() {
     }
   }
 
-  const cachedRemoteUser = getRemoteCachedUser();
-  if (cachedRemoteUser) {
-    return cachedRemoteUser;
-  }
-
   try {
     const supabase = await getRemoteSupabase();
     const {
@@ -645,22 +640,18 @@ export async function getCurrentSession() {
     }
   }
 
-  const cachedRemoteSession = getRemoteSessionObject();
-  if (cachedRemoteSession?.user) {
-    return cachedRemoteSession;
-  }
-
   try {
     const supabase = await getRemoteSupabase();
     const {
       data: { session }
     } = await supabase.auth.getSession();
 
-    if (session?.user) {
+    if (session?.user && session?.access_token) {
       setRemoteSession(session);
+      return session;
     }
-
-    return session || null;
+    clearRemoteSession();
+    return null;
   } catch {
     return null;
   }
@@ -674,11 +665,6 @@ export async function waitForSessionPersistence({ attempts = 12, delayMs = 150 }
     }
   }
 
-  const cachedRemoteSession = getRemoteSessionObject();
-  if (cachedRemoteSession?.user) {
-    return cachedRemoteSession;
-  }
-
   try {
     const supabase = await getRemoteSupabase();
 
@@ -687,7 +673,7 @@ export async function waitForSessionPersistence({ attempts = 12, delayMs = 150 }
         data: { session }
       } = await supabase.auth.getSession();
 
-      if (session?.user) {
+      if (session?.user && session?.access_token) {
         setRemoteSession(session);
         return session;
       }
@@ -697,15 +683,7 @@ export async function waitForSessionPersistence({ attempts = 12, delayMs = 150 }
       }
     }
 
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-
-    if (user) {
-      const userOnlySession = { user };
-      setRemoteSession(userOnlySession);
-      return userOnlySession;
-    }
+    clearRemoteSession();
   } catch {
     // Ignore and let the caller decide what to do next.
   }
@@ -879,3 +857,4 @@ export async function saveProfileLocale(locale) {
   const normalizedLocale = String(locale || DEFAULT_LOCALE).toLowerCase() === "en" ? "en" : "ru";
   return saveCurrentProfile({ locale: normalizedLocale });
 }
+

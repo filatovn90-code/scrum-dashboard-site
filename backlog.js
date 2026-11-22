@@ -20,6 +20,17 @@ const weekSelect = document.getElementById("weekSelect");
 const focusTodayPanel = document.getElementById("focusTodayPanel");
 const backlogSummary = document.getElementById("backlogSummary");
 const backlogBoard = document.getElementById("backlogBoard");
+function showBoardError(error) {
+  let notice = document.getElementById("backlogError");
+  if (!notice) {
+    notice = document.createElement("p");
+    notice.id = "backlogError";
+    notice.setAttribute("role", "alert");
+    backlogBoard.before(notice);
+  }
+  notice.textContent = "Не удалось сохранить изменения. Проверьте подключение и вход в аккаунт, затем попробуйте снова.";
+  console.error("Backlog operation failed", error);
+}
 const logoutButton = document.getElementById("logoutButton");
 
 const DAILY_FOCUS_DAY_STORAGE_KEY = "scrum-master-daily-focus-day";
@@ -1167,7 +1178,7 @@ function bindBoardActions() {
       draggedTaskKey = null;
       activeEditorState = null;
       void moved.then((didMove) => didMove && renderBacklog(weekSelect.value))
-        .catch((error) => { backlogBoard.textContent = error.message; });
+        .catch(showBoardError);
     });
   }
 
@@ -1182,7 +1193,7 @@ function bindBoardActions() {
 
   backlogBoard.querySelectorAll("[data-editor-save]").forEach((button) => {
     button.addEventListener("click", () => {
-      void saveEditor(button.dataset.editorSave).catch((error) => { backlogBoard.textContent = error.message; });
+      void saveEditor(button.dataset.editorSave).catch(showBoardError);
     });
   });
 
@@ -1191,7 +1202,7 @@ function bindBoardActions() {
       const taskKey = select.dataset.taskStatus;
 
       if (select.value === "__delete__") {
-        void deleteTask(taskKey).catch((error) => { backlogBoard.textContent = error.message; });
+        void deleteTask(taskKey).catch(showBoardError);
         return;
       }
 
@@ -1203,7 +1214,7 @@ function bindBoardActions() {
         status,
         completed_at: status === "done" ? `${plannedDate}T18:00:00.000Z` : null
       }).then(() => renderBacklog(weekSelect.value))
-        .catch((error) => { backlogBoard.textContent = error.message; });
+        .catch(showBoardError);
     });
   });
 
@@ -1236,3 +1247,4 @@ logoutButton?.addEventListener("click", async () => {
 
 renderDailyFocus(defaultWeek);
 void renderBacklog(defaultWeek);
+
