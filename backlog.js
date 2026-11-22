@@ -41,12 +41,15 @@ const DAILY_FOCUS_DAY_STORAGE_KEY = "scrum-master-daily-focus-day";
 const DAY_PULSE_SNAPSHOT_STORAGE_KEY = "mindpulse-day-pulse-snapshots";
 let userBacklogWeekStorageKey = `scrum-master-backlog-week:${activeUser}`;
 let unscheduledRenderVersion = 0;
+let unscheduledCount = null;
 
 async function renderUnscheduled() {
   const version = ++unscheduledRenderVersion;
   try {
     const tasks = await cloudRepository.loadUnscheduled();
     if (version !== unscheduledRenderVersion) return;
+    unscheduledCount = tasks.length;
+    if (weekSelect.value) renderBacklogSummary(weekSelect.value);
     quickTaskList.replaceChildren();
     if (!tasks.length) {
       quickTaskList.textContent = "Задач без даты пока нет.";
@@ -91,7 +94,11 @@ async function renderUnscheduled() {
       quickTaskList.appendChild(row);
     }
   } catch (error) {
-    if (version === unscheduledRenderVersion) quickTaskMessage.textContent = "Не удалось загрузить задачи без даты.";
+    if (version === unscheduledRenderVersion) {
+      unscheduledCount = null;
+      if (weekSelect.value) renderBacklogSummary(weekSelect.value);
+      quickTaskMessage.textContent = "Не удалось загрузить задачи без даты.";
+    }
     console.error(error);
   }
 }
@@ -649,6 +656,11 @@ function renderBacklogSummary(week) {
         <p class="analytics-card-label">${t("plan.emotionalHeavy")}</p>
         <strong class="analytics-card-value">${heavyEmotionalCount}</strong>
         <span class="analytics-card-note">${t("plan.emotionalHeavyTasks")}</span>
+      </article>
+      <article class="analytics-card">
+        <p class="analytics-card-label">Без даты</p>
+        <strong class="analytics-card-value">${unscheduledCount ?? "—"}</strong>
+        <span class="analytics-card-note">В отдельном списке</span>
       </article>
     </div>
   `;

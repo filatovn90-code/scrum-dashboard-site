@@ -45,3 +45,12 @@ test("task load inputs remain editable but are hidden from the regular card", ()
   assert.match(code, /data-editor-emotional-load/);
   assert.match(card, /t\("plan\.overallLoad"\)/);
 });
+
+test("weekly plan summary shows the number of unscheduled tasks", () => {
+  const code = readFileSync(new URL("../backlog.js", import.meta.url), "utf8");
+  const css = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
+  const summary = code.slice(code.indexOf("function renderBacklogSummary("), code.indexOf("function makeDayPulseKey("));
+  assert.match(summary, /Без даты/);
+  assert.match(summary, /unscheduledCount/);
+  assert.match(css, /#backlogSummary[\s\S]*repeat\(5,\s*minmax\(0,\s*1fr\)\)/);
+});

@@ -9348,7 +9348,7 @@ body.app-has-shell .today-range-field {
 body.app-has-shell .today-range-field strong { font-size: 1rem; }
 body.app-has-shell .today-grid { align-items: start; gap: 24px; }
 body.app-has-shell #backlogSummary .analytics-overview-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0;
   margin: 0 0 20px;
   border: 1px solid #dfe4dc;
@@ -9389,8 +9389,9 @@ body:has(.public-page) :is(input, select, textarea, button):disabled { opacity: 
 }
 @media (max-width: 800px) {
   body.app-has-shell #backlogSummary .analytics-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  body.app-has-shell #backlogSummary .analytics-card:nth-child(2) { border-right: 0; }
-  body.app-has-shell #backlogSummary .analytics-card:nth-child(-n+2) { border-bottom: 1px solid #dfe4dc; }
+  body.app-has-shell #backlogSummary .analytics-card:nth-child(2n) { border-right: 0; }
+  body.app-has-shell #backlogSummary .analytics-card:nth-child(-n+4) { border-bottom: 1px solid #dfe4dc; }
+  body.app-has-shell #backlogSummary .analytics-card:last-child { border-right: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   body:has(.public-page) *, body.app-has-shell * { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
