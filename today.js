@@ -268,7 +268,7 @@ function renderCapacity(readiness, checkin) {
   }
 
   if (capacityNote) {
-    const parts = [readinessCopy.note, safeReadiness && !safeReadiness.stressWarning ? loadLevel?.note : ""].filter(Boolean);
+    const parts = [readinessCopy.note, loadLevel?.key === "unknown" ? loadLevel.note : safeReadiness && !safeReadiness.stressWarning ? loadLevel?.note : ""].filter(Boolean);
     capacityNote.textContent = parts.join(" ");
   }
 

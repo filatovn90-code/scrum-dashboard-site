@@ -69,9 +69,9 @@ export function mapCloudTask(task) {
     text: task.title,
     time: String(task.planned_time || "").slice(0, 5) || "09:00",
     status: statusToBoard(task.status),
-    task_type: task.task_type || "routine",
-    cognitive_load: Number(task.cognitive_load || 2),
-    emotional_load: Number(task.emotional_load || 2)
+    task_type: task.task_type === null ? null : task.task_type || "routine",
+    cognitive_load: task.cognitive_load == null ? null : Number(task.cognitive_load),
+    emotional_load: task.emotional_load == null ? null : Number(task.emotional_load)
   };
 }
 
@@ -106,6 +106,10 @@ export function createCloudRepository(supabase, userId) {
   }
 
   return {
+    loadUnscheduled() {
+      return unwrap(supabase.from("tasks").select("*")
+        .eq("user_id", userId).is("planned_date", null).is("archived_at", null));
+    },
     load(from, to) {
       return unwrap(supabase.from("tasks").select("*")
         .eq("user_id", userId).gte("planned_date", from).lte("planned_date", to)

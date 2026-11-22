@@ -1,7 +1,22 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { explainLoad } from "../lib/load-explanation.js";
-import { calculateDailyLoad } from "../lib/workload.js";
+import { calculateDailyLoad, calculateDailyLoadLevel } from "../lib/workload.js";
+
+test("unrated tasks do not add invented workload and are reported as incomplete", () => {
+  const task = { title: "Unrated", task_type: null, cognitive_load: null, emotional_load: null };
+  const metrics = calculateDailyLoad([task]);
+  assert.equal(metrics.total, 0);
+  assert.equal(metrics.unratedCount, 1);
+  assert.equal(metrics.tasks[0].cognitive_load, null);
+  assert.equal(calculateDailyLoadLevel([task]).key, "unknown");
+});
+
+test("partially rated tasks are not counted as a fully rated workload", () => {
+  const metrics = calculateDailyLoad([{ task_type: "routine", cognitive_load: 5, emotional_load: null }]);
+  assert.equal(metrics.unratedCount, 1);
+  assert.equal(metrics.total, 0);
+});
 
 test("explains highest positive contributors and separates recovery", () => {
   const result = explainLoad([
