@@ -17,6 +17,24 @@ const week = "Неделя 20.04 - 24.04";
 const demo = { id: "20-0900", time: "09:00", text: "Демо", status: "В работе", task_type: "routine", cognitive_load: 2, emotional_load: 2 };
 const custom = { id: "task-123", time: "10:15", text: "Моя задача", status: "Запланировано", task_type: "deep_work", cognitive_load: 4, emotional_load: 3 };
 
+test("unrated cloud tasks remain unrated", () => {
+  const task = mapCloudTask({ id: "unrated", title: "Task", status: "todo", task_type: null, cognitive_load: null, emotional_load: null });
+  assert.equal(task.cognitive_load, null);
+  assert.equal(task.emotional_load, null);
+});
+
+test("unscheduled task loading is restricted to the signed-in user and excludes archived tasks", async () => {
+  const calls = [];
+  const q = {
+    select() { return q; },
+    eq(...args) { calls.push(["eq", ...args]); return q; },
+    is(...args) { calls.push(["is", ...args]); return q; },
+    then(resolve) { return Promise.resolve({ data: [], error: null }).then(resolve); }
+  };
+  await createCloudRepository({ from: () => q }, "owner").loadUnscheduled();
+  assert.deepEqual(calls, [["eq", "user_id", "owner"], ["is", "planned_date", null], ["is", "archived_at", null]]);
+});
+
 function storage(values) {
   return {
     getItem(key) { return values[key] ?? null; },

@@ -19,11 +19,109 @@ const weekSelect = document.getElementById("weekSelect");
 const focusTodayPanel = document.getElementById("focusTodayPanel");
 const backlogSummary = document.getElementById("backlogSummary");
 const backlogBoard = document.getElementById("backlogBoard");
+function showBoardError(error) {
+  let notice = document.getElementById("backlogError");
+  if (!notice) {
+    notice = document.createElement("p");
+    notice.id = "backlogError";
+    notice.setAttribute("role", "alert");
+    backlogBoard.before(notice);
+  }
+  notice.textContent = "Не удалось сохранить изменения. Проверьте подключение и вход в аккаунт, затем попробуйте снова.";
+  console.error("Backlog operation failed", error);
+}
+const quickTaskForm = document.getElementById("quickTaskForm");
+const quickTaskTitle = document.getElementById("quickTaskTitle");
+const quickTaskList = document.getElementById("quickTaskList");
+const quickTaskMessage = document.getElementById("quickTaskMessage");
 const logoutButton = document.getElementById("logoutButton");
 
 const DAILY_FOCUS_DAY_STORAGE_KEY = "scrum-master-daily-focus-day";
 const DAY_PULSE_SNAPSHOT_STORAGE_KEY = "mindpulse-day-pulse-snapshots";
 let userBacklogWeekStorageKey = `scrum-master-backlog-week:${activeUser}`;
+let unscheduledRenderVersion = 0;
+let unscheduledCount = null;
+
+async function renderUnscheduled() {
+  const version = ++unscheduledRenderVersion;
+  try {
+    const tasks = await cloudRepository.loadUnscheduled();
+    if (version !== unscheduledRenderVersion) return;
+    unscheduledCount = tasks.length;
+    if (weekSelect.value) renderBacklogSummary(weekSelect.value);
+    quickTaskList.replaceChildren();
+    if (!tasks.length) {
+      quickTaskList.textContent = "Задач без даты пока нет.";
+      return;
+    }
+    for (const task of tasks) {
+      const row = document.createElement("div");
+      row.className = "quick-task-row";
+      const description = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = task.title;
+      const meta = document.createElement("span");
+      meta.textContent = task.task_type == null || task.cognitive_load == null || task.emotional_load == null ? "Нагрузка не оценена" : "Нагрузка оценена";
+      description.append(title, meta);
+      const date = document.createElement("input");
+      date.type = "date";
+      date.setAttribute("aria-label", `День для задачи ${task.title}`);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Назначить день";
+      button.addEventListener("click", async () => {
+        if (!date.value) { date.focus(); return; }
+        const targetWeek = weekNames.find((week) => (backlogData[week]?.days || []).some((day) => toBacklogIsoDate(day.date) === date.value));
+        if (!targetWeek) {
+          quickTaskMessage.textContent = "Выберите день, доступный на недельной доске.";
+          date.focus();
+          return;
+        }
+        button.disabled = true;
+        try {
+          await cloudRepository.updateTask(task.id, { planned_date: date.value });
+          weekSelect.value = targetWeek;
+          quickTaskMessage.textContent = "День назначен. Задача добавлена в план недели.";
+          await renderBacklog(targetWeek);
+        } catch (error) {
+          quickTaskMessage.textContent = "Не удалось назначить день. Попробуйте ещё раз.";
+          console.error(error);
+          button.disabled = false;
+        }
+      });
+      row.append(description, date, button);
+      quickTaskList.appendChild(row);
+    }
+  } catch (error) {
+    if (version === unscheduledRenderVersion) {
+      unscheduledCount = null;
+      if (weekSelect.value) renderBacklogSummary(weekSelect.value);
+      quickTaskMessage.textContent = "Не удалось загрузить задачи без даты.";
+    }
+    console.error(error);
+  }
+}
+
+quickTaskForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const title = quickTaskTitle.value.trim();
+  if (!title) { quickTaskTitle.focus(); return; }
+  const button = quickTaskForm.querySelector("button");
+  button.disabled = true;
+  try {
+    await ensurePulseContext();
+    await cloudRepository.createTask({ title, status: "todo", planned_date: null, task_type: null, cognitive_load: null, emotional_load: null });
+    quickTaskTitle.value = "";
+    quickTaskMessage.textContent = "Задача добавлена.";
+    await renderUnscheduled();
+    quickTaskTitle.focus();
+  } catch (error) {
+    quickTaskMessage.textContent = "Не удалось сохранить задачу. Попробуйте ещё раз.";
+    console.error(error);
+  } finally {
+    button.disabled = false;
+  }
+});
 let userDayPulseSnapshotStorageKey = `${DAY_PULSE_SNAPSHOT_STORAGE_KEY}:${activeUser}`;
 const BACKLOG_YEAR = 2026;
 const DEFAULT_DAY_PULSE = 70;
@@ -296,9 +394,9 @@ function fallbackEmotionalLoad(stress) {
 }
 
 function normalizeBacklogTaskItem(item, date = "") {
-  const taskType = mapLegacyTaskType(item?.task_type || item?.taskType);
-  const cognitiveLoad = clampLoad(item?.cognitive_load ?? item?.mentalCost, fallbackCognitiveLoad(taskType));
-  const emotionalLoad = clampLoad(item?.emotional_load ?? item?.emotionalCost, fallbackEmotionalLoad(item?.stress));
+  const taskType = item?.task_type === null ? null : mapLegacyTaskType(item?.task_type || item?.taskType);
+  const cognitiveLoad = item?.cognitive_load === null ? null : clampLoad(item?.cognitive_load ?? item?.mentalCost, fallbackCognitiveLoad(taskType));
+  const emotionalLoad = item?.emotional_load === null ? null : clampLoad(item?.emotional_load ?? item?.emotionalCost, fallbackEmotionalLoad(item?.stress));
   const normalized = normalizeTask({
     task_type: taskType,
     cognitive_load: cognitiveLoad,
@@ -558,6 +656,11 @@ function renderBacklogSummary(week) {
         <strong class="analytics-card-value">${heavyEmotionalCount}</strong>
         <span class="analytics-card-note">${t("plan.emotionalHeavyTasks")}</span>
       </article>
+      <article class="analytics-card">
+        <p class="analytics-card-label">Без даты</p>
+        <strong class="analytics-card-value">${unscheduledCount ?? "—"}</strong>
+        <span class="analytics-card-note">В отдельном списке</span>
+      </article>
     </div>
   `;
 }
@@ -760,6 +863,7 @@ function buildDayPulseMetricsMap(week, days) {
     const remaining = Math.max(0, capacity - totalLoad);
 
     return [day.date, {
+      unratedCount: loadMetrics.unratedCount,
       dateIso,
       hasPulse: Number.isFinite(computedPulse),
       stressWarning: checkin && Number(checkin.stress_level) >= 9 ? "high" : checkin && Number(checkin.stress_level) >= 7 ? "elevated" : null,
@@ -816,7 +920,7 @@ function renderDayPulseCard(week, day, metrics) {
           <span>${summaryLabel}</span>
           ${metrics.overBy ? `<span class="day-pulse-over">+${metrics.overBy}</span>` : ""}
         </div>
-        <div class="day-pulse-note">${getPulseCardHint(metrics)}</div>
+        <div class="day-pulse-note">${metrics.unratedCount ? `Нагрузка оценена не полностью: задач без оценки ${metrics.unratedCount}` : getPulseCardHint(metrics)}</div>
       </button>
       ${expanded ? `
         <div class="day-pulse-details">
@@ -849,6 +953,7 @@ function renderTaskEditor(editorKey, day, defaults) {
         </div>
         <div class="inline-task-row">
           <select data-editor-task-type>
+            <option value="" ${defaults.task_type == null ? "selected" : ""}>Тип не указан</option>
             <option value="routine" ${defaults.task_type === "routine" ? "selected" : ""}>${t("taskTypes.routine")}</option>
             <option value="deep_work" ${defaults.task_type === "deep_work" ? "selected" : ""}>${t("taskTypes.deep_work")}</option>
             <option value="communication" ${defaults.task_type === "communication" ? "selected" : ""}>${t("taskTypes.communication")}</option>
@@ -857,11 +962,13 @@ function renderTaskEditor(editorKey, day, defaults) {
             <option value="recovery" ${defaults.task_type === "recovery" ? "selected" : ""}>${t("taskTypes.recovery")}</option>
           </select>
           <select data-editor-cognitive-load>
+            <option value="" ${defaults.cognitive_load == null ? "selected" : ""}>Когнитивная: не оценена</option>
             ${[1, 2, 3, 4, 5].map((value) => `<option value="${value}" ${defaults.cognitive_load === value ? "selected" : ""}>${t("plan.cognitive")} ${value}/5</option>`).join("")}
           </select>
         </div>
         <div class="inline-task-row">
           <select data-editor-emotional-load>
+            <option value="" ${defaults.emotional_load == null ? "selected" : ""}>Эмоциональная: не оценена</option>
             ${[1, 2, 3, 4, 5].map((value) => `<option value="${value}" ${defaults.emotional_load === value ? "selected" : ""}>${t("plan.emotional")} ${value}/5</option>`).join("")}
           </select>
         </div>
@@ -909,7 +1016,7 @@ function renderTaskCard(week, day, rawItem) {
     });
   }
 
-  const intensity = calculateTaskIntensity(item);
+  const intensity = item.task_type == null || item.cognitive_load == null || item.emotional_load == null ? { label: "Не оценена" } : calculateTaskIntensity(item);
   const doneMark = item.status === "Сделано" ? '<span class="task-done-mark" aria-hidden="true">✓</span>' : "";
 
   return `
@@ -976,9 +1083,9 @@ async function saveEditor(editorKey) {
     planned_date: toBacklogIsoDate(day.date),
     planned_time: selectedTime,
     status,
-    task_type: taskTypeSelect.value,
-    cognitive_load: Number(cognitiveLoadSelect.value),
-    emotional_load: Number(emotionalLoadSelect.value),
+    task_type: taskTypeSelect.value || null,
+    cognitive_load: cognitiveLoadSelect.value === "" ? null : Number(cognitiveLoadSelect.value),
+    emotional_load: emotionalLoadSelect.value === "" ? null : Number(emotionalLoadSelect.value),
     completed_at: status === "done" ? `${toBacklogIsoDate(day.date)}T18:00:00.000Z` : null
   };
 
@@ -1051,6 +1158,7 @@ async function renderBacklog(week) {
   }
   applyCloudWeek(week, cloudData);
   dayPulseCheckins = checkins;
+  void renderUnscheduled();
 
   const pulseMetricsByDay = buildDayPulseMetricsMap(week, data.days);
   renderBacklogSummary(week);
@@ -1165,7 +1273,7 @@ function bindBoardActions() {
       draggedTaskKey = null;
       activeEditorState = null;
       void moved.then((didMove) => didMove && renderBacklog(weekSelect.value))
-        .catch((error) => { backlogBoard.textContent = error.message; });
+        .catch(showBoardError);
     });
   }
 
@@ -1180,7 +1288,7 @@ function bindBoardActions() {
 
   backlogBoard.querySelectorAll("[data-editor-save]").forEach((button) => {
     button.addEventListener("click", () => {
-      void saveEditor(button.dataset.editorSave).catch((error) => { backlogBoard.textContent = error.message; });
+      void saveEditor(button.dataset.editorSave).catch(showBoardError);
     });
   });
 
@@ -1189,7 +1297,7 @@ function bindBoardActions() {
       const taskKey = select.dataset.taskStatus;
 
       if (select.value === "__delete__") {
-        void deleteTask(taskKey).catch((error) => { backlogBoard.textContent = error.message; });
+        void deleteTask(taskKey).catch(showBoardError);
         return;
       }
 
@@ -1201,7 +1309,7 @@ function bindBoardActions() {
         status,
         completed_at: status === "done" ? `${plannedDate}T18:00:00.000Z` : null
       }).then(() => renderBacklog(weekSelect.value))
-        .catch((error) => { backlogBoard.textContent = error.message; });
+        .catch(showBoardError);
     });
   });
 

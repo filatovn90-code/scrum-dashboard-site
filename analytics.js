@@ -409,11 +409,11 @@ function buildTaskTypeSummary(tasks) {
 
   tasks.forEach((rawTask) => {
     const task = normalizeTask(rawTask);
-    const key = task.task_type || "routine";
+    const key = task.task_type ?? "unspecified";
     if (!map.has(key)) {
       map.set(key, {
         key,
-        label: getTaskTypeLabel(key),
+        label: getTaskTypeLabel(key === "unspecified" ? null : key),
         count: 0,
         cognitiveTotal: 0,
         emotionalTotal: 0,

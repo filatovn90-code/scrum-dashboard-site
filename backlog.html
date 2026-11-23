@@ -33,6 +33,18 @@
 
             <div id="backlogSummary"></div>
 
+            <section class="quick-backlog" aria-labelledby="quickBacklogTitle">
+              <h3 id="quickBacklogTitle">Задачи без даты</h3>
+              <p>Запишите задачу сейчас, а день и нагрузку выберите позже.</p>
+              <form id="quickTaskForm" class="quick-task-form">
+                <label class="quick-task-label" for="quickTaskTitle">Новая задача</label>
+                <input id="quickTaskTitle" type="text" maxlength="500" placeholder="Что нужно сделать?" required>
+                <button type="submit">Добавить</button>
+              </form>
+              <p id="quickTaskMessage" role="status" aria-live="polite"></p>
+              <div id="quickTaskList"></div>
+            </section>
+
             <section class="section backlog-focus-strip" id="focusTodayPanel">
               <div class="section-heading backlog-focus-heading">
                 <div>
