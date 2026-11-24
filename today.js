@@ -42,6 +42,7 @@ const energyDebtValue = document.getElementById("todayEnergyDebtValue");
 const energyDebtStatus = document.getElementById("todayEnergyDebtStatus");
 const energyDebtNote = document.getElementById("todayEnergyDebtNote");
 const capacityMode = document.getElementById("todayCapacityMode");
+const readinessExplanation = document.getElementById("todayReadinessExplanation");
 
 let supabase;
 let currentUser;
