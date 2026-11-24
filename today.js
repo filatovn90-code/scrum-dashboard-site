@@ -2,6 +2,7 @@ import { requireAuth, signOutCurrentUser } from "./auth-helpers.js";
 import { getCurrentProfile, getSupabase } from "./supabase-client.js";
 import { applyTranslations, onLocaleChange, t } from "./i18n.js";
 import { landingPath, loginPath } from "./route-paths.js";
+import { explainReadiness } from "./lib/load-explanation.js";
 import {
   calculateDailyLoadLevel,
   calculateEnergyDebtSeries,
