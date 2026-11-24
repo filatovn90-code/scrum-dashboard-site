@@ -681,6 +681,11 @@ const messages = {
       stressAttention: "Стоит обратить внимание на стресс",
       stressElevatedNote: "Ты отметил повышенный стресс. Посмотри на план и оставь место для пауз.",
       stressHighNote: "Ты отметил высокий стресс. Даже если энергии и фокуса достаточно, можно бережнее оценить план и предусмотреть паузы.",
+      readinessExplain: {
+        summary: { missing: "Отметьте состояние, чтобы сопоставить его с планом.", stress: "На оценку дня заметно влияет повышенный стресс.", overloaded: "Сочетание состояния и объёма плана говорит, что день может оказаться слишком плотным.", energy: "Сегодняшняя оценка энергии ниже обычного рабочего ориентира.", focus: "Сегодняшняя оценка фокуса ниже обычного рабочего ориентира.", dense: "Запланированная нагрузка выглядит высокой.", balanced: "По текущим оценкам план выглядит управляемым. Это ориентир, а не гарантия самочувствия." },
+        factor: { stress: "Повышенный стресс снижает готовность, даже если энергии или фокуса достаточно.", energy: "Невысокая энергия может сделать сложные задачи требовательнее.", focus: "Невысокий фокус может затруднить задачи, требующие концентрации.", dense: "Суммарный объём незавершённых задач уже высокий.", cognitive: "В плане несколько задач с высокой когнитивной нагрузкой.", emotional: "В плане несколько задач с высокой эмоциональной нагрузкой.", unrated: "Есть задачи без полной оценки нагрузки; они не учитываются в расчёте полностью." },
+        action: { checkin: "Когда будет удобно, отметьте состояние. План не изменится автоматически.", lighten: "Можно оставить больше пауз или выбрать задачу полегче. Решение за вами.", reschedule: "Если это подходит, рассмотрите перенос одной тяжёлой задачи. План не меняется автоматически.", protect: "Можно не добавлять ещё одну сложную задачу и оставить время на переключение.", steady: "Оставьте запас на перерывы и пересмотрите план, если состояние изменится." }
+      },
       stateValues: "Энергия {energy}/10 · Фокус {focus}/10 · Стресс {stress}/10",
       readinessUnknown: "Нет оценки",
       readinessMissing: "Сначала сохрани оценку состояния, чтобы увидеть готовность дня.",
@@ -1386,6 +1391,11 @@ const messages = {
       stressAttention: "Pay attention to stress",
       stressElevatedNote: "You reported elevated stress. Consider reviewing your plan and leaving room for breaks.",
       stressHighNote: "You reported high stress. Even if your energy and focus are high, consider reviewing your plan and allowing time for breaks.",
+      readinessExplain: {
+        summary: { missing: "Add a check-in to compare your state with the plan.", stress: "Elevated stress is a notable factor in today's estimate.", overloaded: "Your current state and planned workload suggest the day may be too dense.", energy: "Today's energy rating is below a typical working baseline.", focus: "Today's focus rating is below a typical working baseline.", dense: "The planned workload looks high.", balanced: "Based on current ratings, the plan looks manageable. This is a guide, not a guarantee of how you will feel." },
+        factor: { stress: "Elevated stress lowers readiness even when energy or focus is sufficient.", energy: "Lower energy can make demanding tasks feel harder.", focus: "Lower focus can make concentration-heavy tasks harder.", dense: "The total volume of unfinished tasks is already high.", cognitive: "The plan has several tasks with high cognitive load.", emotional: "The plan has several tasks with high emotional load.", unrated: "Some tasks are not fully rated and are not fully included in the calculation." },
+        action: { checkin: "When convenient, add a check-in. Nothing in your plan will change automatically.", lighten: "You could leave more room for breaks or choose one lighter task. The choice is yours.", reschedule: "If it works for you, consider moving one demanding task. The plan will not change automatically.", protect: "You could avoid adding another demanding task and leave time to switch between tasks.", steady: "Keep room for breaks and revisit the plan if your state changes." }
+      },
       stateValues: "Energy {energy}/10 · Focus {focus}/10 · Stress {stress}/10",
       readinessUnknown: "No check-in",
       readinessMissing: "Save a check-in to see your readiness for today.",
