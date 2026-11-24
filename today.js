@@ -249,6 +249,29 @@ function renderTodayView() {
   renderReadinessExplanation(todayCheckin ? checkinState : null, activeTasks, readiness);
 }
 
+function renderReadinessExplanation(checkin, tasks, readiness) {
+  if (!readinessExplanation) return;
+  readinessExplanation.replaceChildren();
+  const explanation = explainReadiness(checkin, tasks, readiness);
+  const add = (tag, text) => {
+    const element = document.createElement(tag);
+    element.textContent = text;
+    readinessExplanation.append(element);
+    return element;
+  };
+
+  add("p", t(`workload.readinessExplain.summary.${explanation.summary}`));
+  if (explanation.factors.length) {
+    const list = add("ul", "");
+    explanation.factors.slice(0, 3).forEach((factor) => {
+      const item = document.createElement("li");
+      item.textContent = t(`workload.readinessExplain.factor.${factor}`);
+      list.append(item);
+    });
+  }
+  add("p", t(`workload.readinessExplain.action.${explanation.action}`));
+}
+
 function renderCapacity(readiness, energyDebt, checkin) {
   const safeReadiness = readiness;
   const safeDebt = energyDebt || summarizeEnergyDebt([]);
