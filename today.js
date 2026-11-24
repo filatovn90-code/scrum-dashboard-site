@@ -246,6 +246,7 @@ function renderTodayView() {
   const energyDebt = summarizeEnergyDebt(debtSeries);
   const readiness = todayCheckin ? calculateReadinessScore(checkinState, activeTasks, energyDebt) : null;
   renderCapacity(readiness, energyDebt, todayCheckin ? checkinState : null);
+  renderReadinessExplanation(todayCheckin ? checkinState : null, activeTasks, readiness);
 }
 
 function renderCapacity(readiness, energyDebt, checkin) {
